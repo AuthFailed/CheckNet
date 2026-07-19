@@ -4,7 +4,7 @@ import Foundation
 /// and Live Activities. Falls back to standard defaults when the app-group
 /// container is unavailable (e.g. unsigned simulator builds).
 enum AppGroup {
-    static let identifier = "group.com.checknet.app"
+    static let identifier = "group.com.chrsnv.checknet"
 
     static var defaults: UserDefaults {
         UserDefaults(suiteName: identifier) ?? .standard
