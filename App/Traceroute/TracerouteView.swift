@@ -89,7 +89,9 @@ struct TracerouteView: View {
             } else {
                 Image(systemName: model.reached ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                     .foregroundStyle(model.reached ? .green : .orange)
-                Text(model.reached ? "Достигнут за \(model.hops.count) хопов" : "Цель не достигнута")
+                let reachedLabel: LocalizedStringKey = model.reached
+                    ? "Достигнут за \(model.hops.count) хопов" : "Цель не достигнута"
+                Text(reachedLabel)
             }
             Spacer()
         }

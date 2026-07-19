@@ -92,7 +92,7 @@ struct TLSInspectorView: View {
                     .font(.title2)
                     .foregroundStyle(info.trustEvaluationPassed ? .green : .red)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(info.trustEvaluationPassed ? "Сертификат доверенный" : "Доверие не подтверждено")
+                    Text(info.trustEvaluationPassed ? LocalizedStringKey("Сертификат доверенный") : LocalizedStringKey("Доверие не подтверждено"))
                         .font(.headline)
                     Text("\(info.resolvedIP) · \(String(format: "%.0f", info.handshakeMillis)) мс")
                         .font(.caption).foregroundStyle(.secondary)
@@ -113,7 +113,9 @@ struct TLSInspectorView: View {
     private func certCard(_ cert: TLSCertificate, index: Int, isLeaf: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(isLeaf ? "Сертификат сервера" : (cert.isCA ? "CA · уровень \(index)" : "Промежуточный \(index)"))
+                let certLabel: LocalizedStringKey = isLeaf ? "Сертификат сервера"
+                    : (cert.isCA ? "CA · уровень \(index)" : "Промежуточный \(index)")
+                Text(certLabel)
                     .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 Spacer()
                 validityBadge(cert)
@@ -146,7 +148,7 @@ struct TLSInspectorView: View {
     }
 
     private func badge(_ text: String, _ color: Color) -> some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(.caption2.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 8).padding(.vertical, 3)

@@ -92,7 +92,7 @@ struct WakeOnLanView: View {
     private func fieldRow<Content: View>(icon: String, title: String, @ViewBuilder content: () -> Content) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon).foregroundStyle(.secondary).frame(width: 20)
-            Text(title).foregroundStyle(.secondary).frame(width: 92, alignment: .leading)
+            Text(LocalizedStringKey(title)).foregroundStyle(.secondary).frame(width: 92, alignment: .leading)
             content()
             Spacer(minLength: 0)
         }
@@ -102,7 +102,7 @@ struct WakeOnLanView: View {
     private func banner(icon: String, color: Color, text: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon).foregroundStyle(color)
-            Text(text).font(.callout)
+            Text(LocalizedStringKey(text)).font(.callout)
             Spacer()
         }
         .padding(14).card()

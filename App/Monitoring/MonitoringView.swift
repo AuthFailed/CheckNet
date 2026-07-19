@@ -54,7 +54,7 @@ struct MonitoringView: View {
         return HStack(spacing: 10) {
             Image(systemName: manager.isMonitoring ? "dot.radiowaves.left.and.right" : "pause.circle")
                 .foregroundStyle(manager.isMonitoring ? .green : .secondary)
-            Text(manager.isMonitoring ? "Мониторинг активен" : "Остановлен")
+            Text(manager.isMonitoring ? LocalizedStringKey("Мониторинг активен") : LocalizedStringKey("Остановлен"))
                 .font(.subheadline.weight(.medium))
             Spacer()
             if down > 0 {
@@ -80,9 +80,15 @@ struct MonitoringView: View {
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(entry.status == .down ? "недоступен" : (entry.lastLatency.map { "\(Int($0)) мс" } ?? "—"))
-                            .font(.callout.monospaced())
-                            .foregroundStyle(StatusStyle.color(entry.status))
+                        Group {
+                            if entry.status == .down {
+                                Text("недоступен")
+                            } else {
+                                Text(entry.lastLatency.map { "\(Int($0)) мс" } ?? "—")
+                            }
+                        }
+                        .font(.callout.monospaced())
+                        .foregroundStyle(StatusStyle.color(entry.status))
                         if entry.status != .down && entry.lossPercent > 0 {
                             Text("\(Int(entry.lossPercent))% потерь").font(.caption2).foregroundStyle(.orange)
                         }

@@ -9,7 +9,7 @@ struct PingSettingsView: View {
             Form {
                 Section("Тип пакета") {
                     Picker("Тип", selection: $model.probeType) {
-                        ForEach(ProbeType.allCases) { Text($0.rawValue).tag($0) }
+                        ForEach(ProbeType.allCases) { Text(LocalizedStringKey($0.rawValue)).tag($0) }
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()

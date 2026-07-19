@@ -147,7 +147,7 @@ struct CatalogView: View {
                 Button {
                     store.togglePin(tool)
                 } label: {
-                    Label(store.isPinned(tool) ? "Открепить" : "Закрепить",
+                    Label(store.isPinned(tool) ? LocalizedStringKey("Открепить") : LocalizedStringKey("Закрепить"),
                           systemImage: store.isPinned(tool) ? "star.slash" : "star")
                 }
                 .tint(.orange)

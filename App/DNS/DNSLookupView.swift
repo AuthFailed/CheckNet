@@ -188,7 +188,7 @@ struct ErrorBanner: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-            Text(message).font(.callout).foregroundStyle(.primary)
+            Text(LocalizedStringKey(message)).font(.callout).foregroundStyle(.primary)
             Spacer()
         }
         .padding(14)

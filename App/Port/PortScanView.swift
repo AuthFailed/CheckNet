@@ -111,7 +111,7 @@ struct PortScanView: View {
     private var modeCard: some View {
         VStack(spacing: 10) {
             Picker("Режим", selection: $model.mode) {
-                ForEach(PortScanModel.Mode.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(PortScanModel.Mode.allCases) { Text(LocalizedStringKey($0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
             .disabled(model.isRunning)

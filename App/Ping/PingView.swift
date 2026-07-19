@@ -170,10 +170,16 @@ struct PingView: View {
             HStack(spacing: 14) {
                 PulseRing(value: model.lastRTT)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(model.lastRTT.map { "Текущий отклик · \(fmt($0)) мс" } ?? "Ожидание ответа…")
-                        .font(.subheadline.weight(.semibold))
+                    Group {
+                        if let rtt = model.lastRTT {
+                            Text("Текущий отклик · \(fmt(rtt)) мс")
+                        } else {
+                            Text("Ожидание ответа…")
+                        }
+                    }
+                    .font(.subheadline.weight(.semibold))
                     if model.lastRTT == nil, let err = model.lastError {
-                        Text(err)
+                        Text(LocalizedStringKey(err))
                             .font(.caption2)
                             .foregroundStyle(.orange)
                             .lineLimit(2)
@@ -250,7 +256,7 @@ struct PingView: View {
                     .frame(width: 38, height: 38)
                     .background(reachable ? Color.green : Color.red, in: Circle())
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(reachable ? "Хост доступен" : "Хост недоступен")
+                    Text(reachable ? LocalizedStringKey("Хост доступен") : LocalizedStringKey("Хост недоступен"))
                         .font(.title3.weight(.bold))
                     Text("\(model.stats.received) из \(model.stats.transmitted) · \(fmt(model.stats.lossPercent))% потерь · \(fmt(model.elapsedSeconds)) с")
                         .font(.caption).foregroundStyle(.secondary)
@@ -327,7 +333,7 @@ struct PingView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 34)).foregroundStyle(.orange).padding(.top, 30)
             Text("Не удалось выполнить проверку").font(.headline)
-            Text(message).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Text(LocalizedStringKey(message)).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity).padding(.horizontal, 24)
     }
@@ -350,7 +356,7 @@ struct PingView: View {
                 }
             } else {
                 Button { model.toggle() } label: {
-                    Label(model.isRunning ? "Остановить" : "Запустить проверку",
+                    Label(model.isRunning ? LocalizedStringKey("Остановить") : LocalizedStringKey("Запустить проверку"),
                           systemImage: model.isRunning ? "stop.fill" : "play.fill")
                         .font(.headline).frame(maxWidth: .infinity).frame(height: 52)
                         .foregroundStyle(model.isRunning ? .red : .white)
@@ -377,7 +383,7 @@ struct PingView: View {
     private func statCell(value: String, label: String, color: Color = .primary) -> some View {
         VStack(spacing: 3) {
             Text(value).font(.system(size: 17, weight: .bold, design: .monospaced)).foregroundStyle(color)
-            Text(label).font(.caption2).foregroundStyle(.secondary)
+            Text(LocalizedStringKey(label)).font(.caption2).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
     }

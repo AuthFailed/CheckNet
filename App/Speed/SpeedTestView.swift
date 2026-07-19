@@ -49,8 +49,8 @@ struct SpeedTestView: View {
                             .font(.callout.weight(.medium)).foregroundStyle(.primary)
                         HStack(spacing: 6) {
                             Text(s.host).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
-                            if let bw = s.bandwidthLabel {
-                                Text("· \(bw)").font(.caption).foregroundStyle(.secondary)
+                            if let bw = s.bandwidthValue {
+                                Text("· \(bw) Гбит/с").font(.caption).foregroundStyle(.secondary)
                             }
                             if let ping = model.pings[s.host] {
                                 Text("· \(Int(ping)) мс").font(.caption).foregroundStyle(.green)
@@ -83,7 +83,7 @@ struct SpeedTestView: View {
     private var gaugeCard: some View {
         VStack(spacing: 16) {
             if !model.currentPhaseLabel.isEmpty {
-                Text(model.currentPhaseLabel).font(.caption).foregroundStyle(.secondary)
+                Text(LocalizedStringKey(model.currentPhaseLabel)).font(.caption).foregroundStyle(.secondary)
             }
             if model.phase == .running {
                 VStack(spacing: 4) {
@@ -91,7 +91,8 @@ struct SpeedTestView: View {
                         .font(.system(size: 56, weight: .bold, design: .rounded))
                         .foregroundStyle(model.liveDirection == .download ? .blue : .green)
                         .contentTransition(.numericText())
-                    Text("\(model.liveDirection == .download ? "Загрузка" : "Отдача") · Мбит/с")
+                    let dirLabel: LocalizedStringKey = model.liveDirection == .download ? "Загрузка" : "Отдача"
+                    (Text(dirLabel) + Text(verbatim: " · Мбит/с"))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
             }
@@ -106,7 +107,7 @@ struct SpeedTestView: View {
 
     private func resultCell(title: String, value: Double?, color: Color, icon: String) -> some View {
         VStack(spacing: 3) {
-            Label(title, systemImage: icon).font(.caption2).foregroundStyle(.secondary)
+            Label(LocalizedStringKey(title), systemImage: icon).font(.caption2).foregroundStyle(.secondary)
             Text(value.map { String(format: "%.1f", $0) } ?? "—")
                 .font(.system(.title2, design: .rounded).weight(.bold)).foregroundStyle(color)
             Text("Мбит/с").font(.caption2).foregroundStyle(.tertiary)
@@ -188,8 +189,8 @@ struct ServerPickerView: View {
                         .foregroundStyle(.primary)
                     HStack(spacing: 6) {
                         Text(server.host).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
-                        if let bw = server.bandwidthLabel {
-                            Text(bw)
+                        if let bw = server.bandwidthValue {
+                            Text("\(bw) Гбит/с")
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(.blue)
                                 .padding(.horizontal, 6).padding(.vertical, 1)
