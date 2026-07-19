@@ -175,7 +175,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     /// (scanning). Gated behind a one-time consent prompt.
     var isSensitive: Bool {
         switch self {
-        case .portScan, .ipScanner, .networkBrowser, .bonjour, .wakeOnLan:
+        case .portScan, .ipScanner:
             return true
         default:
             return false

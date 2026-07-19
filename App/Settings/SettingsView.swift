@@ -36,14 +36,19 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("Проверки") {
+                Section {
                     Toggle("Live Activity в Dynamic Island", isOn: $settings.liveActivitiesEnabled)
                     Toggle("Обратный DNS по умолчанию", isOn: $settings.reverseDNSByDefault)
+                    Toggle("Предупреждать о сканирующих проверках", isOn: $settings.confirmSensitiveTests)
                     Button {
                         showHistory = true
                     } label: {
                         Label("История проверок", systemImage: "clock.arrow.circlepath")
                     }
+                } header: {
+                    Text("Проверки")
+                } footer: {
+                    Text("Сканирование портов и диапазонов IP в чужих сетях может расцениваться как атака. Когда включено, приложение спрашивает согласие перед запуском таких проверок.")
                 }
 
                 Section {

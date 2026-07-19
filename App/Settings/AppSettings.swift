@@ -58,6 +58,25 @@ final class AppSettings {
     var reverseDNSByDefault: Bool {
         didSet { UserDefaults.standard.set(reverseDNSByDefault, forKey: "checknet.rdnsDefault") }
     }
+    /// Warn and ask for consent before running scanning tools that some
+    /// networks may treat as an attack (port scan, IP-range scan, Wake-on-LAN).
+    var confirmSensitiveTests: Bool {
+        didSet { UserDefaults.standard.set(confirmSensitiveTests, forKey: "checknet.confirmSensitive") }
+    }
+
+    /// In-memory "agreed this session" set so a granted tool isn't re-prompted.
+    @ObservationIgnored private var sessionConsent: Set<String> = []
+
+    /// Whether a consent prompt should be shown before running `tool`.
+    func consentNeeded(for tool: Tool) -> Bool {
+        tool.isSensitive && confirmSensitiveTests && !sessionConsent.contains(tool.id)
+    }
+
+    /// Remember consent for this tool for the rest of the session.
+    func grantConsent(for tool: Tool) { sessionConsent.insert(tool.id) }
+
+    /// Turn off all sensitive-test confirmations ("don't ask again").
+    func disableSensitivePrompts() { confirmSensitiveTests = false }
 
     init() {
         let d = UserDefaults.standard
@@ -65,5 +84,6 @@ final class AppSettings {
         language = AppLanguage(rawValue: d.string(forKey: "checknet.language") ?? "") ?? .system
         liveActivitiesEnabled = d.object(forKey: "checknet.liveActivities") as? Bool ?? true
         reverseDNSByDefault = d.object(forKey: "checknet.rdnsDefault") as? Bool ?? true
+        confirmSensitiveTests = d.object(forKey: "checknet.confirmSensitive") as? Bool ?? true
     }
 }

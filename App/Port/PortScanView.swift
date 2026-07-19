@@ -61,6 +61,12 @@ struct PortScanView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = PortScanModel()
+    @Environment(AppSettings.self) private var settings
+    @State private var showConsent = false
+
+    private func requestStart() {
+        if settings.consentNeeded(for: .portScan) { showConsent = true } else { model.start() }
+    }
 
     var body: some View {
         ScrollView {
@@ -92,12 +98,13 @@ struct PortScanView: View {
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Сканировать", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
-                model.toggle()
+                if model.isRunning { model.stop() } else { requestStart() }
             }
         }
+        .sensitiveConsent(.portScan, isPresented: $showConsent) { model.start() }
         .onAppear {
             if let presetHost { model.host = presetHost }
-            if autostart { model.start() }
+            if autostart { requestStart() }
         }
     }
 
