@@ -8,6 +8,7 @@ struct PingView: View {
     var presetHost: String? = nil
 
     @Environment(SavedHostsStore.self) private var savedHosts
+    @Environment(AppSettings.self) private var settings
     @State private var model = PingViewModel()
     @State private var showSettings = false
     @State private var showSavePrompt = false
@@ -56,6 +57,7 @@ struct PingView: View {
             Text(model.host)
         }
         .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
             if let presetHost, !presetHost.isEmpty { model.host = presetHost }
             if openSettings { showSettings = true }
             if autostart { model.start() }
@@ -170,8 +172,15 @@ struct PingView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(model.lastRTT.map { "Текущий отклик · \(fmt($0)) мс" } ?? "Ожидание ответа…")
                         .font(.subheadline.weight(.semibold))
-                    Sparkline(values: model.sparkline)
-                        .frame(height: 34)
+                    if model.lastRTT == nil, let err = model.lastError {
+                        Text(err)
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                            .lineLimit(2)
+                    } else {
+                        Sparkline(values: model.sparkline)
+                            .frame(height: 34)
+                    }
                 }
             }
             Divider()

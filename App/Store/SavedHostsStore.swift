@@ -28,6 +28,24 @@ final class SavedHostsStore {
         hosts.filter { $0.toolID == nil || $0.toolID == tool.id }
     }
 
+    /// Global favorites split into IP literals and domain names for the settings UI.
+    var savedIPs: [SavedHost] { hosts.filter { $0.toolID == nil && SavedHostsStore.isIP($0.value) } }
+    var savedDomains: [SavedHost] { hosts.filter { $0.toolID == nil && !SavedHostsStore.isIP($0.value) } }
+
+    static func isIP(_ value: String) -> Bool {
+        var v4 = in_addr(); var v6 = in6_addr()
+        return value.withCString { inet_pton(AF_INET, $0, &v4) == 1 || inet_pton(AF_INET6, $0, &v6) == 1 }
+    }
+
+    func update(_ host: SavedHost, name: String, value: String) {
+        guard let idx = hosts.firstIndex(where: { $0.id == host.id }) else { return }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        hosts[idx].name = name.isEmpty ? trimmed : name
+        hosts[idx].value = trimmed
+        persist()
+    }
+
     func add(name: String, value: String, tool: Tool?) {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }

@@ -30,24 +30,52 @@ targets:
       - target: CheckNetWidgets
         embed: true
         platformFilter: iOS
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: CheckNet
+        ITSAppUsesNonExemptEncryption: false
+        NSSupportsLiveActivities: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSLocalNetworkUsageDescription: "CheckNet сканирует локальную сеть для обнаружения устройств, Bonjour-сервисов и проверки хостов."
+        NSBonjourServices:
+          - _services._dns-sd._udp
+          - _checknet._tcp
+          - _http._tcp
+          - _https._tcp
+          - _ssh._tcp
+          - _sftp-ssh._tcp
+          - _smb._tcp
+          - _afpovertcp._tcp
+          - _airplay._tcp
+          - _raop._tcp
+          - _googlecast._tcp
+          - _ipp._tcp
+          - _ipps._tcp
+          - _printer._tcp
+          - _homekit._tcp
+          - _hap._tcp
+          - _spotify-connect._tcp
+          - _device-info._tcp
+          - _companion-link._tcp
+          - _rfb._tcp
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet
         PRODUCT_NAME: CheckNet
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
-        GENERATE_INFOPLIST_FILE: YES
+        GENERATE_INFOPLIST_FILE: NO
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_ENTITLEMENTS: App/CheckNet.entitlements
-        INFOPLIST_KEY_CFBundleDisplayName: CheckNet
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        INFOPLIST_KEY_NSSupportsLiveActivities: YES
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
-        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "CheckNet сканирует локальную сеть для обнаружения устройств и проверки хостов."
-        INFOPLIST_KEY_NSBonjourServices: "_services._dns-sd._udp,_http._tcp,_ssh._tcp"
 
   CheckNetWidgets:
     type: app-extension

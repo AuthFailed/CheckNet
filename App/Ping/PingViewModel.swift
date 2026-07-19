@@ -41,6 +41,7 @@ final class PingViewModel {
     private(set) var replies: [PingReply] = []           // newest first
     private(set) var stats = PingStatistics(host: "", resolvedIP: "")
     private(set) var lastRTT: Double?
+    private(set) var lastError: String?
     private(set) var elapsedSeconds: Double = 0
 
     private var runTask: Task<Void, Never>?
@@ -93,6 +94,7 @@ final class PingViewModel {
         replies = []
         stats = PingStatistics(host: host, resolvedIP: "")
         lastRTT = nil
+        lastError = nil
         resolvedIP = ""
         reverseName = nil
         elapsedSeconds = 0
@@ -127,8 +129,15 @@ final class PingViewModel {
                 stats.transmitted = max(stats.transmitted, stats.received + 1)
                 bumpElapsed()
                 await updateLiveActivity()
-            case .icmpError:
+            case .icmpError(_, let message):
+                lastError = message
                 bumpElapsed()
+            case .failed(let reason):
+                phase = .failed(reason)
+                if useLiveActivity {
+                    await liveActivity.end(latency: nil, loss: 100, received: 0, transmitted: 0, status: .down)
+                }
+                return
             case .finished(let s):
                 stats = s
                 await finishRun()
@@ -140,6 +149,16 @@ final class PingViewModel {
     // MARK: TCP run
 
     private func runTCP(host: String, port: Int, config: PingConfig, reverseDNS: Bool) async {
+        // Resolve once up front so a bad host fails visibly instead of looking like loss.
+        do {
+            let ep = try await HostResolver.resolveFirst(host: host, port: UInt16(port))
+            resolvedIP = ep.ipString
+            if reverseDNS { Task { await self.resolveReverse(ep.ipString) } }
+        } catch {
+            phase = .failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
+            return
+        }
+
         let scanner = PortScanner()
         var seq = 0
         let total = config.count
@@ -147,17 +166,12 @@ final class PingViewModel {
             if let total, seq >= total { break }
             let result = await scanner.check(host: host, port: port, timeout: config.timeout)
             if Task.isCancelled { break }
-            if resolvedIP.isEmpty {
-                if let ep = try? await HostResolver.resolveFirst(host: host, port: UInt16(port)) {
-                    resolvedIP = ep.ipString
-                    if reverseDNS { Task { await self.resolveReverse(ep.ipString) } }
-                }
-            }
             stats.transmitted += 1
             if result.isOpen, let latency = result.latencyMillis {
                 let reply = PingReply(sequence: seq, bytes: 0, ttl: nil, rttMillis: latency, sourceIP: resolvedIP)
                 ingest(reply)
             } else {
+                if let err = result.error { lastError = err }
                 bumpElapsed()
             }
             seq += 1
