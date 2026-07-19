@@ -115,6 +115,17 @@ public enum NetworkInterfaces {
         }
     }
 
+    /// The primary local IPv4 network as a /24 CIDR (derived from en*/pdp* interface).
+    public static func primaryIPv4CIDR() -> String? {
+        let ifaces = list(includeIPv6: false)
+        guard let iface = ifaces.first(where: { $0.name.hasPrefix("en") || $0.name.hasPrefix("pdp") }) ?? ifaces.first else {
+            return nil
+        }
+        let parts = iface.address.split(separator: ".")
+        guard parts.count == 4 else { return nil }
+        return "\(parts[0]).\(parts[1]).\(parts[2]).0/24"
+    }
+
     private static func ipString(_ addr: UnsafeMutablePointer<sockaddr>, family: IPFamily) -> String {
         var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
         let len = family == .ipv4 ? socklen_t(MemoryLayout<sockaddr_in>.size) : socklen_t(MemoryLayout<sockaddr_in6>.size)

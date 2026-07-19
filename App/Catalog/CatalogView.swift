@@ -223,6 +223,8 @@ struct ToolDestinationView: View {
             NATView(autostart: route.autostart)
         case .monitoring:
             MonitoringView()
+        case .networkBrowser:
+            NetworkBrowserView()
         case .dns:
             DNSLookupView(presetHost: route.presetHost, autostart: route.autostart)
         case .dnsCompare:
