@@ -77,7 +77,7 @@ struct CatalogView: View {
     private var pinnedSection: some View {
         Section {
             ForEach(store.pinnedTools) { tool in
-                toolRow(tool)
+                toolRow(tool).id("pin-\(tool.id)")
             }
         } header: {
             Label {
@@ -97,7 +97,7 @@ struct CatalogView: View {
         return Section {
             if !collapsed {
                 ForEach(section.tools) { tool in
-                    toolRow(tool)
+                    toolRow(tool).id("cat-\(tool.id)")
                 }
             }
         } header: {
@@ -122,8 +122,9 @@ struct CatalogView: View {
 
     private var searchResults: some View {
         let matches = Tool.allCases.filter {
-            $0.title.localizedCaseInsensitiveContains(query) ||
-            $0.subtitle.localizedCaseInsensitiveContains(query)
+            !$0.isCensorshipCheck &&
+            ($0.title.localizedCaseInsensitiveContains(query) ||
+             $0.subtitle.localizedCaseInsensitiveContains(query))
         }
         return Section {
             if matches.isEmpty {
@@ -139,12 +140,12 @@ struct CatalogView: View {
     // MARK: Row
 
     private func toolRow(_ tool: Tool, showSubtitle: Bool = false) -> some View {
-        ToolRowView(tool: tool, showSubtitle: showSubtitle)
+        ToolRowView(tool: tool, showSubtitle: showSubtitle, isPinned: store.isPinned(tool))
             .contentShape(.rect)
             .onTapGesture { path.append(ToolRoute(tool: tool)) }
             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                 Button {
-                    withAnimation { store.togglePin(tool) }
+                    store.togglePin(tool)
                 } label: {
                     Label(store.isPinned(tool) ? "Открепить" : "Закрепить",
                           systemImage: store.isPinned(tool) ? "star.slash" : "star")
@@ -174,6 +175,7 @@ struct CatalogView: View {
 struct ToolRowView: View {
     let tool: Tool
     var showSubtitle: Bool = false
+    var isPinned: Bool = false
 
     var body: some View {
         HStack(spacing: 13) {
@@ -182,9 +184,17 @@ struct ToolRowView: View {
                 .foregroundStyle(tool.isImplemented ? Color.accentColor : Color.secondary)
                 .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(tool.title)
-                    .font(.body)
-                    .foregroundStyle(.primary)
+                HStack(spacing: 5) {
+                    Text(tool.title)
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                    if isPinned {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.orange)
+                            .accessibilityLabel("В избранном")
+                    }
+                }
                 if showSubtitle {
                     Text(tool.subtitle)
                         .font(.caption)
@@ -199,6 +209,8 @@ struct ToolRowView: View {
                     .padding(.horizontal, 7).padding(.vertical, 2)
                     .background(Color.secondary.opacity(0.12), in: Capsule())
             }
+            InfoButton(title: tool.title, systemImage: tool.systemImage,
+                       message: tool.info, note: tool.sensitivityNote)
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.tertiary)
@@ -212,6 +224,17 @@ struct ToolDestinationView: View {
     let route: ToolRoute
 
     var body: some View {
+        content
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    InfoButton(title: route.tool.title, systemImage: route.tool.systemImage,
+                               message: route.tool.info, note: route.tool.sensitivityNote)
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch route.tool {
         case .ping:
             PingView(autostart: route.autostart, openSettings: route.openSettings, presetHost: route.presetHost)

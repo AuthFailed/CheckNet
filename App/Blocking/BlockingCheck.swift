@@ -148,6 +148,11 @@ struct BlockingCheckView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                InfoButton(title: check.title, systemImage: check.systemImage, message: check.explanation)
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить", running: model.isRunning,
                       disabled: check.needsTarget && model.target.trimmingCharacters(in: .whitespaces).isEmpty) {

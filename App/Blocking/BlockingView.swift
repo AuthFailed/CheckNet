@@ -10,12 +10,9 @@ struct BlockingView: View {
             List {
                 Section {
                     ForEach(BlockingCheck.allCases) { check in
-                        Button {
-                            path.append(BlockingRoute(check: check))
-                        } label: {
-                            row(check)
-                        }
-                        .buttonStyle(.plain)
+                        row(check)
+                            .contentShape(.rect)
+                            .onTapGesture { path.append(BlockingRoute(check: check)) }
                     }
                 } header: {
                     Text("Проверки ограничений")
@@ -41,6 +38,7 @@ struct BlockingView: View {
                 Text(check.subtitle).font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
+            InfoButton(title: check.title, systemImage: check.systemImage, message: check.explanation)
             Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
         }
         .padding(.vertical, 2)
