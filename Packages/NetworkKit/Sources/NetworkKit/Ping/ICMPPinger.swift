@@ -18,9 +18,15 @@ public final class ICMPPinger: Sendable {
     /// Convenience: run a bounded ping and return aggregate statistics.
     public func measure(host: String, config: PingConfig = .default) async throws -> PingStatistics {
         var stats: PingStatistics?
+        var failure: String?
         for await event in ping(host: host, config: config) {
-            if case .finished(let s) = event { stats = s }
+            switch event {
+            case .finished(let s): stats = s
+            case .failed(let reason): failure = reason
+            default: break
+            }
         }
+        if let failure { throw NetworkError.protocolError(failure) }
         guard let stats else { throw NetworkError.cancelled }
         return stats
     }
@@ -68,8 +74,8 @@ private final class PingRunner: @unchecked Sendable {
                 let endpoint = try await HostResolver.resolveFirst(host: host, family: config.family)
                 queue.async { [self] in self.loop(endpoint: endpoint) }
             } catch {
-                var stats = PingStatistics(host: host, resolvedIP: "")
-                finish(&stats)
+                let reason = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                fail(reason)
             }
         }
     }
@@ -79,7 +85,11 @@ private final class PingRunner: @unchecked Sendable {
 
         let sock = SocketFactory.makeICMP(endpoint: endpoint, config: config)
         guard case .success(let f) = sock else {
-            finish(&stats)
+            if case .failure(let reason) = sock {
+                fail("Не удалось открыть ICMP-сокет: \(reason). На iOS проверьте разрешение «Локальная сеть».")
+            } else {
+                fail("Не удалось открыть ICMP-сокет")
+            }
             return
         }
         lock.lock(); fd = f; lock.unlock()
@@ -181,6 +191,17 @@ private final class PingRunner: @unchecked Sendable {
         lock.unlock()
         if f >= 0 { close(f) }
         continuation.yield(.finished(stats))
+        continuation.finish()
+    }
+
+    /// Terminates the run with a visible error instead of a silent finish.
+    private func fail(_ reason: String) {
+        lock.lock()
+        let f = fd
+        fd = -1
+        lock.unlock()
+        if f >= 0 { close(f) }
+        continuation.yield(.failed(reason))
         continuation.finish()
     }
 

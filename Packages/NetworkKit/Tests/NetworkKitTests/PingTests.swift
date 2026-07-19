@@ -59,6 +59,22 @@ final class PingTests: XCTestCase {
         for t in ttls { XCTAssertTrue((1...255).contains(t)) }
     }
 
+    func testPingBadHostSurfacesFailure() async {
+        let pinger = ICMPPinger()
+        var failure: String?
+        var finishedOK = false
+        for await event in pinger.ping(host: "no-such-host.invalid", config: PingConfig(count: 2, timeout: 1)) {
+            switch event {
+            case .failed(let reason): failure = reason
+            case .finished: finishedOK = true
+            default: break
+            }
+        }
+        XCTAssertNotNil(failure, "bad host should surface a .failed event, not finish silently")
+        XCTAssertFalse(finishedOK, "should not emit .finished on resolution failure")
+        print("bad host failure: \(failure ?? "-")")
+    }
+
     func testPingStatisticsMath() {
         var s = PingStatistics(host: "h", resolvedIP: "1.2.3.4", transmitted: 4, received: 3)
         s.rttSamples = [10, 20, 30]
