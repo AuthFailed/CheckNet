@@ -64,6 +64,8 @@ public enum PingEvent: Sendable {
     case timeout(sequence: Int)
     /// A non-fatal ICMP error for a specific probe (e.g. host unreachable).
     case icmpError(sequence: Int, message: String)
+    /// A fatal error that prevented the run (resolution/socket failure). Terminal.
+    case failed(String)
     /// The run finished (all packets sent or cancelled); carries final stats.
     case finished(PingStatistics)
 }

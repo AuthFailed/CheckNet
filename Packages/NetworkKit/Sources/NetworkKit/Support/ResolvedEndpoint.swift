@@ -38,20 +38,36 @@ public enum HostResolver {
     public static func resolve(
         host: String,
         port: UInt16 = 0,
-        family: IPFamily? = nil
+        family: IPFamily? = nil,
+        timeout: TimeInterval = 8.0
     ) async throws -> [ResolvedEndpoint] {
         let trimmed = host.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { throw NetworkError.invalidHost(host) }
 
-        return try await withCheckedThrowingContinuation { cont in
-            DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    let results = try Self.resolveBlocking(host: trimmed, port: port, family: family)
-                    cont.resume(returning: results)
-                } catch {
-                    cont.resume(throwing: error)
+        // Race the (uncancellable, potentially hanging) blocking resolve against a
+        // hard timeout so a stuck DNS lookup can never silently freeze a test.
+        return try await withThrowingTaskGroup(of: [ResolvedEndpoint].self) { group in
+            group.addTask {
+                try await withCheckedThrowingContinuation { cont in
+                    DispatchQueue.global(qos: .userInitiated).async {
+                        do {
+                            let results = try Self.resolveBlocking(host: trimmed, port: port, family: family)
+                            cont.resume(returning: results)
+                        } catch {
+                            cont.resume(throwing: error)
+                        }
+                    }
                 }
             }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                throw NetworkError.resolutionFailed(host: trimmed, reason: "истекло время DNS (\(Int(timeout)) с)")
+            }
+            defer { group.cancelAll() }
+            guard let first = try await group.next() else {
+                throw NetworkError.resolutionFailed(host: trimmed, reason: "нет результата")
+            }
+            return first
         }
     }
 
@@ -59,9 +75,10 @@ public enum HostResolver {
     public static func resolveFirst(
         host: String,
         port: UInt16 = 0,
-        family: IPFamily? = nil
+        family: IPFamily? = nil,
+        timeout: TimeInterval = 8.0
     ) async throws -> ResolvedEndpoint {
-        let all = try await resolve(host: host, port: port, family: family)
+        let all = try await resolve(host: host, port: port, family: family, timeout: timeout)
         guard let first = all.first else {
             throw NetworkError.resolutionFailed(host: host, reason: "нет адресов")
         }
