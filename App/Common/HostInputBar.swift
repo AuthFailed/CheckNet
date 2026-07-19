@@ -12,8 +12,6 @@ struct HostInputBar: View {
     var onSubmit: () -> Void = {}
     var trailing: () -> AnyView = { AnyView(EmptyView()) }
 
-    @Environment(SavedHostsStore.self) private var savedHosts
-
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
