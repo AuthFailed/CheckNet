@@ -60,7 +60,6 @@ Deep-link launch args (also the Shortcuts groundwork): `-openTool <toolRawValue>
 - Commits: **Conventional Commits**, clear scope, no AI/tooling attribution.
 
 ## Status
-Done (tested + wired): Ping, DNS lookup, Port scan, TLS inspector, Host→IP, Reverse DNS, Interfaces.
-Engine tested, screen pending: DNS resolver-compare, DNS tamper detect.
-Next (self-contained, no third-party API): traceroute, MTR, whois (TCP 43), DNSBL blacklist (DNS), MTU discovery, CGNAT/double-NAT (traceroute + STUN), IP-range scanner, network browser + mDNS/Bonjour + MAC-vendor OUI, Wake-on-LAN, history + CSV/JSON export, App Intents/Shortcuts, Widgets, Live Activities/Dynamic Island, background monitoring + local notifications.
-Needs external API or restricted on iOS (deferred): IP geolocation, World Ping, deep Wi-Fi RSSI/channel (iOS-restricted; more on macOS), server-based speed test.
+**20 tools done (engine-tested + wired):** ping, traceroute, MTR, DNS lookup, DNS compare, DNS tamper, port scan, TLS inspector, host→IP, reverse DNS, interfaces, whois, DNSBL blacklist, Wake-on-LAN, MTU discovery, IP-range scanner, Bonjour/mDNS, CGNAT/NAT, monitoring, network browser.
+**Platform features done:** App Intents/Shortcuts, home-screen Widget, Live Activity + Dynamic Island, history + CSV/JSON export, app-group shared store (widget extension `CheckNetWidgets`).
+**Not built — need third-party API or blocked on iOS (user asked to skip API-dependent):** IP geolocation, World Ping, speed test, bufferbloat (all need an external server); Wi-Fi RSSI/channel/roaming (iOS-restricted, CoreWLAN on macOS); network-browser MAC/vendor on iOS (`rt_msghdr2` macOS-only).
