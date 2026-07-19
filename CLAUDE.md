@@ -59,7 +59,15 @@ Deep-link launch args (also the Shortcuts groundwork): `-openTool <toolRawValue>
 - iOS lacks `SecCertificateCopyValues`/`kSecOID*` → cert fields come from the hand-written `X509` DER parser.
 - Commits: **Conventional Commits**, clear scope, no AI/tooling attribution.
 
+## App structure
+Root is a Liquid Glass `TabView` (`App/RootTabView.swift`): **Тесты** (tool catalog), **Блокировки** (censorship checks), **Настройки** (`AppSettings`: theme/language/saved-hosts/toggles). `AppSettings` + `SavedHostsStore` (IP vs domain split) are `@Observable` env objects.
+
+## Device gotchas (simulator hides these)
+- The sim skips **Local Network Privacy** + swallowed errors made tests look dead on device. Engines now emit terminal `.failed(reason)`; `HostResolver.resolve` has a hard timeout; `LocalNetworkPermission` triggers the prompt on launch; **all** browsed Bonjour types are in `NSBonjourServices` (explicit `App/Info.plist` via XcodeGen, `GENERATE_INFOPLIST_FILE: NO`).
+
 ## Status
-**20 tools done (engine-tested + wired):** ping, traceroute, MTR, DNS lookup, DNS compare, DNS tamper, port scan, TLS inspector, host→IP, reverse DNS, interfaces, whois, DNSBL blacklist, Wake-on-LAN, MTU discovery, IP-range scanner, Bonjour/mDNS, CGNAT/NAT, monitoring, network browser.
-**Platform features done:** App Intents/Shortcuts, home-screen Widget, Live Activity + Dynamic Island, history + CSV/JSON export, app-group shared store (widget extension `CheckNetWidgets`).
-**Not built — need third-party API or blocked on iOS (user asked to skip API-dependent):** IP geolocation, World Ping, speed test, bufferbloat (all need an external server); Wi-Fi RSSI/channel/roaming (iOS-restricted, CoreWLAN on macOS); network-browser MAC/vendor on iOS (`rt_msghdr2` macOS-only).
+**22 tools done (engine-tested + wired):** ping, traceroute, MTR, DNS lookup, DNS compare, DNS tamper, port scan, TLS inspector, host→IP, reverse DNS, interfaces, whois, DNSBL blacklist, Wake-on-LAN, MTU discovery, IP-range scanner, Bonjour/mDNS, CGNAT/NAT, monitoring, network browser, **speed test (iperf3)**, plus the **Блокировки** censorship suite (DNS spoof / IP / SNI-RST / HTTP block-page / whitelist / Siberian throttle — `CensorshipChecks` + `DoHClient`, probe-vs-control).
+**Speed test:** pure-Swift iperf3 protocol client (`IperfClient`) + auto server list (`IperfServerList`, export.iperf3serverlist.net) + ping preview + Cloudflare HTTP fallback (`CloudflareSpeedTest`). iperf3 handshake verified against real servers (ACCESS_DENIED parsed); full runs need a free server + unthrottled net.
+**Platform features:** App Intents/Shortcuts, Widget, Live Activity + Dynamic Island, history + CSV/JSON export, app-group store.
+**Not built — third-party API or iOS-restricted:** IP geolocation, World Ping (need external API); Wi-Fi RSSI/channel (iOS-restricted; CoreWLAN on macOS); network-browser MAC/vendor on iOS (`rt_msghdr2` macOS-only); bufferbloat (needs a load server — could layer on the speed test).
+**Language switch:** picker + `.environment(\.locale)` set; full English `Localizable.strings` not yet extracted (UI strings are Russian literals).
