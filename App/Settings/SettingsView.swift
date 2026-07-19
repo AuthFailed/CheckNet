@@ -12,7 +12,7 @@ struct SettingsView: View {
             Form {
                 Section("Оформление") {
                     Picker("Тема", selection: $settings.theme) {
-                        ForEach(AppTheme.allCases) { Text($0.label).tag($0) }
+                        ForEach(AppTheme.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                     }
                     Picker("Язык", selection: $settings.language) {
                         ForEach(AppLanguage.allCases) { Text($0.label).tag($0) }

@@ -21,21 +21,48 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
 }
 
 enum AppLanguage: String, CaseIterable, Identifiable, Codable {
-    case system, ru, en
+    // System default plus the most-used App Store languages.
+    case system, en, ru, zhHans, es, fr, de, ja, ptBR, ko, it, tr, ar, hi
+
     var id: String { rawValue }
+
+    /// Endonym shown in the picker (each in its own language).
     var label: String {
         switch self {
-        case .system: return "Системный"
-        case .ru: return "Русский"
-        case .en: return "English"
+        case .system: return "Системный / System"
+        case .en:     return "English"
+        case .ru:     return "Русский"
+        case .zhHans: return "简体中文"
+        case .es:     return "Español"
+        case .fr:     return "Français"
+        case .de:     return "Deutsch"
+        case .ja:     return "日本語"
+        case .ptBR:   return "Português (Brasil)"
+        case .ko:     return "한국어"
+        case .it:     return "Italiano"
+        case .tr:     return "Türkçe"
+        case .ar:     return "العربية"
+        case .hi:     return "हिन्दी"
         }
     }
+
     /// Locale code applied to the app (nil = follow system).
     var localeIdentifier: String? {
         switch self {
         case .system: return nil
-        case .ru: return "ru"
-        case .en: return "en"
+        case .en:     return "en"
+        case .ru:     return "ru"
+        case .zhHans: return "zh-Hans"
+        case .es:     return "es"
+        case .fr:     return "fr"
+        case .de:     return "de"
+        case .ja:     return "ja"
+        case .ptBR:   return "pt-BR"
+        case .ko:     return "ko"
+        case .it:     return "it"
+        case .tr:     return "tr"
+        case .ar:     return "ar"
+        case .hi:     return "hi"
         }
     }
 }

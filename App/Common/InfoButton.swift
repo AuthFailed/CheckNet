@@ -45,7 +45,7 @@ struct InfoSheet: View {
                             .frame(width: 54, height: 54)
                             .background(Color.accentColor.opacity(0.12),
                                         in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        Text(title)
+                        Text(LocalizedStringKey(title))
                             .font(.title2.weight(.bold))
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)

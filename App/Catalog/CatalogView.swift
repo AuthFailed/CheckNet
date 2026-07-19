@@ -105,7 +105,7 @@ struct CatalogView: View {
                 withAnimation(.snappy(duration: 0.25)) { store.toggleCollapse(section) }
             } label: {
                 HStack {
-                    Text(section.title)
+                    Text(LocalizedStringKey(section.title))
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption.weight(.semibold))
@@ -185,7 +185,7 @@ struct ToolRowView: View {
                 .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 5) {
-                    Text(tool.title)
+                    Text(LocalizedStringKey(tool.title))
                         .font(.body)
                         .foregroundStyle(.primary)
                     if isPinned {
@@ -196,7 +196,7 @@ struct ToolRowView: View {
                     }
                 }
                 if showSubtitle {
-                    Text(tool.subtitle)
+                    Text(LocalizedStringKey(tool.subtitle))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

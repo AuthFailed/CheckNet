@@ -34,8 +34,8 @@ struct BlockingView: View {
                 .foregroundStyle(.tint)
                 .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 2) {
-                Text(check.title).foregroundStyle(.primary)
-                Text(check.subtitle).font(.caption).foregroundStyle(.secondary)
+                Text(LocalizedStringKey(check.title)).foregroundStyle(.primary)
+                Text(LocalizedStringKey(check.subtitle)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
             InfoButton(title: check.title, systemImage: check.systemImage, message: check.explanation)
