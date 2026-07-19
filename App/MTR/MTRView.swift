@@ -44,7 +44,7 @@ struct MTRView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "chart.line.uptrend.xyaxis",
-                             disabled: model.isRunning) { model.start() }
+                             disabled: model.isRunning, savedHostTool: .mtr) { model.start() }
 
                 if !model.resolvedIP.isEmpty {
                     HStack {

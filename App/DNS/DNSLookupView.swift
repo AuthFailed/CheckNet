@@ -42,7 +42,7 @@ struct DNSLookupView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Домен", icon: "magnifyingglass",
-                             disabled: model.isRunning) {
+                             disabled: model.isRunning, savedHostTool: .dns) {
                     Task { await model.run() }
                 }
 

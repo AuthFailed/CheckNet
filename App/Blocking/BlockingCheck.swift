@@ -124,7 +124,8 @@ struct BlockingCheckView: View {
 
                 if check.needsTarget {
                     HostInputBar(text: $model.target, placeholder: "Домен для проверки",
-                                 icon: check.systemImage, disabled: model.isRunning) {
+                                 icon: check.systemImage, disabled: model.isRunning,
+                                 savedHostTool: .dnsTamper) {
                         Task { await model.run() }
                     }
                 }

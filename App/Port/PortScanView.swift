@@ -66,7 +66,8 @@ struct PortScanView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Хост или IP",
-                             icon: "square.grid.3x3.middle.filled", disabled: model.isRunning) {
+                             icon: "square.grid.3x3.middle.filled", disabled: model.isRunning,
+                             savedHostTool: .portScan) {
                     model.start()
                 }
                 modeCard

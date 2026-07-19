@@ -1,13 +1,18 @@
 import SwiftUI
 
 /// A reusable host/IP input card with an icon and optional trailing accessory.
+/// Pass `savedHostTool` to surface the saved hosts/domains bookmark menu, so any
+/// tool that takes a host or IP can reuse the user's saved targets.
 struct HostInputBar: View {
     @Binding var text: String
     var placeholder: String = "Хост или IP"
     var icon: String = "globe"
     var disabled: Bool = false
+    var savedHostTool: Tool? = nil
     var onSubmit: () -> Void = {}
     var trailing: () -> AnyView = { AnyView(EmptyView()) }
+
+    @Environment(SavedHostsStore.self) private var savedHosts
 
     var body: some View {
         HStack(spacing: 12) {
@@ -26,10 +31,53 @@ struct HostInputBar: View {
                 .onSubmit(onSubmit)
                 .disabled(disabled)
             trailing()
+            if let savedHostTool, !disabled {
+                SavedHostsMenu(tool: savedHostTool, text: $text)
+            }
         }
         .padding(.horizontal, 14)
         .frame(minHeight: 52)
         .card()
+    }
+}
+
+/// Bookmark menu listing the user's saved hosts (global + tool-scoped) plus a
+/// one-tap action to save the current value. Shared by every host-input tool.
+struct SavedHostsMenu: View {
+    let tool: Tool
+    @Binding var text: String
+    @Environment(SavedHostsStore.self) private var savedHosts
+
+    var body: some View {
+        Menu {
+            let hosts = savedHosts.hosts(for: tool)
+            if !hosts.isEmpty {
+                Section("Сохранённые") {
+                    ForEach(hosts) { h in
+                        Button {
+                            text = h.value
+                        } label: {
+                            Label(h.name == h.value ? h.value : "\(h.name) · \(h.value)",
+                                  systemImage: SavedHostsStore.isIP(h.value) ? "number" : "globe")
+                        }
+                    }
+                }
+            }
+            let trimmed = text.trimmingCharacters(in: .whitespaces)
+            Button {
+                savedHosts.add(name: "", value: trimmed, tool: nil)
+            } label: {
+                Label(trimmed.isEmpty ? "Сохранить хост…" : "Сохранить «\(trimmed)»", systemImage: "plus")
+            }
+            .disabled(trimmed.isEmpty)
+        } label: {
+            Image(systemName: "bookmark.fill")
+                .font(.system(size: 15))
+                .foregroundStyle(.blue)
+                .padding(7)
+                .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
+        }
+        .accessibilityLabel("Сохранённые хосты")
     }
 }
 

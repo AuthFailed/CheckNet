@@ -47,7 +47,7 @@ struct TracerouteView: View {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Хост или IP",
                              icon: "point.topleft.down.to.point.bottomright.curvepath",
-                             disabled: model.isRunning) { model.start() }
+                             disabled: model.isRunning, savedHostTool: .traceroute) { model.start() }
 
                 Toggle("Разрешать имена (rDNS)", isOn: $model.resolveNames)
                     .padding(.horizontal, 14).padding(.vertical, 6)
