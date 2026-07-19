@@ -45,6 +45,9 @@ final class PingViewModel {
 
     private var runTask: Task<Void, Never>?
     private var startDate: Date?
+    private let liveActivity = PingLiveActivityController()
+    /// When true, the run drives a Live Activity / Dynamic Island.
+    var useLiveActivity = true
 
     var isRunning: Bool { phase == .running }
 
@@ -80,9 +83,10 @@ final class PingViewModel {
     }
 
     func stop() {
+        // Cancelling lets each run loop fall through to `finishRun()`, which
+        // ends the Live Activity, records the result, and sets `.finished`.
         runTask?.cancel()
         runTask = nil
-        if phase == .running { phase = .finished }
     }
 
     private func reset() {
@@ -114,20 +118,23 @@ final class PingViewModel {
             switch event {
             case .started(let ip, _):
                 resolvedIP = ip
+                if useLiveActivity { liveActivity.start(host: host, ip: ip) }
                 if reverseDNS { Task { await self.resolveReverse(ip) } }
             case .reply(let reply):
                 ingest(reply)
+                await updateLiveActivity()
             case .timeout:
                 stats.transmitted = max(stats.transmitted, stats.received + 1)
                 bumpElapsed()
+                await updateLiveActivity()
             case .icmpError:
                 bumpElapsed()
             case .finished(let s):
                 stats = s
-                finishRun()
+                await finishRun()
             }
         }
-        if phase == .running { finishRun() }
+        if phase == .running { await finishRun() }
     }
 
     // MARK: TCP run
@@ -158,7 +165,7 @@ final class PingViewModel {
                 try? await Task.sleep(for: .seconds(config.interval))
             }
         }
-        finishRun()
+        await finishRun()
     }
 
     // MARK: Ingest helpers
@@ -178,9 +185,42 @@ final class PingViewModel {
         if let startDate { elapsedSeconds = Date().timeIntervalSince(startDate) }
     }
 
-    private func finishRun() {
+    private func currentStatus() -> PingSnapshot.Status {
+        PingSnapshot.status(loss: stats.lossPercent, latency: lastRTT ?? stats.avg)
+    }
+
+    private func updateLiveActivity() async {
+        guard useLiveActivity else { return }
+        await liveActivity.update(latency: lastRTT, loss: stats.lossPercent,
+                                  received: stats.received, transmitted: stats.transmitted,
+                                  status: currentStatus())
+    }
+
+    private func finishRun() async {
         bumpElapsed()
         if phase == .running { phase = .finished }
+        let status = PingSnapshot.status(loss: stats.lossPercent, latency: stats.avg)
+        if useLiveActivity {
+            await liveActivity.end(latency: stats.avg, loss: stats.lossPercent,
+                                   received: stats.received, transmitted: stats.transmitted, status: status)
+        }
+        recordResult(status: status)
+    }
+
+    private func recordResult(status: PingSnapshot.Status) {
+        guard stats.transmitted > 0 else { return }
+        let snapshot = PingSnapshot(
+            host: host, ip: resolvedIP.isEmpty ? stats.resolvedIP : resolvedIP,
+            latencyMillis: stats.avg, lossPercent: stats.lossPercent,
+            jitterMillis: stats.jitter, status: status, timestamp: Date()
+        )
+        SharedStore.saveSnapshot(snapshot)
+        SharedStore.appendHistory(CheckRecord(
+            tool: "ping", host: host, timestamp: Date(),
+            latencyMillis: stats.avg, lossPercent: stats.lossPercent,
+            succeeded: stats.received > 0,
+            detail: "\(stats.received)/\(stats.transmitted), \(Int(stats.lossPercent))% потерь, avg \(stats.avg.map { String(format: "%.0f", $0) } ?? "—") мс"
+        ))
     }
 
     private func resolveReverse(_ ip: String) async {
