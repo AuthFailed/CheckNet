@@ -45,7 +45,7 @@ struct MTUView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "ruler",
-                             disabled: model.isRunning) { model.start() }
+                             disabled: model.isRunning, savedHostTool: .mtuDiscovery) { model.start() }
 
                 if model.isRunning, let probe = model.currentProbe {
                     HStack(spacing: 10) {

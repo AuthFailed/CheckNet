@@ -34,7 +34,8 @@ struct TLSInspectorView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Хост (напр. example.com)",
-                             icon: "lock.shield", disabled: model.isRunning) {
+                             icon: "lock.shield", disabled: model.isRunning,
+                             savedHostTool: .tlsInspector) {
                     Task { await model.run() }
                 } trailing: {
                     AnyView(

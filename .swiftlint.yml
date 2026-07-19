@@ -1,0 +1,40 @@
+# SwiftLint configuration for CheckNet.
+# Style + optimization checks; kept pragmatic so CI stays green on existing code.
+
+excluded:
+  - .build
+  - build
+  - DerivedData
+  - Packages/NetworkKit/.build
+  - CheckNet.xcodeproj
+
+# Downgrade the few error-severity rules to warnings so pre-existing style
+# never blocks a merge (the checks still surface in the log).
+force_cast: warning
+force_try: warning
+
+disabled_rules:
+  - line_length
+  - todo
+  - identifier_name
+  - type_name
+  - function_body_length
+  - type_body_length
+  - file_length
+  - cyclomatic_complexity
+  - large_tuple
+  - nesting
+  - function_parameter_count
+  - trailing_comma
+
+opt_in_rules:
+  - empty_count            # optimization: prefer isEmpty over count == 0
+  - contains_over_first_not_nil
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - empty_collection_literal
+  - first_where            # optimization: first(where:) over filter().first
+  - last_where
+  - reduce_into
+  - sorted_first_last
+  - flatmap_over_map_reduce

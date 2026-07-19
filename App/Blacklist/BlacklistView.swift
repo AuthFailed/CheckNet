@@ -33,7 +33,7 @@ struct BlacklistView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
-                             disabled: model.isRunning) { Task { await model.run() } }
+                             disabled: model.isRunning, savedHostTool: .blacklist) { Task { await model.run() } }
                 if let report = model.report {
                     summaryCard(report)
                     listCard(report)

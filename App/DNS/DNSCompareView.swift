@@ -27,7 +27,7 @@ struct DNSCompareView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.left.arrow.right",
-                             disabled: model.isRunning) { Task { await model.run() } }
+                             disabled: model.isRunning, savedHostTool: .dnsCompare) { Task { await model.run() } }
                 HStack {
                     Text("Тип записи").foregroundStyle(.secondary)
                     Spacer()
@@ -123,7 +123,7 @@ struct DNSTamperView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.host, placeholder: "Домен", icon: "exclamationmark.shield",
-                             disabled: model.isRunning) { Task { await model.run() } }
+                             disabled: model.isRunning, savedHostTool: .dnsTamper) { Task { await model.run() } }
                 if let report = model.report {
                     verdictCard(report)
                     findingsCard(report)

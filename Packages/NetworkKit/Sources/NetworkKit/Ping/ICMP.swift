@@ -58,7 +58,7 @@ enum ICMP {
 
 /// A parsed ICMP reply extracted from a received datagram.
 struct ParsedICMPReply {
-    enum Kind {
+    enum Kind: Equatable {
         case echoReply
         case timeExceeded
         case unreachable

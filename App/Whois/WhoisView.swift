@@ -29,7 +29,7 @@ struct WhoisView: View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
-                             disabled: model.isRunning) { Task { await model.run() } }
+                             disabled: model.isRunning, savedHostTool: .whois) { Task { await model.run() } }
                 if let error = model.errorMessage {
                     ErrorBanner(message: error)
                 } else if let result = model.result {
