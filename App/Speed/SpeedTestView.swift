@@ -48,7 +48,10 @@ struct SpeedTestView: View {
                         Text(s.locationLabel.isEmpty ? s.host : s.locationLabel)
                             .font(.callout.weight(.medium)).foregroundStyle(.primary)
                         HStack(spacing: 6) {
-                            Text(s.host).font(.caption.monospaced()).foregroundStyle(.secondary)
+                            Text(s.host).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
+                            if let bw = s.bandwidthLabel {
+                                Text("· \(bw)").font(.caption).foregroundStyle(.secondary)
+                            }
                             if let ping = model.pings[s.host] {
                                 Text("· \(Int(ping)) мс").font(.caption).foregroundStyle(.green)
                             }
@@ -151,36 +154,18 @@ struct ServerPickerView: View {
                               : "Проверить доступность и пинг", systemImage: "bolt.horizontal")
                     }
                     .disabled(model.phase == .pinging)
+                    Button {
+                        Task { await model.refreshServers() }
+                    } label: {
+                        Label("Обновить список серверов", systemImage: "arrow.clockwise")
+                    }
+                    .disabled(model.phase == .pinging || model.phase == .loadingServers)
                 }
-                Section("Серверы (\(model.sortedServers.count))") {
-                    ForEach(model.sortedServers.prefix(60)) { server in
-                        Button {
-                            model.selected = server
-                            dismiss()
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(server.locationLabel.isEmpty ? server.host : server.locationLabel)
-                                        .foregroundStyle(.primary)
-                                    Text("\(server.host) · \(server.provider)")
-                                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                                }
-                                Spacer()
-                                if let ping = model.pings[server.host] {
-                                    Text("\(Int(ping)) мс")
-                                        .font(.callout.monospaced())
-                                        .foregroundStyle(ping < 80 ? .green : (ping < 200 ? .orange : .secondary))
-                                } else if model.phase == .pinging {
-                                    ProgressView().controlSize(.mini)
-                                } else {
-                                    Text("—").foregroundStyle(.tertiary)
-                                }
-                                if model.selected?.id == server.id {
-                                    Image(systemName: "checkmark").foregroundStyle(.tint)
-                                }
-                            }
+                ForEach(model.serverGroups) { group in
+                    Section("\(group.title) (\(group.servers.count))") {
+                        ForEach(group.servers.prefix(40)) { server in
+                            serverRow(server)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -190,5 +175,43 @@ struct ServerPickerView: View {
             #endif
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { dismiss() } } }
         }
+    }
+
+    private func serverRow(_ server: IperfServer) -> some View {
+        Button {
+            model.selected = server
+            dismiss()
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(server.locationLabel.isEmpty ? server.host : server.locationLabel)
+                        .foregroundStyle(.primary)
+                    HStack(spacing: 6) {
+                        Text(server.host).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
+                        if let bw = server.bandwidthLabel {
+                            Text(bw)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.blue)
+                                .padding(.horizontal, 6).padding(.vertical, 1)
+                                .background(.blue.opacity(0.12), in: Capsule())
+                        }
+                    }
+                }
+                Spacer()
+                if let ping = model.pings[server.host] {
+                    Text("\(Int(ping)) мс")
+                        .font(.callout.monospaced())
+                        .foregroundStyle(ping < 80 ? .green : (ping < 200 ? .orange : .secondary))
+                } else if model.phase == .pinging {
+                    ProgressView().controlSize(.mini)
+                } else {
+                    Text("—").foregroundStyle(.tertiary)
+                }
+                if model.selected?.id == server.id {
+                    Image(systemName: "checkmark").foregroundStyle(.tint)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 }

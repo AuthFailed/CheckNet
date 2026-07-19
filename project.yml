@@ -6,6 +6,7 @@ options:
     macOS: "26.0"
   createIntermediateGroups: true
   groupSortPosition: top
+  developmentLanguage: ru
 
 packages:
   NetworkKit:
@@ -34,6 +35,21 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: CheckNet
+        CFBundleDevelopmentRegion: ru
+        CFBundleLocalizations:
+          - ru
+          - en
+          - zh-Hans
+          - es
+          - fr
+          - de
+          - ja
+          - pt-BR
+          - ko
+          - it
+          - tr
+          - ar
+          - hi
         ITSAppUsesNonExemptEncryption: false
         NSSupportsLiveActivities: true
         UILaunchScreen: {}

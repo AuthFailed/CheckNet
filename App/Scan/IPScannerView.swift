@@ -54,12 +54,18 @@ final class IPScannerModel {
 struct IPScannerView: View {
     var autostart = false
     @State private var model = IPScannerModel()
+    @Environment(AppSettings.self) private var settings
+    @State private var showConsent = false
+
+    private func requestStart() {
+        if settings.consentNeeded(for: .ipScanner) { showConsent = true } else { model.start() }
+    }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 HostInputBar(text: $model.range, placeholder: "CIDR или диапазон",
-                             icon: "barcode.viewfinder", disabled: model.isRunning) { model.start() }
+                             icon: "barcode.viewfinder", disabled: model.isRunning) { requestStart() }
 
                 if model.total > 0 {
                     progressCard
@@ -81,10 +87,11 @@ struct IPScannerView: View {
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Сканировать", running: model.isRunning,
                       disabled: model.range.trimmingCharacters(in: .whitespaces).isEmpty) {
-                model.toggle()
+                if model.isRunning { model.stop() } else { requestStart() }
             }
         }
-        .onAppear { if autostart { model.start() } }
+        .sensitiveConsent(.ipScanner, isPresented: $showConsent) { model.start() }
+        .onAppear { if autostart { requestStart() } }
     }
 
     private var progressCard: some View {
