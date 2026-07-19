@@ -117,7 +117,8 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     var isImplemented: Bool {
         switch self {
         case .ping, .traceroute, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
-             .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan:
+             .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan,
+             .mtuDiscovery, .ipScanner, .bonjour:
             return true
         default:
             return false

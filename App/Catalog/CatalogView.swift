@@ -212,6 +212,12 @@ struct ToolDestinationView: View {
             BlacklistView(presetHost: route.presetHost, autostart: route.autostart)
         case .wakeOnLan:
             WakeOnLanView()
+        case .mtuDiscovery:
+            MTUView(presetHost: route.presetHost, autostart: route.autostart)
+        case .ipScanner:
+            IPScannerView(autostart: route.autostart)
+        case .bonjour:
+            BonjourView()
         case .portScan:
             PortScanView(presetHost: route.presetHost, autostart: route.autostart)
         case .tlsInspector:
