@@ -118,7 +118,8 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .ping, .traceroute, .mtr, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
              .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan,
-             .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser:
+             .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser,
+             .speedTest:
             return true
         default:
             return false

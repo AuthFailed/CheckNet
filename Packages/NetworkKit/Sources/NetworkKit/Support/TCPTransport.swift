@@ -76,6 +76,9 @@ enum TCPTransport {
             }
             buffer.append(contentsOf: chunk[0..<n])
         }
+        guard buffer.count == count else {
+            throw NetworkError.protocolError("соединение закрыто (\(buffer.count)/\(count) байт)")
+        }
         return buffer
     }
 
