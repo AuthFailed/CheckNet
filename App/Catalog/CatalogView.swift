@@ -225,6 +225,8 @@ struct ToolDestinationView: View {
             MonitoringView()
         case .networkBrowser:
             NetworkBrowserView()
+        case .speedTest:
+            SpeedTestView()
         case .dns:
             DNSLookupView(presetHost: route.presetHost, autostart: route.autostart)
         case .dnsCompare:
