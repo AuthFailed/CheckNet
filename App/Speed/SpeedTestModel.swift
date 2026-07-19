@@ -23,6 +23,9 @@ final class SpeedTestModel {
 
     private var runTask: Task<Void, Never>?
 
+    /// Device region (ISO country) used to surface nearby servers first.
+    static let deviceRegion: String = Locale.current.region?.identifier ?? ""
+
     /// Servers sorted by measured latency (reachable first), then unknown.
     var sortedServers: [IperfServer] {
         servers.sorted { a, b in
@@ -35,6 +38,33 @@ final class SpeedTestModel {
         }
     }
 
+    /// Servers in the user's own country, nearest first.
+    var nearbyServers: [IperfServer] {
+        guard !Self.deviceRegion.isEmpty else { return [] }
+        return sortedServers.filter { $0.country.caseInsensitiveCompare(Self.deviceRegion) == .orderedSame }
+    }
+
+    /// A section of the server list for grouped display.
+    struct ServerGroup: Identifiable { let id: String; let title: String; let servers: [IperfServer] }
+
+    /// Grouped for the picker: nearby (same country) first, then by continent.
+    var serverGroups: [ServerGroup] {
+        let sorted = sortedServers
+        var groups: [ServerGroup] = []
+        let nearby = nearbyServers
+        if !nearby.isEmpty {
+            let label = Self.deviceRegion.isEmpty ? "Рядом с вами" : "Рядом с вами (\(Self.deviceRegion))"
+            groups.append(ServerGroup(id: "nearby", title: label, servers: nearby))
+        }
+        let nearbyHosts = Set(nearby.map(\.host))
+        let rest = sorted.filter { !nearbyHosts.contains($0.host) }
+        let byContinent = Dictionary(grouping: rest) { $0.continent.isEmpty ? "Другие регионы" : $0.continent }
+        for key in byContinent.keys.sorted() {
+            groups.append(ServerGroup(id: key, title: key, servers: byContinent[key] ?? []))
+        }
+        return groups
+    }
+
     func loadServers() async {
         guard servers.isEmpty else { return }
         phase = .loadingServers
@@ -44,8 +74,23 @@ final class SpeedTestModel {
             phase = .ready
             await pingServers()
         } catch {
-            phase = .failed("Не удалось загрузить список серверов: \(error.localizedDescription)")
+            // Fall back to the curated RU servers so the tab still works offline
+            // from the public index.
+            let fallback = IperfServerList.ertelecomServers.filter { $0.supportsReverse }
+            if !fallback.isEmpty {
+                servers = fallback
+                phase = .ready
+                await pingServers()
+            } else {
+                phase = .failed("Не удалось загрузить список серверов: \(error.localizedDescription)")
+            }
         }
+    }
+
+    /// Manually refresh the auto-updated server index.
+    func refreshServers() async {
+        servers = []; pings = [:]; selected = nil
+        await loadServers()
     }
 
     /// Ping (reachability + latency) all servers to show how far each is.
@@ -77,8 +122,13 @@ final class SpeedTestModel {
                 addNext()
             }
         }
-        // Auto-select the nearest reachable server.
-        if selected == nil { selected = sortedServers.first { pings[$0.host] != nil } ?? sortedServers.first }
+        // Auto-select the nearest reachable server, preferring the user's country.
+        if selected == nil {
+            selected = nearbyServers.first { pings[$0.host] != nil }
+                ?? sortedServers.first { pings[$0.host] != nil }
+                ?? nearbyServers.first
+                ?? sortedServers.first
+        }
         phase = .ready
     }
 
