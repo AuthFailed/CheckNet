@@ -217,6 +217,12 @@ struct ToolDestinationView: View {
             PingView(autostart: route.autostart, openSettings: route.openSettings, presetHost: route.presetHost)
         case .traceroute:
             TracerouteView(presetHost: route.presetHost, autostart: route.autostart)
+        case .mtr:
+            MTRView(presetHost: route.presetHost, autostart: route.autostart)
+        case .cgnatDetect:
+            NATView(autostart: route.autostart)
+        case .monitoring:
+            MonitoringView()
         case .dns:
             DNSLookupView(presetHost: route.presetHost, autostart: route.autostart)
         case .dnsCompare:
