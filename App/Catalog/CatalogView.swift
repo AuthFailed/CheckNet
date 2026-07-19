@@ -26,6 +26,7 @@ struct CatalogView: View {
     @Environment(ToolStore.self) private var store
     @State private var path: [ToolRoute] = []
     @State private var query: String = ""
+    @State private var showHistory = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -47,10 +48,26 @@ struct CatalogView: View {
             .navigationDestination(for: ToolRoute.self) { route in
                 ToolDestinationView(route: route)
             }
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showHistory = true
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
+                    .accessibilityLabel("История")
+                }
+            }
+            .sheet(isPresented: $showHistory) {
+                HistoryView()
+            }
         }
         .onAppear {
             if path.isEmpty, let route = LaunchOptions.initialRoute {
                 path.append(route)
+            }
+            if ProcessInfo.processInfo.arguments.contains("-openHistory") {
+                showHistory = true
             }
         }
     }
