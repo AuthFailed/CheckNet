@@ -1,0 +1,108 @@
+name: CI
+
+# Runs on manual dispatch, on pushes to main and any branch, and on PRs to main.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - '**'
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (SwiftPM + iOS app)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Toolchain versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build NetworkKit (SwiftPM core)
+        run: swift build --package-path Packages/NetworkKit
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build app (iOS Simulator)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNet \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+  lint:
+    name: Lint & optimization (SwiftLint)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter github-actions-logging
+
+  security:
+    name: Security scan (CodeQL)
+    runs-on: macos-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: swift
+          build-mode: manual
+
+      - name: Build for CodeQL
+        run: |
+          set -o pipefail
+          xcodegen generate
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNet \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:swift"
