@@ -41,7 +41,7 @@ xcodebuild -project CheckNet.xcodeproj -scheme CheckNet \
 # Install / launch / screenshot
 SIM=195ED81D-E86E-4CAF-8C83-B326C657B68D
 xcrun simctl install "$SIM" build/Build/Products/Debug-iphonesimulator/CheckNet.app
-xcrun simctl launch "$SIM" com.checknet.app -openTool ping -host 1.1.1.1 -run 1
+xcrun simctl launch "$SIM" com.chrsnv.checknet -openTool ping -host 1.1.1.1 -run 1
 xcrun simctl io "$SIM" screenshot screens/out.png
 ```
 Deep-link launch args (also the Shortcuts groundwork): `-openTool <toolRawValue> [-host <h>] [-run]`, parsed in `App/Catalog/CatalogView.swift` → `LaunchOptions`.

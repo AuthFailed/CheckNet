@@ -1,6 +1,6 @@
 name: CheckNet
 options:
-  bundleIdPrefix: com.checknet
+  bundleIdPrefix: com.chrsnv
   deploymentTarget:
     iOS: "26.0"
     macOS: "26.0"
@@ -32,7 +32,7 @@ targets:
         platformFilter: iOS
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.checknet.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet
         PRODUCT_NAME: CheckNet
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
@@ -63,7 +63,7 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.checknet.app.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet.widgets
         PRODUCT_NAME: CheckNetWidgets
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
