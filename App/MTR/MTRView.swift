@@ -89,13 +89,17 @@ struct MTRView: View {
         .card()
     }
 
+    private let col: CGFloat = 38
+
     private var header: some View {
-        HStack(spacing: 4) {
-            Text("#").frame(width: 20, alignment: .leading)
+        HStack(spacing: 3) {
+            Text("#").frame(width: 18, alignment: .leading)
             Text("Хост").frame(maxWidth: .infinity, alignment: .leading)
-            Text("Loss").frame(width: 44, alignment: .trailing)
-            Text("Avg").frame(width: 44, alignment: .trailing)
-            Text("Last").frame(width: 44, alignment: .trailing)
+            Text("Loss").frame(width: col, alignment: .trailing)
+            Text("Avg").frame(width: col, alignment: .trailing)
+            Text("Best").frame(width: col, alignment: .trailing)
+            Text("Wrst").frame(width: col, alignment: .trailing)
+            Text("Last").frame(width: col, alignment: .trailing)
         }
         .font(.caption2.weight(.semibold))
         .foregroundStyle(.secondary)
@@ -103,29 +107,35 @@ struct MTRView: View {
     }
 
     private func hopRow(_ hop: MTRHop) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 3) {
             Text("\(hop.ttl)")
-                .font(.caption.monospaced())
+                .font(.caption2.monospaced())
                 .foregroundStyle(hop.reachedDestination ? .green : .secondary)
-                .frame(width: 20, alignment: .leading)
+                .frame(width: 18, alignment: .leading)
             VStack(alignment: .leading, spacing: 1) {
                 Text(hop.host ?? "*")
-                    .font(.caption.monospaced())
+                    .font(.caption2.monospaced())
                     .foregroundStyle(hop.host == nil ? .secondary : .primary)
                     .lineLimit(1)
                 if let name = hop.hostname {
                     Text(name).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1)
                 }
+                Text("отпр. \(hop.sent) · получ. \(hop.received)")
+                    .font(.system(size: 8)).foregroundStyle(.tertiary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             Text(String(format: "%.0f%%", hop.lossPercent))
-                .font(.caption.monospaced())
+                .font(.caption2.monospaced())
                 .foregroundStyle(hop.lossPercent > 0 ? .orange : .secondary)
-                .frame(width: 44, alignment: .trailing)
+                .frame(width: col, alignment: .trailing)
             Text(hop.average.map { String(format: "%.0f", $0) } ?? "—")
-                .font(.caption.monospaced()).frame(width: 44, alignment: .trailing)
+                .font(.caption2.monospaced()).frame(width: col, alignment: .trailing)
+            Text(hop.best.map { String(format: "%.0f", $0) } ?? "—")
+                .font(.caption2.monospaced()).foregroundStyle(.secondary).frame(width: col, alignment: .trailing)
+            Text(hop.worst.map { String(format: "%.0f", $0) } ?? "—")
+                .font(.caption2.monospaced()).foregroundStyle(.secondary).frame(width: col, alignment: .trailing)
             Text(hop.last.map { String(format: "%.0f", $0) } ?? "—")
-                .font(.caption.monospaced()).foregroundStyle(.secondary).frame(width: 44, alignment: .trailing)
+                .font(.caption2.monospaced()).foregroundStyle(.secondary).frame(width: col, alignment: .trailing)
         }
         .padding(.horizontal, 12).padding(.vertical, 8)
     }

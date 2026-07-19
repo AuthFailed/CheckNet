@@ -96,41 +96,89 @@ private final class MTRRunner: @unchecked Sendable {
         continuation.yield(.started(resolvedIP: endpoint.ipString))
 
         var hops: [Int: MTRHop] = [:]
-        var maxTTL = config.maxHops
-        var seq: UInt16 = 0
+        var activeMax = config.maxHops
+        var seqCounter: UInt16 = 0
         var round = 0
 
+        // WinMTR model: every cycle fires one probe at each TTL up front, then
+        // collects all replies within a single shared timeout window — so a cycle
+        // takes ~timeout, not maxHops × timeout. Per-hop stats accumulate over rounds.
         while !isCancelled {
             round += 1
-            for ttl in 1...maxTTL {
+            var pending: [UInt16: (ttl: Int, time: UInt64)] = [:]
+            let cycleStart = MonoClock.nanos()
+
+            for ttl in 1...activeMax {
                 if isCancelled { break }
                 SocketFactory.setTTL(fd: f, family: endpoint.family, ttl: ttl)
-                seq &+= 1
-                let probe = sendProbe(fd: f, endpoint: endpoint, seq: seq)
-
+                seqCounter &+= 1
+                let seq = seqCounter
+                let packet = ICMP.echoRequest(family: endpoint.family, identifier: identifier,
+                                              sequence: seq, payload: [UInt8]("MTR".utf8))
+                let now = MonoClock.nanos()
+                _ = endpoint.withSockaddr { addr, len in
+                    packet.withUnsafeBytes { raw in sendto(f, raw.baseAddress, raw.count, 0, addr, len) }
+                }
+                pending[seq] = (ttl, now)
                 var hop = hops[ttl] ?? MTRHop(ttl: ttl, host: nil, hostname: nil, sent: 0, received: 0,
                                               last: nil, best: nil, worst: nil, total: 0, reachedDestination: false)
                 hop.sent += 1
-                if let rtt = probe.rtt {
+                hops[ttl] = hop
+            }
+
+            // Collect replies until the shared window elapses.
+            let deadline = cycleStart + UInt64(config.timeout * 1_000_000_000)
+            var destinationTTL: Int? = nil
+            while !pending.isEmpty && !isCancelled {
+                let nowNanos = MonoClock.nanos()
+                guard nowNanos < deadline else { break }
+                let remaining = deadline - nowNanos
+                var pfd = pollfd(fd: f, events: Int16(POLLIN), revents: 0)
+                if poll(&pfd, 1, Int32(min(500, remaining / 1_000_000))) <= 0 { continue }
+                guard let received = SocketFactory.receive(fd: f, family: endpoint.family),
+                      let parsed = ICMP.parseReply(received.data, family: endpoint.family),
+                      parsed.identifier == identifier,
+                      let info = pending[parsed.sequence] else { continue }
+                pending[parsed.sequence] = nil
+                let ttl = info.ttl
+                let rtt = Double(MonoClock.nanos() &- info.time) / 1_000_000.0
+                var hop = hops[ttl] ?? MTRHop(ttl: ttl, host: nil, hostname: nil, sent: 1, received: 0,
+                                              last: nil, best: nil, worst: nil, total: 0, reachedDestination: false)
+                switch parsed.kind {
+                case .echoReply, .timeExceeded, .unreachable:
                     hop.received += 1
                     hop.last = rtt
                     hop.best = min(hop.best ?? rtt, rtt)
                     hop.worst = max(hop.worst ?? rtt, rtt)
                     hop.total += rtt
-                    if let ip = probe.routerIP { hop.host = ip }
-                }
-                if probe.reached { hop.reachedDestination = true }
-                if hop.hostname == nil, config.resolveNames, let ip = hop.host {
-                    hop.hostname = reverseLookup(ip)
+                    if let ip = received.sourceIP { hop.host = ip }
+                    let reached = parsed.kind == .echoReply
+                        || (parsed.kind == .unreachable && received.sourceIP == endpoint.ipString)
+                    if reached { hop.reachedDestination = true; destinationTTL = min(destinationTTL ?? ttl, ttl) }
+                case .other:
+                    break
                 }
                 hops[ttl] = hop
+            }
 
-                // Yield incrementally so the table builds live.
-                let partial = (1...ttl).compactMap { hops[$0] }
-                continuation.yield(.update(hops: partial, round: round))
+            // Once the destination answers, freeze the hop count there.
+            if let d = destinationTTL { activeMax = min(activeMax, d) }
 
-                // Stop this round once the destination answers — no probing beyond it.
-                if probe.reached { maxTTL = min(maxTTL, ttl); break }
+            continuation.yield(.update(hops: (1...activeMax).compactMap { hops[$0] }, round: round))
+
+            // Resolve router names lazily (cached once found), then push an enriched snapshot.
+            if config.resolveNames {
+                var changed = false
+                for ttl in 1...activeMax {
+                    if var hop = hops[ttl], hop.hostname == nil, let ip = hop.host {
+                        hop.hostname = reverseLookup(ip)
+                        hops[ttl] = hop
+                        changed = changed || hop.hostname != nil
+                    }
+                }
+                if changed {
+                    continuation.yield(.update(hops: (1...activeMax).compactMap { hops[$0] }, round: round))
+                }
             }
 
             if let maxRounds = config.maxRounds, round >= maxRounds { break }
@@ -142,34 +190,6 @@ private final class MTRRunner: @unchecked Sendable {
         if f2 >= 0 { close(f2) }
         continuation.yield(.finished)
         continuation.finish()
-    }
-
-    private func sendProbe(fd: Int32, endpoint: ResolvedEndpoint, seq: UInt16) -> (rtt: Double?, routerIP: String?, reached: Bool) {
-        let packet = ICMP.echoRequest(family: endpoint.family, identifier: identifier, sequence: seq, payload: [UInt8]("MTR".utf8))
-        let sendTime = MonoClock.nanos()
-        let sent = endpoint.withSockaddr { addr, len in
-            packet.withUnsafeBytes { raw in sendto(fd, raw.baseAddress, raw.count, 0, addr, len) }
-        }
-        guard sent >= 0 else { return (nil, nil, false) }
-
-        let deadline = sendTime + UInt64(config.timeout * 1_000_000_000)
-        while MonoClock.nanos() < deadline {
-            if isCancelled { break }
-            let remaining = deadline > MonoClock.nanos() ? deadline - MonoClock.nanos() : 0
-            var pfd = pollfd(fd: fd, events: Int16(POLLIN), revents: 0)
-            if poll(&pfd, 1, Int32(min(500, remaining / 1_000_000))) <= 0 { continue }
-            guard let received = SocketFactory.receive(fd: fd, family: endpoint.family),
-                  let parsed = ICMP.parseReply(received.data, family: endpoint.family),
-                  parsed.sequence == seq else { continue }
-            let rtt = Double(MonoClock.nanos() &- sendTime) / 1_000_000.0
-            switch parsed.kind {
-            case .echoReply: return (rtt, received.sourceIP ?? endpoint.ipString, true)
-            case .timeExceeded: return (rtt, received.sourceIP, false)
-            case .unreachable: return (rtt, received.sourceIP, received.sourceIP == endpoint.ipString)
-            default: continue
-            }
-        }
-        return (nil, nil, false)
     }
 
     private func reverseLookup(_ ip: String) -> String? {
