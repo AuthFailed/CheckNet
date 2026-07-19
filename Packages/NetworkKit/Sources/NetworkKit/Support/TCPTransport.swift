@@ -79,6 +79,34 @@ enum TCPTransport {
         return buffer
     }
 
+    /// Reads until the peer closes the connection or the deadline passes.
+    static func readUntilClose(fd: Int32, timeout: TimeInterval, maxBytes: Int = 1 << 20) throws -> [UInt8] {
+        var out = [UInt8]()
+        let deadline = MonoClock.nanos() + UInt64(timeout * 1_000_000_000)
+        var chunk = [UInt8](repeating: 0, count: 8192)
+        while out.count < maxBytes {
+            let remaining = deadline > MonoClock.nanos() ? deadline - MonoClock.nanos() : 0
+            if remaining == 0 { break }
+            var pfd = pollfd(fd: fd, events: Int16(POLLIN), revents: 0)
+            let pr = poll(&pfd, 1, Int32(remaining / 1_000_000))
+            if pr == 0 { break }
+            guard pr > 0 else { break }
+            let n = chunk.withUnsafeMutableBytes { recv(fd, $0.baseAddress, $0.count, 0) }
+            if n == 0 { break }            // peer closed
+            if n < 0 { if errno == EINTR { continue }; break }
+            out.append(contentsOf: chunk[0..<n])
+        }
+        return out
+    }
+
+    /// A one-shot line-oriented TCP request (send query, read until close) — used by whois.
+    static func requestUntilClose(endpoint: ResolvedEndpoint, query: [UInt8], timeout: TimeInterval) throws -> [UInt8] {
+        let (fd, _) = try connect(endpoint: endpoint, timeout: timeout)
+        defer { close(fd) }
+        try writeAll(fd: fd, bytes: query)
+        return try readUntilClose(fd: fd, timeout: timeout)
+    }
+
     /// A DNS-over-TCP exchange (2-byte length prefix), used for truncated responses.
     static func dnsRequest(endpoint: ResolvedEndpoint, query: [UInt8], timeout: TimeInterval) throws -> [UInt8] {
         let (fd, _) = try connect(endpoint: endpoint, timeout: timeout)

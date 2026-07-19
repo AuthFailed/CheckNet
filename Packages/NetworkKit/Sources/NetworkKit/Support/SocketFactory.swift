@@ -55,6 +55,16 @@ enum SocketFactory {
         }
     }
 
+    /// Updates the TTL / hop limit on an existing socket (used by traceroute).
+    static func setTTL(fd: Int32, family: IPFamily, ttl: Int) {
+        var v = Int32(ttl)
+        if family == .ipv4 {
+            setsockopt(fd, IPPROTO_IP, IP_TTL, &v, socklen_t(MemoryLayout<Int32>.size))
+        } else {
+            setsockopt(fd, IPPROTO_IPV6, IPV6_UNICAST_HOPS, &v, socklen_t(MemoryLayout<Int32>.size))
+        }
+    }
+
     /// Reads one datagram (non-blocking). Returns nil when the socket would block or errors.
     static func receive(fd: Int32, family: IPFamily) -> ReceivedDatagram? {
         var dataBuf = [UInt8](repeating: 0, count: 2048)
