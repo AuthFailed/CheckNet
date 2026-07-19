@@ -198,8 +198,20 @@ struct ToolDestinationView: View {
         switch route.tool {
         case .ping:
             PingView(autostart: route.autostart, openSettings: route.openSettings, presetHost: route.presetHost)
+        case .traceroute:
+            TracerouteView(presetHost: route.presetHost, autostart: route.autostart)
         case .dns:
             DNSLookupView(presetHost: route.presetHost, autostart: route.autostart)
+        case .dnsCompare:
+            DNSCompareView(presetHost: route.presetHost, autostart: route.autostart)
+        case .dnsTamper:
+            DNSTamperView(presetHost: route.presetHost, autostart: route.autostart)
+        case .whois:
+            WhoisView(presetHost: route.presetHost, autostart: route.autostart)
+        case .blacklist:
+            BlacklistView(presetHost: route.presetHost, autostart: route.autostart)
+        case .wakeOnLan:
+            WakeOnLanView()
         case .portScan:
             PortScanView(presetHost: route.presetHost, autostart: route.autostart)
         case .tlsInspector:
