@@ -65,7 +65,11 @@ public struct TransferCutoffCheck: Sendable {
     private static let padStep = 4000
     private static let maxPadStepCount = 15
     private static let tinyChunk = 2
-    private static let tinyChunkDelayMillis: UInt64 = 50
+    /// Just enough to keep the writes in separate segments. Longer gaps (the
+    /// upstream tool uses 50 ms) look like slowloris to a CDN, which then closes
+    /// the connection — and that would read as a freeze on a perfectly clean
+    /// network. `TCP_NODELAY` is what actually guarantees the segmentation.
+    private static let tinyChunkDelayMillis: UInt64 = 8
 
     // MARK: - Individual probes
 
@@ -85,25 +89,40 @@ public struct TransferCutoffCheck: Sendable {
             defer { stream.close() }
             try await stream.open(timeout: 8)
 
-            // i = 0 is the liveness control: if an unpadded request fails, the
-            // host is simply unreachable and the run proves nothing.
-            for i in 0...Self.maxPadStepCount {
-                let request = Self.httpRequest(host: host, padding: i == 0 ? 0 : Self.padStep)
-                try await stream.send(request)
-                bytesSent += request.count
-                segments += 1
+            // Payload goes in a POST body, not a header: servers cap header size
+            // (Cloudflare rejects a 4 KB header outright), so header padding
+            // measures the origin's limits rather than the network's.
+            let total = Self.padStep * Self.maxPadStepCount
+            let head = Array("""
+            POST / HTTP/1.1\r
+            Host: \(host)\r
+            Content-Type: application/octet-stream\r
+            Content-Length: \(total)\r
+            Connection: keep-alive\r
+            \r
 
-                let response = try await stream.receive(timeout: readTimeout)
-                if response == nil {
-                    return CutoffProbe(
-                        variant: .byteAccumulation, outcome: i == 0 ? .failed : .frozen,
-                        bytesSent: bytesSent, segmentsSent: segments,
-                        elapsedMillis: MonoClock.millisSince(start), failure: .eof,
-                        detail: "соединение закрыто после \(bytesSent / 1024) КБ"
-                    )
-                }
+            """.replacingOccurrences(of: "\n", with: "").utf8) + Array("\r\n\r\n".utf8)
+
+            try await stream.send(head)
+            segments += 1
+
+            let chunk = [UInt8](repeating: 0x61, count: Self.padStep)
+            for _ in 0..<Self.maxPadStepCount {
+                try await stream.send(chunk)
+                bytesSent += chunk.count
+                segments += 1
             }
 
+            // Any reply at all — even a 405 — proves the bytes crossed the network.
+            let response = try await stream.receive(timeout: readTimeout)
+            if response == nil {
+                return CutoffProbe(
+                    variant: .byteAccumulation, outcome: .failed,
+                    bytesSent: bytesSent, segmentsSent: segments,
+                    elapsedMillis: MonoClock.millisSince(start), failure: .eof,
+                    detail: "сервер закрыл соединение после \(bytesSent / 1024) КБ"
+                )
+            }
             return CutoffProbe(
                 variant: .byteAccumulation, outcome: .passed,
                 bytesSent: bytesSent, segmentsSent: segments,
@@ -112,13 +131,14 @@ public struct TransferCutoffCheck: Sendable {
             )
         } catch {
             let kind = ProbeFailureKind.classify(error)
-            // A stall after the unpadded control succeeded is the signature.
-            let outcome: CutoffProbe.Outcome = (bytesSent > 0 && kind.suggestsInterference) ? .frozen : .failed
+            // A silent stall is the signature. A clean close or a TLS alert is the
+            // server talking back, and must not be reported as interference.
+            let frozen = bytesSent > 0 && (kind == .timeout || kind == .reset)
             return CutoffProbe(
-                variant: .byteAccumulation, outcome: outcome,
+                variant: .byteAccumulation, outcome: frozen ? .frozen : .failed,
                 bytesSent: bytesSent, segmentsSent: segments,
                 elapsedMillis: MonoClock.millisSince(start), failure: kind,
-                detail: outcome == .frozen
+                detail: frozen
                     ? "оборвалось на \(bytesSent / 1024) КБ — \(kind.label)"
                     : "не удалось выполнить пробу — \(kind.label)"
             )
@@ -190,7 +210,7 @@ public struct TransferCutoffCheck: Sendable {
         } catch {
             let kind = ProbeFailureKind.classify(error)
             // Segments already left the device, so a stall here is a freeze.
-            let outcome: CutoffProbe.Outcome = (segments > 0 && kind.suggestsInterference) ? .frozen : .failed
+            let outcome: CutoffProbe.Outcome = (segments > 0 && (kind == .timeout || kind == .reset)) ? .frozen : .failed
             return CutoffProbe(
                 variant: variant, outcome: outcome, bytesSent: request.count,
                 segmentsSent: segments, elapsedMillis: MonoClock.millisSince(start),
@@ -268,14 +288,9 @@ public struct TransferCutoffCheck: Sendable {
 
     // MARK: - Helpers
 
-    /// A minimal, valid keep-alive request. `padding` bytes of filler go into a
-    /// custom header so the size is ours to choose.
-    private static func httpRequest(host: String, padding: Int) -> [UInt8] {
-        var request = "HEAD / HTTP/1.1\r\nHost: \(host)\r\nConnection: keep-alive\r\n"
-        if padding > 0 {
-            request += "X-Pad: " + String(repeating: "a", count: padding) + "\r\n"
-        }
-        request += "\r\n"
-        return Array(request.utf8)
+    /// A minimal, valid keep-alive request — small on purpose, since the
+    /// packet-count probe is about segmentation, not size.
+    private static func httpRequest(host: String, padding: Int = 0) -> [UInt8] {
+        Array("HEAD / HTTP/1.1\r\nHost: \(host)\r\nConnection: keep-alive\r\n\r\n".utf8)
     }
 }
