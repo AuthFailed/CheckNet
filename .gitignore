@@ -19,3 +19,4 @@ CheckNet.xcodeproj/
 # Misc
 screens/
 *.log
+build-mac/
