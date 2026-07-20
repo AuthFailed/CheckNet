@@ -23,6 +23,10 @@ struct HostSharingView: View {
     @State private var pendingImport: ImportPayload?
     @State private var pasteError: String?
     @State private var didSeedSelection = false
+    @State private var showScanner = false
+    /// Hosts decoded from a scan, held until the camera sheet has closed so the
+    /// import sheet doesn't try to present on top of it.
+    @State private var scannedHosts: [SavedHost]?
 
     private var globalHosts: [SavedHost] {
         store.hosts.filter { $0.toolID == nil }
@@ -107,6 +111,14 @@ struct HostSharingView: View {
             }
 
             Section {
+                #if os(iOS)
+                Button {
+                    pasteError = nil
+                    showScanner = true
+                } label: {
+                    Label("Сканировать QR-код", systemImage: "qrcode.viewfinder")
+                }
+                #endif
                 Button {
                     importFromClipboard()
                 } label: {
@@ -118,7 +130,7 @@ struct HostSharingView: View {
             } header: {
                 Text("Импорт")
             } footer: {
-                Text("Скопируйте присланную ссылку checknet:// — приложение покажет, что именно будет добавлено.")
+                Text("Отсканируйте QR-код с другого устройства или скопируйте присланную ссылку checknet:// — приложение покажет, что именно будет добавлено.")
             }
         }
         .navigationTitle("Поделиться хостами")
@@ -135,6 +147,25 @@ struct HostSharingView: View {
         .sheet(item: $pendingImport) { payload in
             ImportHostsSheet(hosts: payload.hosts)
         }
+        #if os(iOS)
+        .sheet(isPresented: $showScanner, onDismiss: presentScannedHosts) {
+            QRScannerSheet(onFound: handleScan)
+        }
+        #endif
+    }
+
+    private func handleScan(_ payload: String) {
+        guard let hosts = HostSharing.hosts(fromPastedText: payload), !hosts.isEmpty else {
+            pasteError = "В этом QR-коде нет списка хостов CheckNet."
+            return
+        }
+        scannedHosts = hosts
+    }
+
+    private func presentScannedHosts() {
+        guard let hosts = scannedHosts else { return }
+        scannedHosts = nil
+        pendingImport = ImportPayload(hosts: hosts)
     }
 
     private func row(for host: SavedHost) -> some View {
