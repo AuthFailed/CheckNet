@@ -16,10 +16,11 @@ final class TLSStream: @unchecked Sendable {
     ///   - ip: literal address, so DNS never enters the measurement
     ///   - serverName: SNI to advertise; may deliberately differ from the host
     ///     that owns `ip` — that mismatch is the whitelist probe
-    init(ip: String, port: UInt16, serverName: String) throws {
+    init(ip: String, port: UInt16, serverName: String, fingerprint: TLSFingerprint = .system) throws {
         let tlsOptions = NWProtocolTLS.Options()
         let sec = tlsOptions.securityProtocolOptions
         sec_protocol_options_set_tls_server_name(sec, serverName)
+        fingerprint.apply(to: tlsOptions)
         // We connect by IP and often with a deliberately mismatched SNI, so chain
         // validation would fail for reasons that have nothing to do with the
         // measurement. Accept whatever we get; we never send real data.

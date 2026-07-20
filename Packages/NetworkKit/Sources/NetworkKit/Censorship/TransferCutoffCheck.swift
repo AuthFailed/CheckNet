@@ -50,7 +50,12 @@ public struct CutoffProbe: Sendable, Codable, Hashable {
 /// A freeze in `packetCount` while `singleSegment` succeeds is a packet counter
 /// and nothing else — 64 bytes of traffic has no benign reason to stall.
 public struct TransferCutoffCheck: Sendable {
-    public init() {}
+    /// ClientHello profile used for every arm of the check.
+    public let fingerprint: TLSFingerprint
+
+    public init(fingerprint: TLSFingerprint = .system) {
+        self.fingerprint = fingerprint
+    }
 
     /// Foreign-AS hosts where the behaviour is reported. Paired with a domestic
     /// control so "foreign freezes, domestic doesn't" can be stated.
@@ -76,7 +81,7 @@ public struct TransferCutoffCheck: Sendable {
 
         do {
             let endpoint = try await HostResolver.resolveFirst(host: host, port: port)
-            let stream = try TLSStream(ip: endpoint.ipString, port: port, serverName: host)
+            let stream = try TLSStream(ip: endpoint.ipString, port: port, serverName: host, fingerprint: fingerprint)
             defer { stream.close() }
             try await stream.open(timeout: 8)
 
@@ -148,7 +153,7 @@ public struct TransferCutoffCheck: Sendable {
 
         do {
             let endpoint = try await HostResolver.resolveFirst(host: host, port: port)
-            let stream = try TLSStream(ip: endpoint.ipString, port: port, serverName: host)
+            let stream = try TLSStream(ip: endpoint.ipString, port: port, serverName: host, fingerprint: fingerprint)
             defer { stream.close() }
             try await stream.open(timeout: 8)
 
