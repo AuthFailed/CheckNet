@@ -3,7 +3,7 @@ import NetworkKit
 
 /// The censorship / local-restriction checks shown in the Блокировки tab.
 enum BlockingCheck: String, CaseIterable, Identifiable {
-    case dnsSpoofing, httpBlock, sniBlocking, ipBlocking, whitelist, siberian
+    case dnsSpoofing, httpBlock, sniBlocking, ipBlocking, whitelist, siberian, transferCutoff
 
     var id: String { rawValue }
 
@@ -15,6 +15,7 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
         case .ipBlocking: return "Блокировка по IP"
         case .whitelist: return "Белые списки"
         case .siberian: return "«Сибирская» блокировка"
+        case .transferCutoff: return "Обрыв на 16–20 КБ"
         }
     }
 
@@ -26,6 +27,7 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
         case .ipBlocking: return "IP закрыт на уровне сети"
         case .whitelist: return "Доступны только «разрешённые» сайты"
         case .siberian: return "Троттлинг параллельных TLS"
+        case .transferCutoff: return "Передача замирает на середине"
         }
     }
 
@@ -37,6 +39,7 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
         case .ipBlocking: return "network.slash"
         case .whitelist: return "list.bullet.rectangle"
         case .siberian: return "snowflake"
+        case .transferCutoff: return "pause.circle"
         }
     }
 
@@ -49,6 +52,7 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
         case .sniBlocking, .siberian: return "www.tor-project.org"
         case .ipBlocking: return "x.com"
         case .whitelist: return ""
+        case .transferCutoff: return TransferCutoffCheck.defaultTarget
         }
     }
 
@@ -66,6 +70,8 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
             return "Проверяем доступность «разрешённых» ресурсов (Госуслуги, Яндекс, VK) и зарубежных контролей. Если работают только первые — вероятен режим белого списка при региональном шатдауне."
         case .siberian:
             return "Открываем много параллельных TLS-соединений к одному хосту. Если часть срывается — это троттлинг по числу TLS-сессий, характерный для некоторых операторов."
+        case .transferCutoff:
+            return "Соединения с зарубежными серверами часто замирают, когда передача расходится — обычно в районе 16–20 КБ. Проверяем тремя способами: наращиваем объём по 4 КБ, отправляем крошечный запрос множеством мелких пакетов и его же одним пакетом. Если мелкими пакетами замирает, а одним проходит — считаются пакеты, а не килобайты. Для сравнения та же проба идёт к российскому серверу."
         }
     }
 
@@ -79,6 +85,7 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
         case .ipBlocking:  return await checks.checkIPBlocking(domain: host)
         case .whitelist:   return await checks.checkWhitelistMode()
         case .siberian:    return await checks.checkSiberianBlock(host: host)
+        case .transferCutoff: return await TransferCutoffCheck().run(target: host)
         }
     }
 }
