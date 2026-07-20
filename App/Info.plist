@@ -74,6 +74,8 @@
 		<string>_companion-link._tcp</string>
 		<string>_rfb._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>CheckNet сканирует локальную сеть для обнаружения устройств, Bonjour-сервисов и проверки хостов.</string>
 	<key>NSSupportsLiveActivities</key>
