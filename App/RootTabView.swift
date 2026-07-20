@@ -9,6 +9,7 @@ struct RootTabView: View {
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count { return Int(args[i + 1]) ?? 0 }
         return 0
     }()
+    @State private var pendingImport: ImportPayload?
 
     var body: some View {
         TabView(selection: $selection) {
@@ -24,5 +25,12 @@ struct RootTabView: View {
         }
         .preferredColorScheme(settings.theme.colorScheme)
         .environment(\.locale, settings.language.localeIdentifier.map(Locale.init) ?? .current)
+        .onOpenURL { url in
+            guard let hosts = HostSharing.hosts(from: url), !hosts.isEmpty else { return }
+            pendingImport = ImportPayload(hosts: hosts)
+        }
+        .sheet(item: $pendingImport) { payload in
+            ImportHostsSheet(hosts: payload.hosts)
+        }
     }
 }

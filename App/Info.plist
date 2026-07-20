@@ -34,6 +34,19 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.chrsnv.checknet.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>checknet</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -61,6 +74,8 @@
 		<string>_companion-link._tcp</string>
 		<string>_rfb._tcp</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>CheckNet сканирует локальную сеть для обнаружения устройств, Bonjour-сервисов и проверки хостов.</string>
 	<key>NSSupportsLiveActivities</key>
