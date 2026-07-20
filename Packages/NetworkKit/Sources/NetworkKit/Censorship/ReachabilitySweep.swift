@@ -48,7 +48,12 @@ public struct ProviderSummary: Sendable, Hashable, Identifiable {
 /// "Every Hetzner and DigitalOcean host fails while Selectel is fine" is a
 /// conclusion a user can act on.
 public struct ReachabilitySweep: Sendable {
-    public init() {}
+    /// ClientHello profile used for every probe in the sweep.
+    public let fingerprint: TLSFingerprint
+
+    public init(fingerprint: TLSFingerprint = .system) {
+        self.fingerprint = fingerprint
+    }
 
     /// Deliberately low. Opening many simultaneous TLS connections is itself a
     /// trigger for connection-rate policing (reported to fire around a dozen),
@@ -63,7 +68,7 @@ public struct ReachabilitySweep: Sendable {
         let start = MonoClock.nanos()
         do {
             let endpoint = try await HostResolver.resolveFirst(host: target.host, port: 443)
-            let stream = try TLSStream(ip: endpoint.ipString, port: 443, serverName: target.host)
+            let stream = try TLSStream(ip: endpoint.ipString, port: 443, serverName: target.host, fingerprint: fingerprint)
             defer { stream.close() }
             try await stream.open(timeout: timeout)
             return ReachabilityResult(
