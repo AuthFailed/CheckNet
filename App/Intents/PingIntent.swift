@@ -93,5 +93,32 @@ struct CheckNetShortcuts: AppShortcutsProvider {
             shortTitle: "Хост доступен?",
             systemImageName: "checkmark.circle"
         )
+        AppShortcut(
+            intent: RunBlockingCheckIntent(),
+            phrases: [
+                "Проверить блокировку в \(.applicationName)",
+                "\(.applicationName) проверь блокировки"
+            ],
+            shortTitle: "Проверить блокировку",
+            systemImageName: "hand.raised"
+        )
+        AppShortcut(
+            intent: CheckReachabilityIntent(),
+            phrases: [
+                "Проверить доступность в \(.applicationName)",
+                "\(.applicationName) что недоступно"
+            ],
+            shortTitle: "Проверить доступность",
+            systemImageName: "network"
+        )
+        AppShortcut(
+            intent: CheckPushDeliveryIntent(),
+            phrases: [
+                "Проверить уведомления в \(.applicationName)",
+                "\(.applicationName) почему не приходят уведомления"
+            ],
+            shortTitle: "Проверить push",
+            systemImageName: "bell.badge"
+        )
     }
 }
