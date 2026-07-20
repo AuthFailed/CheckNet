@@ -112,20 +112,50 @@ public struct DNSResult: Sendable, Hashable, Codable {
 
 /// A well-known public resolver.
 public struct DNSResolverInfo: Sendable, Hashable, Identifiable, Codable {
+    /// Where a resolver sits politically. Comparing a national resolver against
+    /// a foreign one is the point: divergence between them is the signal.
+    public enum Scope: String, Sendable, Codable {
+        case foreign, russian, national
+
+        public var label: String {
+            switch self {
+            case .foreign: "Зарубежные"
+            case .russian: "Российские"
+            case .national: "Национальные (НСДИ)"
+            }
+        }
+    }
+
     public let id: String
     public let name: String
     public let address: String
-    public init(name: String, address: String) {
+    public let scope: Scope
+    /// Secondary address, where the operator publishes one.
+    public let secondary: String?
+
+    public init(name: String, address: String, scope: Scope = .foreign, secondary: String? = nil) {
         self.id = address
         self.name = name
         self.address = address
+        self.scope = scope
+        self.secondary = secondary
     }
 
     public static let presets: [DNSResolverInfo] = [
-        .init(name: "Cloudflare", address: "1.1.1.1"),
-        .init(name: "Google", address: "8.8.8.8"),
-        .init(name: "Quad9", address: "9.9.9.9"),
-        .init(name: "OpenDNS", address: "208.67.222.222"),
-        .init(name: "AdGuard", address: "94.140.14.14")
+        .init(name: "Cloudflare", address: "1.1.1.1", scope: .foreign, secondary: "1.0.0.1"),
+        .init(name: "Google", address: "8.8.8.8", scope: .foreign, secondary: "8.8.4.4"),
+        .init(name: "Quad9", address: "9.9.9.9", scope: .foreign),
+        .init(name: "OpenDNS", address: "208.67.222.222", scope: .foreign, secondary: "208.67.220.220"),
+        .init(name: "AdGuard", address: "94.140.14.14", scope: .foreign, secondary: "94.140.15.15"),
+        .init(name: "Яндекс", address: "77.88.8.8", scope: .russian, secondary: "77.88.8.1"),
+        // Russia's national DNS. Operators holding an ASN have been required to
+        // use it since 2021, so its answers are the reference for what the
+        // national resolution layer returns.
+        .init(name: "НСДИ", address: "195.208.4.1", scope: .national, secondary: "195.208.5.1"),
+        .init(name: "MSK-IX", address: "62.76.76.62", scope: .national, secondary: "62.76.62.76")
     ]
+
+    public static func presets(in scope: Scope) -> [DNSResolverInfo] {
+        presets.filter { $0.scope == scope }
+    }
 }

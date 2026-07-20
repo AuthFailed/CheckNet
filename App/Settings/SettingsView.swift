@@ -34,6 +34,11 @@ struct SettingsView: View {
                             LabeledContent("IP-адреса", value: "\(savedHosts.savedIPs.count)")
                         } icon: { Image(systemName: "number") }
                     }
+                    NavigationLink {
+                        HostSharingView()
+                    } label: {
+                        Label("Поделиться и импорт", systemImage: "square.and.arrow.up")
+                    }
                 }
 
                 Section {
@@ -49,6 +54,14 @@ struct SettingsView: View {
                     Text("Проверки")
                 } footer: {
                     Text("Сканирование портов и диапазонов IP в чужих сетях может расцениваться как атака. Когда включено, приложение спрашивает согласие перед запуском таких проверок.")
+                }
+
+                Section("Интеграции") {
+                    NavigationLink {
+                        WebhookSettingsView()
+                    } label: {
+                        Label("Вебхуки", systemImage: "paperplane")
+                    }
                 }
 
                 Section {
