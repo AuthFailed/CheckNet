@@ -56,6 +56,14 @@ struct SettingsView: View {
                     Text("Сканирование портов и диапазонов IP в чужих сетях может расцениваться как атака. Когда включено, приложение спрашивает согласие перед запуском таких проверок.")
                 }
 
+                Section("Интеграции") {
+                    NavigationLink {
+                        WebhookSettingsView()
+                    } label: {
+                        Label("Вебхуки", systemImage: "paperplane")
+                    }
+                }
+
                 Section {
                     Button {
                         LocalNetworkPermission.shared.request { granted in
