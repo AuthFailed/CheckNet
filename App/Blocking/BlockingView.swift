@@ -1,5 +1,44 @@
 import SwiftUI
 
+/// How the checks are grouped in the list.
+///
+/// The original request was a second row of tabs at the bottom, but that slot
+/// already belongs to the root `TabView` and a nested tab bar reads as foreign
+/// on iOS 26. Sections carry the same structure using the system list.
+enum BlockingSection: String, CaseIterable, Identifiable {
+    case restrictions, availability, degradation, dns
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        // Not "Блокировки" — that's the tab title, and the repeat reads as a bug.
+        case .restrictions: "Фильтрация"
+        case .availability: "Недоступность"
+        case .degradation: "Деградация"
+        case .dns: "DNS"
+        }
+    }
+
+    var footer: String? {
+        switch self {
+        case .restrictions: "Проверки сравнивают ваше соединение с эталоном и показывают, что именно ограничивает сеть."
+        case .availability: "Что именно недоступно — по провайдерам, сервисам и серверам уведомлений."
+        case .degradation: "Соединение устанавливается, но рвётся или замедляется в процессе."
+        case .dns: nil
+        }
+    }
+
+    var checks: [BlockingCheck] {
+        switch self {
+        case .restrictions: [.sniBlocking, .ipBlocking, .httpBlock, .whitelist]
+        case .availability: []
+        case .degradation: [.transferCutoff, .siberian]
+        case .dns: [.dnsSpoofing]
+        }
+    }
+}
+
 /// The "Блокировки" tab — checks that reveal local ISP restrictions the user's
 /// own connection is subject to (transparency/diagnostics).
 struct BlockingView: View {
@@ -8,23 +47,55 @@ struct BlockingView: View {
     var body: some View {
         NavigationStack(path: $path) {
             List {
-                Section {
-                    ForEach(BlockingCheck.allCases) { check in
-                        row(check)
-                            .contentShape(.rect)
-                            .onTapGesture { path.append(BlockingRoute(check: check)) }
+                ForEach(BlockingSection.allCases) { section in
+                    Section {
+                        if section == .availability {
+                            NavigationLink(value: BlockingRoute.reachability) {
+                                sweepRow
+                            }
+                        }
+                        ForEach(section.checks) { check in
+                            row(check)
+                                .contentShape(.rect)
+                                .onTapGesture { path.append(.check(check)) }
+                        }
+                    } header: {
+                        Text(LocalizedStringKey(section.title))
+                    } footer: {
+                        if let footer = section.footer {
+                            Text(LocalizedStringKey(footer))
+                        }
                     }
-                } header: {
-                    Text("Проверки ограничений")
+                }
+
+                Section {
+                    EmptyView()
                 } footer: {
-                    Text("Каждая проверка сравнивает ваше соединение с эталоном и показывает, какие локальные ограничения применяет ваш провайдер. Только диагностика.")
+                    Text("Только диагностика: приложение показывает, какие ограничения применяет сеть, и не помогает их обходить.")
                 }
             }
             .navigationTitle("Блокировки")
             .navigationDestination(for: BlockingRoute.self) { route in
-                BlockingCheckView(check: route.check)
+                switch route {
+                case .check(let check): BlockingCheckView(check: check)
+                case .reachability: ReachabilityView()
+                }
             }
         }
+    }
+
+    private var sweepRow: some View {
+        HStack(spacing: 13) {
+            Image(systemName: "network")
+                .font(.system(size: 17))
+                .foregroundStyle(.tint)
+                .frame(width: 28, height: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Доступность узлов").foregroundStyle(.primary)
+                Text("Провайдеры, сервисы, push-уведомления").font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 2)
     }
 
     private func row(_ check: BlockingCheck) -> some View {
@@ -45,6 +116,7 @@ struct BlockingView: View {
     }
 }
 
-struct BlockingRoute: Hashable {
-    let check: BlockingCheck
+enum BlockingRoute: Hashable {
+    case check(BlockingCheck)
+    case reachability
 }
