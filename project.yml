@@ -51,6 +51,11 @@ targets:
           - ar
           - hi
         ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.chrsnv.checknet.deeplink
+            CFBundleTypeRole: Editor
+            CFBundleURLSchemes:
+              - checknet
         NSSupportsLiveActivities: true
         UILaunchScreen: {}
         UIApplicationSceneManifest:

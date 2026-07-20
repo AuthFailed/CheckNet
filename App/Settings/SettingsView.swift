@@ -34,6 +34,11 @@ struct SettingsView: View {
                             LabeledContent("IP-адреса", value: "\(savedHosts.savedIPs.count)")
                         } icon: { Image(systemName: "number") }
                     }
+                    NavigationLink {
+                        HostSharingView()
+                    } label: {
+                        Label("Поделиться и импорт", systemImage: "square.and.arrow.up")
+                    }
                 }
 
                 Section {
