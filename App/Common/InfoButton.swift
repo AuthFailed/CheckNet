@@ -50,7 +50,7 @@ struct InfoSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                     }
-                    Text(message)
+                    Text(LocalizedStringKey(message))
                         .font(.body)
                         .foregroundStyle(.primary)
                         .fixedSize(horizontal: false, vertical: true)

@@ -75,7 +75,10 @@ final class AppSettings {
         didSet { UserDefaults.standard.set(theme.rawValue, forKey: "checknet.theme") }
     }
     var language: AppLanguage {
-        didSet { UserDefaults.standard.set(language.rawValue, forKey: "checknet.language") }
+        didSet {
+            UserDefaults.standard.set(language.rawValue, forKey: "checknet.language")
+            AppLocalization.apply(language.localeIdentifier)
+        }
     }
     /// Drive Live Activities / Dynamic Island from ping runs.
     var liveActivitiesEnabled: Bool {
@@ -112,5 +115,6 @@ final class AppSettings {
         liveActivitiesEnabled = d.object(forKey: "checknet.liveActivities") as? Bool ?? true
         reverseDNSByDefault = d.object(forKey: "checknet.rdnsDefault") as? Bool ?? true
         confirmSensitiveTests = d.object(forKey: "checknet.confirmSensitive") as? Bool ?? true
+        AppLocalization.apply(language.localeIdentifier)
     }
 }

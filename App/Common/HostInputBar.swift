@@ -62,10 +62,11 @@ struct SavedHostsMenu: View {
                 }
             }
             let trimmed = text.trimmingCharacters(in: .whitespaces)
+            let saveTitle: LocalizedStringKey = trimmed.isEmpty ? "Сохранить хост…" : "Сохранить «\(trimmed)»"
             Button {
                 savedHosts.add(name: "", value: trimmed, tool: nil)
             } label: {
-                Label(trimmed.isEmpty ? "Сохранить хост…" : "Сохранить «\(trimmed)»", systemImage: "plus")
+                Label(saveTitle, systemImage: "plus")
             }
             .disabled(trimmed.isEmpty)
         } label: {
@@ -81,14 +82,14 @@ struct SavedHostsMenu: View {
 
 /// A primary action button pinned to the bottom safe area.
 struct RunButton: View {
-    var title: String
+    var title: LocalizedStringKey
     var running: Bool
     var disabled: Bool = false
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            Label(running ? "Остановить" : title, systemImage: running ? "stop.fill" : "play.fill")
+            Label(running ? LocalizedStringKey("Остановить") : title, systemImage: running ? "stop.fill" : "play.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
@@ -106,7 +107,8 @@ struct RunButton: View {
 struct SectionCaption: View {
     let text: String
     var body: some View {
-        Text(text.uppercased())
+        Text(LocalizedStringKey(text))
+            .textCase(.uppercase)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,9 +125,9 @@ struct InfoRow: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            Text(label).foregroundStyle(.secondary)
+            Text(LocalizedStringKey(label)).foregroundStyle(.secondary)
             Spacer(minLength: 12)
-            Text(value)
+            Text(LocalizedStringKey(value))
                 .foregroundStyle(valueColor)
                 .multilineTextAlignment(.trailing)
                 .font(mono ? .system(.callout, design: .monospaced) : .callout)

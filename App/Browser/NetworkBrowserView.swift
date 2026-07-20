@@ -130,7 +130,7 @@ struct NetworkBrowserView: View {
     }
 
     private func tag(_ text: String, _ color: Color) -> some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(.system(size: 9, weight: .semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 5).padding(.vertical, 1)

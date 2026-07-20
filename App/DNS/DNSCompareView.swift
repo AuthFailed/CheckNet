@@ -157,7 +157,7 @@ struct DNSTamperView: View {
                 .font(.title)
                 .foregroundStyle(report.suspicious ? .orange : .green)
             VStack(alignment: .leading, spacing: 2) {
-                Text(report.suspicious ? "Есть признаки подмены" : "Подмены не обнаружено")
+                Text(report.suspicious ? LocalizedStringKey("Есть признаки подмены") : LocalizedStringKey("Подмены не обнаружено"))
                     .font(.title3.weight(.bold))
                 Text("Сравнено \(report.rows.count) резолверов")
                     .font(.caption).foregroundStyle(.secondary)
@@ -173,7 +173,7 @@ struct DNSTamperView: View {
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "circle.fill").font(.system(size: 6)).foregroundStyle(.secondary)
                         .padding(.top, 6)
-                    Text(finding).font(.callout)
+                    Text(LocalizedStringKey(finding)).font(.callout)
                     Spacer()
                 }
                 .padding(.horizontal, 14).padding(.vertical, 10)

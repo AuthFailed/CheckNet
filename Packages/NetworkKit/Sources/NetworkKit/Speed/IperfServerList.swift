@@ -34,13 +34,19 @@ public struct IperfServer: Sendable, Hashable, Codable, Identifiable {
         [site, country].filter { !$0.isEmpty }.joined(separator: ", ")
     }
 
-    /// Advertised link capacity as a display string, e.g. "1 Гбит/с". Nil when unknown.
-    public var bandwidthLabel: String? {
+    /// Advertised link capacity, number only (e.g. "1", "10"). Nil when unknown.
+    /// Display it as `Text("\(bandwidthValue) Гбит/с")` so the unit localizes.
+    public var bandwidthValue: String? {
         let g = gbps.trimmingCharacters(in: .whitespaces)
         guard !g.isEmpty, g != "0" else { return nil }
         let number = g.replacingOccurrences(of: "G", with: "", options: .caseInsensitive)
                       .trimmingCharacters(in: .whitespaces)
-        return "\(number.isEmpty ? g : number) Гбит/с"
+        return number.isEmpty ? g : number
+    }
+
+    /// Advertised link capacity as a display string, e.g. "1 Гбит/с". Nil when unknown.
+    public var bandwidthLabel: String? {
+        bandwidthValue.map { "\($0) Гбит/с" }
     }
 }
 

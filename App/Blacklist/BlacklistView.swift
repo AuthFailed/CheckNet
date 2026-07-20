@@ -68,7 +68,8 @@ struct BlacklistView: View {
                 .font(.title)
                 .foregroundStyle(clean ? .green : .red)
             VStack(alignment: .leading, spacing: 2) {
-                Text(clean ? "Чисто" : "В \(report.listedCount) списках")
+                let statusTitle: LocalizedStringKey = clean ? "Чисто" : "В \(report.listedCount) списках"
+                Text(statusTitle)
                     .font(.title3.weight(.bold))
                 Text("\(report.ip) · проверено \(report.checkedCount) провайдеров")
                     .font(.caption).foregroundStyle(.secondary)
@@ -90,7 +91,7 @@ struct BlacklistView: View {
                         Text(entry.codes.joined(separator: ", "))
                             .font(.caption.monospaced()).foregroundStyle(.red)
                     } else {
-                        Text(statusText(entry.status))
+                        Text(LocalizedStringKey(statusText(entry.status)))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }

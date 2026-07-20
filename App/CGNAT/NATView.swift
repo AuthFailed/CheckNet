@@ -58,7 +58,7 @@ struct NATView: View {
         return HStack(spacing: 14) {
             Image(systemName: symbol).font(.largeTitle).foregroundStyle(color)
             VStack(alignment: .leading, spacing: 2) {
-                Text(report.natType.rawValue).font(.title3.weight(.bold))
+                Text(LocalizedStringKey(report.natType.rawValue)).font(.title3.weight(.bold))
                 if !report.cgnatHops.isEmpty {
                     Text("CGNAT: \(report.cgnatHops.joined(separator: ", "))")
                         .font(.caption).foregroundStyle(.secondary)
@@ -87,7 +87,7 @@ struct NATView: View {
             ForEach(Array(report.findings.enumerated()), id: \.offset) { idx, finding in
                 HStack(alignment: .top, spacing: 10) {
                     Image(systemName: "info.circle").font(.caption).foregroundStyle(.blue).padding(.top, 2)
-                    Text(finding).font(.callout)
+                    Text(LocalizedStringKey(finding)).font(.callout)
                     Spacer()
                 }
                 .padding(.horizontal, 14).padding(.vertical, 10)

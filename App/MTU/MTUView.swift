@@ -111,7 +111,7 @@ struct MTUView: View {
     private func metric(_ value: String, _ label: String) -> some View {
         VStack(spacing: 3) {
             Text(value).font(.system(.title3, design: .monospaced).weight(.bold))
-            Text(label).font(.caption2).foregroundStyle(.secondary)
+            Text(LocalizedStringKey(label)).font(.caption2).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
     }

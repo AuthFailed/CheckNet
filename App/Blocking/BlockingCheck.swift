@@ -115,7 +115,7 @@ struct BlockingCheckView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Text(check.explanation)
+                Text(LocalizedStringKey(check.explanation))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -168,8 +168,8 @@ struct BlockingCheckView: View {
         return HStack(spacing: 14) {
             Image(systemName: symbol).font(.largeTitle).foregroundStyle(color)
             VStack(alignment: .leading, spacing: 3) {
-                Text(finding.headline).font(.headline)
-                Text(finding.detail).font(.caption).foregroundStyle(.secondary)
+                Text(LocalizedStringKey(finding.headline)).font(.headline)
+                Text(LocalizedStringKey(finding.detail)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
         }
