@@ -11,9 +11,9 @@ struct PlaceholderToolView: View {
                     .font(.system(size: 46, weight: .regular))
                     .foregroundStyle(.tint)
                     .padding(.top, 40)
-                Text(tool.title)
+                Text(LocalizedStringKey(tool.title))
                     .font(.title2.weight(.bold))
-                Text(tool.subtitle)
+                Text(LocalizedStringKey(tool.subtitle))
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -28,7 +28,7 @@ struct PlaceholderToolView: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 24)
         }
-        .navigationTitle(tool.title)
+        .navigationTitle(LocalizedStringKey(tool.title))
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
