@@ -24,58 +24,106 @@ enum LaunchOptions {
 
 struct CatalogView: View {
     @Environment(ToolStore.self) private var store
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     @State private var path: [ToolRoute] = []
+    @State private var selection: ToolRoute?
     @State private var query: String = ""
     @State private var showHistory = false
 
+    /// Two columns where there is room for them. A Mac window always qualifies;
+    /// on iOS it is the regular width class, which covers iPad landscape and a
+    /// large iPad in portrait but never an iPhone.
+    private var isWide: Bool {
+        #if os(iOS)
+        sizeClass == .regular
+        #else
+        true
+        #endif
+    }
+
     var body: some View {
-        NavigationStack(path: $path) {
-            List {
-                if !store.pinnedTools.isEmpty && query.isEmpty {
-                    pinnedSection
-                }
-                if query.isEmpty {
-                    ForEach(ToolCatalog.sections) { section in
-                        catalogSection(section)
-                    }
-                } else {
-                    searchResults
-                }
-            }
-            #if os(iOS)
-            .listStyle(.insetGrouped)
-            #else
-            .listStyle(.inset)
-            #endif
-            .navigationTitle("Инструменты")
-            #if os(iOS)
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Поиск")
-            #else
-            .searchable(text: $query, prompt: "Поиск")
-            #endif
-            .navigationDestination(for: ToolRoute.self) { route in
-                ToolDestinationView(route: route)
-            }
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showHistory = true
-                    } label: {
-                        Image(systemName: "clock.arrow.circlepath")
-                    }
-                    .accessibilityLabel("История")
-                }
-            }
-            .sheet(isPresented: $showHistory) {
-                HistoryView()
+        Group {
+            if isWide {
+                splitLayout
+            } else {
+                stackLayout
             }
         }
         .onAppear {
-            if path.isEmpty, let route = LaunchOptions.initialRoute {
-                path.append(route)
+            if let route = LaunchOptions.initialRoute {
+                // The deep link has to land in whichever column model is live,
+                // otherwise `-openTool` silently does nothing on iPad.
+                if isWide {
+                    if selection == nil { selection = route }
+                } else if path.isEmpty {
+                    path.append(route)
+                }
             }
             if ProcessInfo.processInfo.arguments.contains("-openHistory") {
                 showHistory = true
+            }
+        }
+    }
+
+    /// Opens a route in whichever column model this layout uses.
+    private func open(_ route: ToolRoute) {
+        if isWide {
+            selection = route
+        } else {
+            path.append(route)
+        }
+    }
+
+    // MARK: Layouts
+
+    /// iPhone and compact widths: one column, tools push onto the stack.
+    private var stackLayout: some View {
+        NavigationStack(path: $path) {
+            catalogList
+                .navigationDestination(for: ToolRoute.self) { route in
+                    ToolDestinationView(route: route)
+                }
+                .modifier(CatalogChrome(query: $query, showHistory: $showHistory))
+        }
+    }
+
+    /// iPad and Mac: the catalog stays in a sidebar and the tool fills the
+    /// detail column, instead of a list row stretching across the window.
+    private var splitLayout: some View {
+        NavigationSplitView {
+            catalogList
+                .modifier(CatalogChrome(query: $query, showHistory: $showHistory))
+        } detail: {
+            NavigationStack {
+                if let selection {
+                    ToolDestinationView(route: selection)
+                        // Without an identity the detail column reuses the
+                        // previous tool's view state when the selection changes.
+                        .id(selection)
+                } else {
+                    ContentUnavailableView(
+                        "Выберите инструмент",
+                        systemImage: "wrench.and.screwdriver",
+                        description: Text("Слева — все проверки. Выберите любую, чтобы запустить её.")
+                    )
+                }
+            }
+        }
+    }
+
+    private var catalogList: some View {
+        List(selection: isWide ? $selection : .constant(nil)) {
+            if !store.pinnedTools.isEmpty && query.isEmpty {
+                pinnedSection
+            }
+            if query.isEmpty {
+                ForEach(ToolCatalog.sections) { section in
+                    catalogSection(section)
+                }
+            } else {
+                searchResults
             }
         }
     }
@@ -147,10 +195,24 @@ struct CatalogView: View {
 
     // MARK: Row
 
+    @ViewBuilder
     private func toolRow(_ tool: Tool, showSubtitle: Bool = false) -> some View {
-        ToolRowView(tool: tool, showSubtitle: showSubtitle, isPinned: store.isPinned(tool))
-            .contentShape(.rect)
-            .onTapGesture { path.append(ToolRoute(tool: tool)) }
+        let route = ToolRoute(tool: tool)
+        Group {
+            if isWide {
+                // The sidebar drives the detail column through List selection,
+                // so the row is a plain tagged row.
+                ToolRowView(tool: tool, showSubtitle: showSubtitle, isPinned: store.isPinned(tool))
+                    .tag(route)
+            } else {
+                // A real NavigationLink rather than onTapGesture: it gives the
+                // row its disclosure affordance, keyboard and VoiceOver
+                // behaviour, and press feedback for free.
+                NavigationLink(value: route) {
+                    ToolRowView(tool: tool, showSubtitle: showSubtitle, isPinned: store.isPinned(tool))
+                }
+            }
+        }
             .swipeActions(edge: .leading, allowsFullSwipe: true) {
                 Button {
                     store.togglePin(tool)
@@ -163,14 +225,14 @@ struct CatalogView: View {
             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                 if tool.isImplemented {
                     Button {
-                        path.append(ToolRoute(tool: tool, autostart: true))
+                        open(ToolRoute(tool: tool, autostart: true))
                     } label: {
                         Label("Запустить", systemImage: "play.fill")
                     }
                     .tint(.green)
                 }
                 Button {
-                    path.append(ToolRoute(tool: tool, openSettings: true))
+                    open(ToolRoute(tool: tool, openSettings: true))
                 } label: {
                     Label("Настройки", systemImage: "slider.horizontal.3")
                 }
@@ -289,5 +351,40 @@ struct ToolDestinationView: View {
         default:
             PlaceholderToolView(tool: route.tool)
         }
+    }
+}
+
+/// Title, search, history button and list style — identical in both layouts,
+/// so they live in one place rather than being repeated per column model.
+private struct CatalogChrome: ViewModifier {
+    @Binding var query: String
+    @Binding var showHistory: Bool
+
+    func body(content: Content) -> some View {
+        content
+            #if os(iOS)
+            .listStyle(.insetGrouped)
+            #else
+            .listStyle(.inset)
+            #endif
+            .navigationTitle("Инструменты")
+            #if os(iOS)
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Поиск")
+            #else
+            .searchable(text: $query, prompt: "Поиск")
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showHistory = true
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
+                    .accessibilityLabel("История")
+                }
+            }
+            .sheet(isPresented: $showHistory) {
+                HistoryView()
+            }
     }
 }
