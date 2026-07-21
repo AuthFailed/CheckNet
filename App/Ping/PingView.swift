@@ -275,6 +275,15 @@ struct PingView: View {
 
     // MARK: Summary
 
+    /// What the image export contains: the result, without the host field or
+    /// the run button, which mean nothing outside the app.
+    @MainActor private var snapshotCard: some View {
+        VStack(spacing: 14) {
+            summaryHeaderCard
+            if model.stats.rttSamples.count > 1 { latencyChartCard }
+        }
+    }
+
     private var summaryResults: some View {
         VStack(spacing: 14) {
             summaryHeaderCard
@@ -380,12 +389,17 @@ struct PingView: View {
     private var bottomBar: some View {
         HStack(spacing: 10) {
             if model.phase == .finished {
-                ShareLink(item: shareText) {
-                    Label("Поделиться", systemImage: "square.and.arrow.up")
-                        .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
-                        .foregroundStyle(.white)
-                        .background(.blue, in: RoundedRectangle(cornerRadius: 15))
-                }
+                // Picture or text — a ping result pasted into a chat as text
+                // loses its shape, and a screenshot is what people actually send
+                // to support or to an ISP.
+                ResultShareMenu(
+                    snapshot: { snapshotCard },
+                    text: shareText,
+                    name: "checknet-ping"
+                )
+                .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
+                .foregroundStyle(.white)
+                .background(.blue, in: RoundedRectangle(cornerRadius: 15))
                 Button { model.start() } label: {
                     Image(systemName: "arrow.clockwise").font(.title3.weight(.semibold))
                         .frame(width: 52, height: 52)

@@ -55,6 +55,31 @@ extension ToolScaffold where Bottom == EmptyView {
     }
 }
 
+#if os(macOS)
+extension View {
+    /// Wires the ⌘R / ⌘. menu commands to one screen's run and stop actions.
+    ///
+    /// Menu commands are built once, outside any view, so they cannot reach a
+    /// tool's model directly — they arrive through `ToolCommandBus`. Applying
+    /// this in `ToolScaffold`'s users means the shortcut works on every tool
+    /// rather than only the one screen that happened to observe the bus.
+    func toolCommands(isRunning: Bool, run: @escaping () -> Void, stop: @escaping () -> Void) -> some View {
+        onChange(of: ToolCommandBus.shared.latest?.id) { _, _ in
+            switch ToolCommandBus.shared.latest?.command {
+            case .run: if !isRunning { run() }
+            case .stop: if isRunning { stop() }
+            default: break
+            }
+        }
+    }
+}
+#else
+extension View {
+    /// No menu bar on iOS; the shortcuts do not exist there.
+    func toolCommands(isRunning: Bool, run: @escaping () -> Void, stop: @escaping () -> Void) -> some View { self }
+}
+#endif
+
 extension View {
     /// Inline navigation title on iOS; on macOS there is no navigation bar and
     /// the modifier does not apply.
