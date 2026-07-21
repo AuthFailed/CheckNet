@@ -71,7 +71,7 @@ struct InfoSheet: View {
             .background(Palette.groupedBackground)
             .navigationTitle("Об инструменте")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

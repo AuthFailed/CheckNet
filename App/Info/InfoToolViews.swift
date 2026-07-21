@@ -55,7 +55,7 @@ struct HostToIPView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Host → IP")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Разрешить", running: model.isRunning,
@@ -152,7 +152,7 @@ struct ReverseDNSView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Обратный DNS")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Найти PTR", running: model.isRunning,
@@ -193,7 +193,7 @@ struct InterfacesView: View {
         }
         .navigationTitle("Интерфейсы")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .overlay {
             if interfaces.isEmpty {

@@ -135,7 +135,7 @@ struct HostSharingView: View {
         }
         .navigationTitle("Поделиться хостами")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .onAppear(perform: seedSelectionOnce)
         .onChange(of: selection) { _, _ in copied = false }
@@ -251,7 +251,7 @@ private struct QRSharePosterView: View {
             .padding()
             .navigationTitle("QR-код")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -316,7 +316,7 @@ struct ImportHostsSheet: View {
             // Short title: "Импорт хостов" is truncated between the two toolbar buttons.
             .navigationTitle("Импорт")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 if result == nil {

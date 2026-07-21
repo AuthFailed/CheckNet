@@ -56,7 +56,7 @@ struct NetworkProfilesView: View {
         }
         .navigationTitle("Профили сети")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .sheet(item: $editing) { profile in
             NetworkProfileEditor(profile: profile)
@@ -182,7 +182,7 @@ struct NetworkProfileEditor: View {
             }
             .navigationTitle(isNew ? "Новый профиль" : "Профиль")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

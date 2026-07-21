@@ -82,7 +82,7 @@ struct IPScannerView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Сканер диапазона")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Сканировать", running: model.isRunning,

@@ -26,7 +26,7 @@ struct SpeedTestView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Тест скорости")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) { bottomBar }
         .task { await model.loadServers() }
@@ -172,7 +172,7 @@ struct ServerPickerView: View {
             }
             .navigationTitle("Серверы iperf3")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { dismiss() } } }
         }

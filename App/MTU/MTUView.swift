@@ -68,7 +68,7 @@ struct MTUView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("MTU discovery")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Определить MTU", running: model.isRunning,

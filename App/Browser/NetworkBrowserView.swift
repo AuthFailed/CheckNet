@@ -57,7 +57,7 @@ struct NetworkBrowserView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Обзор сети")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Сканировать сеть", running: model.isRunning) { model.toggle() }

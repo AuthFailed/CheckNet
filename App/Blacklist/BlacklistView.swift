@@ -47,7 +47,7 @@ struct BlacklistView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Блэклисты")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить", running: model.isRunning,

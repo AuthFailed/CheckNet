@@ -99,6 +99,9 @@ targets:
         SWIFT_APPROACHABLE_CONCURRENCY: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_ENTITLEMENTS: App/CheckNet.entitlements
+        # macOS needs the sandbox + networking entitlements, which iOS neither
+        # has nor accepts — hence a separate file per SDK.
+        CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: App/CheckNet-macOS.entitlements
 
   CheckNetWidgets:
     type: app-extension
