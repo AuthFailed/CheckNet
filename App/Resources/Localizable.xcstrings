@@ -186,79 +186,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · تم فحص %@ مزوّدًا"
+            "value": "%@ · تم فحص %lld مزوّدًا"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ Anbieter geprüft"
+            "value": "%@ · %lld Anbieter geprüft"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ providers checked"
+            "value": "%@ · %lld providers checked"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ proveedores comprobados"
+            "value": "%@ · %lld proveedores comprobados"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ fournisseurs vérifiés"
+            "value": "%@ · %lld fournisseurs vérifiés"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ प्रदाता जाँचे"
+            "value": "%@ · %lld प्रदाता जाँचे"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ provider verificati"
+            "value": "%@ · %lld provider verificati"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ 件のプロバイダを確認"
+            "value": "%@ · %lld 件のプロバイダを確認"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · 제공자 %@곳 확인"
+            "value": "%@ · 제공자 %lld곳 확인"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ provedores verificados"
+            "value": "%@ · %lld provedores verificados"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ · проверено %2$@ провайдеров"
+            "value": "%1$@ · проверено %2$lld провайдеров"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · %@ sağlayıcı kontrol edildi"
+            "value": "%@ · %lld sağlayıcı kontrol edildi"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ · 已检查 %@ 个提供商"
+            "value": "%@ · 已检查 %lld 个提供商"
           }
         }
       }
@@ -1049,73 +1049,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ نشط"
+            "value": "%lld نشط"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ aktiv"
+            "value": "%lld aktiv"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ active"
+            "value": "%lld active"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ activos"
+            "value": "%lld activos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ actifs"
+            "value": "%lld actifs"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ सक्रिय"
+            "value": "%lld सक्रिय"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ attivi"
+            "value": "%lld attivi"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 台オンライン"
+            "value": "%lld 台オンライン"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@개 활성"
+            "value": "%lld개 활성"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ ativos"
+            "value": "%lld ativos"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ etkin"
+            "value": "%lld etkin"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 台在线"
+            "value": "%lld 台在线"
           }
         }
       }
@@ -1126,73 +1126,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ بايت"
+            "value": "%lld بايت"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ Bytes"
+            "value": "%lld Bytes"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ bytes"
+            "value": "%lld bytes"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ bytes"
+            "value": "%lld bytes"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ octets"
+            "value": "%lld octets"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ बाइट"
+            "value": "%lld बाइट"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ byte"
+            "value": "%lld byte"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ バイト"
+            "value": "%lld バイト"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 바이트"
+            "value": "%lld 바이트"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ bytes"
+            "value": "%lld bytes"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ bayt"
+            "value": "%lld bayt"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 字节"
+            "value": "%lld 字节"
           }
         }
       }
@@ -1279,79 +1279,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ سجلًا · %@ مللي ثانية"
+            "value": "%lld سجلًا · %@ مللي ثانية"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ Einträge · %@ ms"
+            "value": "%lld Einträge · %@ ms"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ records · %@ ms"
+            "value": "%lld records · %@ ms"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ registros · %@ ms"
+            "value": "%lld registros · %@ ms"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ enregistrements · %@ ms"
+            "value": "%lld enregistrements · %@ ms"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ रिकॉर्ड · %@ ms"
+            "value": "%lld रिकॉर्ड · %@ ms"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ record · %@ ms"
+            "value": "%lld record · %@ ms"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 件のレコード · %@ ms"
+            "value": "%lld 件のレコード · %@ ms"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "레코드 %@개 · %@ ms"
+            "value": "레코드 %lld개 · %@ ms"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ registros · %@ ms"
+            "value": "%lld registros · %@ ms"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ записей · %2$@ мс"
+            "value": "%1$lld записей · %2$@ мс"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ kayıt · %@ ms"
+            "value": "%lld kayıt · %@ ms"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 条记录 · %@ ms"
+            "value": "%lld 条记录 · %@ ms"
           }
         }
       }
@@ -1361,79 +1361,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ من %@ · %@%% فقدان · %@ ث"
+            "value": "%lld من %lld · %@%% فقدان · %@ ث"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ von %@ · %@ %% Verlust · %@ s"
+            "value": "%lld von %lld · %@ %% Verlust · %@ s"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ of %@ · %@%% loss · %@ s"
+            "value": "%lld of %lld · %@%% loss · %@ s"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ de %@ · %@ %% de pérdida · %@ s"
+            "value": "%lld de %lld · %@ %% de pérdida · %@ s"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ sur %@ · %@ %% de perte · %@ s"
+            "value": "%lld sur %lld · %@ %% de perte · %@ s"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ में से %@ · %@%% हानि · %@ से"
+            "value": "%lld में से %lld · %@%% हानि · %@ से"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ di %@ · %@%% di perdita · %@ s"
+            "value": "%lld di %lld · %@%% di perdita · %@ s"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ / %@ · %@%% 損失 · %@ 秒"
+            "value": "%lld / %lld · %@%% 損失 · %@ 秒"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ / %@ · %@%% 손실 · %@초"
+            "value": "%lld / %lld · %@%% 손실 · %@초"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ de %@ · %@%% de perda · %@ s"
+            "value": "%lld de %lld · %@%% de perda · %@ s"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$@ из %2$@ · %3$@%% потерь · %4$@ с"
+            "value": "%1$lld из %2$lld · %3$@%% потерь · %4$@ с"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ / %@ · %@%% kayıp · %@ sn"
+            "value": "%lld / %lld · %@%% kayıp · %@ sn"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ / %@ · %@%% 丢包 · %@ 秒"
+            "value": "%lld / %lld · %@%% 丢包 · %@ 秒"
           }
         }
       }
@@ -1521,73 +1521,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ غير متاح"
+            "value": "%lld غير متاح"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ nicht verfügbar"
+            "value": "%lld nicht verfügbar"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ unavailable"
+            "value": "%lld unavailable"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ no disponible"
+            "value": "%lld no disponible"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ indisponible"
+            "value": "%lld indisponible"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ उपलब्ध नहीं"
+            "value": "%lld उपलब्ध नहीं"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ non disponibile"
+            "value": "%lld non disponibile"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ は利用できません"
+            "value": "%lld は利用できません"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 사용 불가"
+            "value": "%lld 사용 불가"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ indisponível"
+            "value": "%lld indisponível"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ kullanılamıyor"
+            "value": "%lld kullanılamıyor"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 不可用"
+            "value": "%lld 不可用"
           }
         }
       }
@@ -1597,73 +1597,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ مفتوح"
+            "value": "%lld مفتوح"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ offen"
+            "value": "%lld offen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ open"
+            "value": "%lld open"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ abiertos"
+            "value": "%lld abiertos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ ouverts"
+            "value": "%lld ouverts"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ खुले"
+            "value": "%lld खुले"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ aperte"
+            "value": "%lld aperte"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 個オープン"
+            "value": "%lld 個オープン"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@개 열림"
+            "value": "%lld개 열림"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ abertas"
+            "value": "%lld abertas"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ açık"
+            "value": "%lld açık"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 个开放"
+            "value": "%lld 个开放"
           }
         }
       }
@@ -1673,73 +1673,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ حزمة"
+            "value": "%lld حزمة"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ Pakete"
+            "value": "%lld Pakete"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ packets"
+            "value": "%lld packets"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ paquetes"
+            "value": "%lld paquetes"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ paquets"
+            "value": "%lld paquets"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ पैकेट"
+            "value": "%lld पैकेट"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ pacchetti"
+            "value": "%lld pacchetti"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ パケット"
+            "value": "%lld パケット"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "패킷 %@개"
+            "value": "패킷 %lld개"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ pacotes"
+            "value": "%lld pacotes"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ paket"
+            "value": "%lld paket"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 个数据包"
+            "value": "%lld 个数据包"
           }
         }
       }
@@ -1749,73 +1749,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ ث"
+            "value": "%lld ث"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ s"
+            "value": "%lld s"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ s"
+            "value": "%lld s"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ s"
+            "value": "%lld s"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ s"
+            "value": "%lld s"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ से"
+            "value": "%lld से"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ s"
+            "value": "%lld s"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 秒"
+            "value": "%lld 秒"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@초"
+            "value": "%lld초"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ s"
+            "value": "%lld s"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ sn"
+            "value": "%lld sn"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 秒"
+            "value": "%lld 秒"
           }
         }
       }
@@ -1825,73 +1825,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ جهاز"
+            "value": "%lld جهاز"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ Geräte"
+            "value": "%lld Geräte"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ devices"
+            "value": "%lld devices"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ dispositivos"
+            "value": "%lld dispositivos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ appareils"
+            "value": "%lld appareils"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ डिवाइस"
+            "value": "%lld डिवाइस"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ dispositivi"
+            "value": "%lld dispositivi"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 台"
+            "value": "%lld 台"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@대"
+            "value": "%lld대"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ dispositivos"
+            "value": "%lld dispositivos"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ cihaz"
+            "value": "%lld cihaz"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 台设备"
+            "value": "%lld 台设备"
           }
         }
       }
@@ -1901,73 +1901,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% فقدان"
+            "value": "%lld%% فقدان"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ %% Verlust"
+            "value": "%lld %% Verlust"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% loss"
+            "value": "%lld%% loss"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ %% de pérdida"
+            "value": "%lld %% de pérdida"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ %% de perte"
+            "value": "%lld %% de perte"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% हानि"
+            "value": "%lld%% हानि"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% di perdita"
+            "value": "%lld%% di perdita"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% 損失"
+            "value": "%lld%% 損失"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% 손실"
+            "value": "%lld%% 손실"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% de perda"
+            "value": "%lld%% de perda"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% kayıp"
+            "value": "%lld%% kayıp"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@%% 丢包"
+            "value": "%lld%% 丢包"
           }
         }
       }
@@ -5344,73 +5344,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ مللي ثانية"
+            "value": "· %lld مللي ثانية"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "· %@ ms"
+            "value": "· %lld ms"
           }
         }
       }
@@ -6557,7 +6557,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Будет проверено узлов: %1$@. Каталог от %2$@."
+            "value": "Будет проверено узлов: %1$lld. Каталог от %2$@."
           }
         },
         "tr": {
@@ -9348,73 +9348,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "إلى %@"
+            "value": "إلى %lld"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bis %@"
+            "value": "Bis %lld"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "To %@"
+            "value": "To %lld"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hasta %@"
+            "value": "Hasta %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "À %@"
+            "value": "À %lld"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ तक"
+            "value": "%lld तक"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "A %@"
+            "value": "A %lld"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "終了 %@"
+            "value": "終了 %lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "끝 %@"
+            "value": "끝 %lld"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Até %@"
+            "value": "Até %lld"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bitiş %@"
+            "value": "Bitiş %lld"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "结束 %@"
+            "value": "结束 %lld"
           }
         }
       }
@@ -23123,73 +23123,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "من %@"
+            "value": "من %lld"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Von %@"
+            "value": "Von %lld"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "From %@"
+            "value": "From %lld"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desde %@"
+            "value": "Desde %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "De %@"
+            "value": "De %lld"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ से"
+            "value": "%lld से"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Da %@"
+            "value": "Da %lld"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "開始 %@"
+            "value": "開始 %lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "시작 %@"
+            "value": "시작 %lld"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "De %@"
+            "value": "De %lld"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Başlangıç %@"
+            "value": "Başlangıç %lld"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "起始 %@"
+            "value": "起始 %lld"
           }
         }
       }
@@ -29276,73 +29276,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "جارٍ الاختبار بـ %@ بايت…"
+            "value": "جارٍ الاختبار بـ %lld بايت…"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Test mit %@ Bytes…"
+            "value": "Test mit %lld Bytes…"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Probing %@ bytes…"
+            "value": "Probing %lld bytes…"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Probando %@ bytes…"
+            "value": "Probando %lld bytes…"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Test de %@ octets…"
+            "value": "Test de %lld octets…"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ बाइट जाँच रहे हैं…"
+            "value": "%lld बाइट जाँच रहे हैं…"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Test di %@ byte…"
+            "value": "Test di %lld byte…"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ バイトで試行中…"
+            "value": "%lld バイトで試行中…"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@바이트 시도 중…"
+            "value": "%lld바이트 시도 중…"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Testando %@ bytes…"
+            "value": "Testando %lld bytes…"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ bayt deneniyor…"
+            "value": "%lld bayt deneniyor…"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "正在探测 %@ 字节…"
+            "value": "正在探测 %lld 字节…"
           }
         }
       }
@@ -34504,73 +34504,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "الجولة %@"
+            "value": "الجولة %lld"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Runde %@"
+            "value": "Runde %lld"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Round %@"
+            "value": "Round %lld"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ronda %@"
+            "value": "Ronda %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tour %@"
+            "value": "Tour %lld"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "राउंड %@"
+            "value": "राउंड %lld"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Giro %@"
+            "value": "Giro %lld"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "ラウンド %@"
+            "value": "ラウンド %lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "라운드 %@"
+            "value": "라운드 %lld"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rodada %@"
+            "value": "Rodada %lld"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tur %@"
+            "value": "Tur %lld"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "第 %@ 轮"
+            "value": "第 %lld 轮"
           }
         }
       }
@@ -39888,73 +39888,73 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "تمت مقارنة %@ محلِّل"
+            "value": "تمت مقارنة %lld محلِّل"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ Resolver verglichen"
+            "value": "%lld Resolver verglichen"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ resolvers compared"
+            "value": "%lld resolvers compared"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ resolutores comparados"
+            "value": "%lld resolutores comparados"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ résolveurs comparés"
+            "value": "%lld résolveurs comparés"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ रिज़ॉल्वर की तुलना की"
+            "value": "%lld रिज़ॉल्वर की तुलना की"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ resolver confrontati"
+            "value": "%lld resolver confrontati"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ 件のリゾルバを比較"
+            "value": "%lld 件のリゾルバを比較"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "리졸버 %@개 비교"
+            "value": "리졸버 %lld개 비교"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ resolvedores comparados"
+            "value": "%lld resolvedores comparados"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ çözümleyici karşılaştırıldı"
+            "value": "%lld çözümleyici karşılaştırıldı"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "已比较 %@ 个解析器"
+            "value": "已比较 %lld 个解析器"
           }
         }
       }
@@ -47656,79 +47656,79 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "مُرسَل %@ · مُستلَم %@"
+            "value": "مُرسَل %lld · مُستلَم %lld"
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "gesendet %@ · empf. %@"
+            "value": "gesendet %lld · empf. %lld"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "sent %@ · recv %@"
+            "value": "sent %lld · recv %lld"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "env. %@ · recib. %@"
+            "value": "env. %lld · recib. %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "env. %@ · reçus %@"
+            "value": "env. %lld · reçus %lld"
           }
         },
         "hi": {
           "stringUnit": {
             "state": "translated",
-            "value": "भेजे %@ · मिले %@"
+            "value": "भेजे %lld · मिले %lld"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "inv. %@ · ric. %@"
+            "value": "inv. %lld · ric. %lld"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "送信 %@ · 受信 %@"
+            "value": "送信 %lld · 受信 %lld"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "송신 %@ · 수신 %@"
+            "value": "송신 %lld · 수신 %lld"
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "env. %@ · receb. %@"
+            "value": "env. %lld · receb. %lld"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "отпр. %1$@ · получ. %2$@"
+            "value": "отпр. %1$lld · получ. %2$lld"
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "gön. %@ · alın. %@"
+            "value": "gön. %lld · alın. %lld"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "发送 %@ · 接收 %@"
+            "value": "发送 %lld · 接收 %lld"
           }
         }
       }

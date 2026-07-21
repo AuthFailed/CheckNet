@@ -118,6 +118,12 @@ jobs:
       # Deterministic tests only — parsers, encoders, catalogues, local-server
       # webhook delivery. This job is the gate: it must never be flaky, so a red
       # cross here always means the change broke something.
+      # A translation whose format specifiers disagree with its key crashes at
+      # format time, in that language only — so it survives any amount of
+      # testing done in Russian. Cheap to check, expensive to ship.
+      - name: Validate string catalog
+        run: python3 Scripts/check_string_catalog.py
+
       - name: Run deterministic tests
         env:
           CHECKNET_SKIP_NETWORK_TESTS: "1"
