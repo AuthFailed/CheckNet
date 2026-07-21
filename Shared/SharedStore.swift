@@ -64,8 +64,20 @@ enum SharedStore {
         return decoded
     }
 
-    static func clearHistory() {
-        writeHistory([])
+    /// History filtered to one source (manual vs scheduled).
+    static func history(source: HistorySource) -> [CheckRecord] {
+        history().filter { $0.kind == source }
+    }
+
+    /// Removes a single record by id.
+    static func deleteHistory(id: UUID) {
+        writeHistory(history().filter { $0.id != id })
+    }
+
+    /// Clears every record, or only those from one source.
+    static func clearHistory(source: HistorySource? = nil) {
+        guard let source else { writeHistory([]); return }
+        writeHistory(history().filter { $0.kind != source })
     }
 
     private static func writeHistory(_ records: [CheckRecord]) {

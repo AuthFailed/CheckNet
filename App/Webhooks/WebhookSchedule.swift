@@ -83,6 +83,12 @@ final class WebhookScheduler {
             let finding = await check.run(target: target)
             if finding.verdict == .restricted { restricted += 1 }
             WebhookReporter.reportBlocking(check: id, target: target, finding: finding, eventPrefix: "schedule")
+            SharedStore.appendHistory(CheckRecord(
+                tool: "blocking.\(id)", host: target, timestamp: Date(),
+                latencyMillis: nil, lossPercent: nil,
+                succeeded: finding.verdict != .restricted,
+                detail: finding.headline, source: .scheduled
+            ))
         }
         lastRun = Date()
         lastSummary = restricted == 0

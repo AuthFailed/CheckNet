@@ -34,6 +34,15 @@ struct PingSnapshot: Codable, Hashable, Sendable {
     }
 }
 
+/// Where a history record came from.
+enum HistorySource: String, Codable, Sendable, Hashable {
+    /// The user ran the test by hand.
+    case manual
+    /// A recurring schedule ran it. Kept in a separate history so it doesn't
+    /// clutter the manual log.
+    case scheduled
+}
+
 /// A single stored history record for a completed check.
 struct CheckRecord: Codable, Hashable, Sendable, Identifiable {
     var id: UUID = UUID()
@@ -44,6 +53,11 @@ struct CheckRecord: Codable, Hashable, Sendable, Identifiable {
     var lossPercent: Double?
     var succeeded: Bool
     var detail: String
+    /// Optional so records written before this field decode as `.manual`.
+    var source: HistorySource?
+
+    /// The record's source, defaulting to manual for legacy records.
+    var kind: HistorySource { source ?? .manual }
 }
 
 /// ActivityKit attributes for a live ping session (Dynamic Island + Lock Screen).

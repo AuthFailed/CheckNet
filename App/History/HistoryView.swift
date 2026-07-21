@@ -22,6 +22,21 @@ enum HistoryExporter {
         return write(data, filename: "checknet-history.csv")
     }
 
+    /// A one-line-per-field text summary of a single record, for sharing.
+    static func shareText(_ r: CheckRecord) -> String {
+        let f = DateFormatter(); f.dateStyle = .medium; f.timeStyle = .medium
+        var lines = [
+            "CheckNet — \(r.tool)",
+            "Хост: \(r.host)",
+            "Время: \(f.string(from: r.timestamp))",
+            "Результат: \(r.succeeded ? "успех" : "проблема")"
+        ]
+        if let latency = r.latencyMillis { lines.append("Задержка: \(String(format: "%.1f", latency)) мс") }
+        if let loss = r.lossPercent { lines.append("Потери: \(String(format: "%.0f", loss))%") }
+        lines.append(r.detail)
+        return lines.joined(separator: "\n")
+    }
+
     private static func write(_ data: Data, filename: String) -> URL? {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
         try? data.write(to: url, options: .atomic)
@@ -29,9 +44,15 @@ enum HistoryExporter {
     }
 }
 
+/// Test history. `source` scopes it: manual history is the default; the schedule
+/// screen shows its own scheduled history so the two never mix.
 struct HistoryView: View {
+    var source: HistorySource = .manual
+    var title: String = "История"
+
     @Environment(\.dismiss) private var dismiss
     @State private var records: [CheckRecord] = []
+    @State private var expanded: Set<UUID> = []
     @State private var showClearConfirm = false
 
     private var grouped: [(day: Date, records: [CheckRecord])] {
@@ -58,7 +79,7 @@ struct HistoryView: View {
                     }
                 }
             }
-            .navigationTitle("История")
+            .navigationTitle(title)
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -84,30 +105,83 @@ struct HistoryView: View {
             }
             .confirmationDialog("Очистить всю историю?", isPresented: $showClearConfirm, titleVisibility: .visible) {
                 Button("Очистить", role: .destructive) {
-                    SharedStore.clearHistory(); records = []
+                    SharedStore.clearHistory(source: source)
+                    records = []
                 }
             }
         }
-        .onAppear { records = SharedStore.history() }
+        .onAppear { records = SharedStore.history(source: source) }
     }
 
     private func row(_ record: CheckRecord) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: record.succeeded ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundStyle(record.succeeded ? .green : .red)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(record.host).font(.callout.weight(.medium))
-                Text(record.detail).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-            }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                if let latency = record.latencyMillis {
-                    Text("\(Int(latency)) мс").font(.callout.monospaced())
+        let isOpen = expanded.contains(record.id)
+        return VStack(alignment: .leading, spacing: 0) {
+            Button {
+                toggle(record.id)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: record.succeeded ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundStyle(record.succeeded ? .green : .red)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(record.host).font(.callout.weight(.medium))
+                        Text(record.detail).font(.caption).foregroundStyle(.secondary)
+                            .lineLimit(isOpen ? nil : 1)
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        if let latency = record.latencyMillis {
+                            Text("\(Int(latency)) мс").font(.callout.monospaced())
+                        }
+                        Text(record.timestamp, style: .time).font(.caption2).foregroundStyle(.secondary)
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.caption2).foregroundStyle(.tertiary)
+                        .rotationEffect(.degrees(isOpen ? 90 : 0))
                 }
-                Text(record.timestamp, style: .time).font(.caption2).foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+
+            if isOpen {
+                expandedDetail(record)
             }
         }
         .padding(.vertical, 2)
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                delete(record)
+            } label: { Label("Удалить", systemImage: "trash") }
+            ShareLink(item: HistoryExporter.shareText(record)) {
+                Label("Поделиться", systemImage: "square.and.arrow.up")
+            }
+        }
+    }
+
+    private func expandedDetail(_ record: CheckRecord) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            LabeledContent("Инструмент", value: record.tool)
+            LabeledContent("Время", value: record.timestamp.formatted(date: .abbreviated, time: .standard))
+            if let loss = record.lossPercent {
+                LabeledContent("Потери", value: "\(Int(loss))%")
+            }
+            ShareLink(item: HistoryExporter.shareText(record)) {
+                Label("Поделиться результатом", systemImage: "square.and.arrow.up")
+            }
+            .font(.callout)
+        }
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(.top, 8)
+        .padding(.leading, 28)
+    }
+
+    private func toggle(_ id: UUID) {
+        if expanded.contains(id) { expanded.remove(id) } else { expanded.insert(id) }
+    }
+
+    private func delete(_ record: CheckRecord) {
+        SharedStore.deleteHistory(id: record.id)
+        records.removeAll { $0.id == record.id }
+        expanded.remove(record.id)
     }
 
     private func dayTitle(_ day: Date) -> String {
