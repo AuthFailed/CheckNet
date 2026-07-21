@@ -108,11 +108,7 @@ final class BlockingCheckModel {
         let result = await check.run(target: target)
         finding = result
         isRunning = false
-        WebhookReporter.report(
-            event: "blocking.\(check.rawValue)", host: target,
-            succeeded: result.verdict != .restricted,
-            verdict: result.verdict.rawValue, headline: result.headline, detail: result.detail
-        )
+        WebhookReporter.reportBlocking(check: check.rawValue, target: target, finding: result)
     }
 }
 

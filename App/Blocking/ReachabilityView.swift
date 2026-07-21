@@ -32,13 +32,9 @@ final class ReachabilityModel {
         finding = sweep.verdict(for: collected)
         isRunning = false
 
-        WebhookReporter.report(
-            event: "reachability.\(scope.rawValue)",
-            host: scope.label,
-            succeeded: finding?.verdict != .restricted,
-            verdict: finding?.verdict.rawValue,
-            headline: finding?.headline,
-            detail: finding?.detail
+        WebhookReporter.reportReachability(
+            scope: scope.rawValue, results: collected,
+            verdict: (finding?.verdict ?? .inconclusive).rawValue
         )
     }
 

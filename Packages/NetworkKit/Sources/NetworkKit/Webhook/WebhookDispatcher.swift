@@ -120,13 +120,19 @@ public struct WebhookDispatcher: Sendable {
         } catch {
             return WebhookDelivery(statusCode: nil, attempts: 0, error: "не удалось сформировать payload")
         }
+        return await send(body: body, contentType: "application/json", eventName: event.event)
+    }
 
+    /// Sends a prebuilt body — used when the payload is assembled by
+    /// `WebhookPayloadBuilder` with a user-chosen format and field selection.
+    @discardableResult
+    public func send(body: Data, contentType: String, eventName: String) async -> WebhookDelivery {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = timeout
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(contentType, forHTTPHeaderField: "Content-Type")
         request.setValue("CheckNet/1.0", forHTTPHeaderField: "User-Agent")
-        request.setValue(event.event, forHTTPHeaderField: "X-CheckNet-Event")
+        request.setValue(eventName, forHTTPHeaderField: "X-CheckNet-Event")
         request.setValue(String(WebhookEvent.currentVersion), forHTTPHeaderField: "X-CheckNet-Version")
         if let secret, !secret.isEmpty {
             request.setValue("sha256=" + Self.signature(body: body, secret: secret),

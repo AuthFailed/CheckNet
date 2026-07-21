@@ -126,11 +126,7 @@ struct NetworkProfilesView: View {
             let target = profile.target.isEmpty ? check.defaultTarget : profile.target
             let finding = await check.run(target: target)
             if finding.verdict == .restricted { restricted += 1 }
-            WebhookReporter.report(
-                event: "profile.\(id)", host: target,
-                succeeded: finding.verdict != .restricted,
-                verdict: finding.verdict.rawValue, headline: finding.headline, detail: finding.detail
-            )
+            WebhookReporter.reportBlocking(check: id, target: target, finding: finding, eventPrefix: "profile")
         }
         let summary = restricted == 0
             ? "Ограничений не найдено (\(profile.checkIDs.count) проверок)."
