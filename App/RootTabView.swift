@@ -23,6 +23,11 @@ struct RootTabView: View {
                 SettingsView()
             }
         }
+        // On iPhone this stays the Liquid Glass tab bar. Where there is room —
+        // iPad regular width, a Mac window — the system turns the same three
+        // tabs into a sidebar, which is what those platforms expect instead of
+        // a tab bar pinned to the bottom of a 13" screen.
+        .tabViewStyle(.sidebarAdaptable)
         .preferredColorScheme(settings.theme.colorScheme)
         .environment(\.locale, settings.language.localeIdentifier.map(Locale.init) ?? .current)
         .onOpenURL { url in
