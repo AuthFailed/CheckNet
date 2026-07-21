@@ -6,9 +6,15 @@
 	<array>
 		<string>group.com.chrsnv.checknet</string>
 	</array>
-	<!-- Reading the current Wi-Fi SSID for network profiles. Takes effect only
-	     when signed with a provisioning profile that carries this capability. -->
-	<key>com.apple.developer.networking.wifi-info</key>
-	<true/>
+	<!-- Network profiles read the current Wi-Fi SSID, which needs the
+	     Access Wi-Fi Information capability. Personal (free) development teams
+	     cannot sign it, so it is left OUT to keep the app buildable. When a paid
+	     developer account is available, re-add:
+
+	         <key>com.apple.developer.networking.wifi-info</key>
+	         <true/>
+
+	     CurrentNetwork already degrades gracefully without it (reports
+	     "нет доступа к имени сети"), so no code change is required. -->
 </dict>
 </plist>
