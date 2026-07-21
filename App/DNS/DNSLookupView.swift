@@ -39,38 +39,31 @@ struct DNSLookupView: View {
     @State private var model = DNSLookupModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Домен", icon: "magnifyingglass",
-                             disabled: model.isRunning, savedHostTool: .dns) {
-                    Task { await model.run() }
-                }
-
-                controlsCard
-
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                } else if let result = model.result {
-                    resultView(result)
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Домен", icon: "magnifyingglass",
+                         disabled: model.isRunning, savedHostTool: .dns) {
+                Task { await model.run() }
             }
-            .padding(16)
-            .animation(.snappy, value: model.result)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("DNS")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+
+            controlsCard
+
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
+            } else if let result = model.result {
+                resultView(result)
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
+            }
+        } bottom: {
             RunButton(title: "Запросить", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }
                 Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.result)
+        .navigationTitle("DNS")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { Task { await model.run() } }

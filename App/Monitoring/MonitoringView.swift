@@ -5,48 +5,41 @@ struct MonitoringView: View {
     @State private var newHost = ""
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HStack {
-                    HostInputBar(text: $newHost, placeholder: "Добавить хост", icon: "plus.circle") {
-                        manager.add(newHost); newHost = ""
-                    } trailing: {
-                        AnyView(
-                            Button {
-                                manager.add(newHost); newHost = ""
-                            } label: {
-                                Image(systemName: "plus").foregroundStyle(.blue)
-                            }
-                            .disabled(newHost.trimmingCharacters(in: .whitespaces).isEmpty)
-                        )
-                    }
-                }
-
-                if manager.entries.isEmpty {
-                    ContentUnavailableView("Нет хостов", systemImage: "bell.badge",
-                                           description: Text("Добавьте хосты для непрерывного мониторинга и уведомлений о падении."))
-                    .padding(.top, 40)
-                } else {
-                    statusBanner
-                    hostsCard
-                    intervalCard
+        ToolScaffold {
+            HStack {
+                HostInputBar(text: $newHost, placeholder: "Добавить хост", icon: "plus.circle") {
+                    manager.add(newHost); newHost = ""
+                } trailing: {
+                    AnyView(
+                        Button {
+                            manager.add(newHost); newHost = ""
+                        } label: {
+                            Image(systemName: "plus").foregroundStyle(.blue)
+                        }
+                        .disabled(newHost.trimmingCharacters(in: .whitespaces).isEmpty)
+                    )
                 }
             }
-            .padding(16)
-            .animation(.snappy, value: manager.entries)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Мониторинг")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+
+            if manager.entries.isEmpty {
+                ContentUnavailableView("Нет хостов", systemImage: "bell.badge",
+                                       description: Text("Добавьте хосты для непрерывного мониторинга и уведомлений о падении."))
+                .padding(.top, 40)
+            } else {
+                statusBanner
+                hostsCard
+                intervalCard
+            }
+        } bottom: {
             if !manager.entries.isEmpty {
                 RunButton(title: "Запустить мониторинг", running: manager.isMonitoring) {
                     manager.toggleMonitoring()
                 }
             }
         }
+        .animation(.snappy, value: manager.entries)
+        .navigationTitle("Мониторинг")
+        .toolTitleDisplayMode()
     }
 
     private var statusBanner: some View {

@@ -69,38 +69,31 @@ struct PortScanView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Хост или IP",
-                             icon: "square.grid.3x3.middle.filled", disabled: model.isRunning,
-                             savedHostTool: .portScan) {
-                    model.start()
-                }
-                modeCard
-                if model.total > 0 {
-                    progressCard
-                }
-                if !model.openPorts.isEmpty {
-                    resultsCard
-                } else if !model.isRunning && model.scanned > 0 {
-                    Text("Открытых портов не найдено")
-                        .foregroundStyle(.secondary).padding(.top, 24)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Хост или IP",
+                         icon: "square.grid.3x3.middle.filled", disabled: model.isRunning,
+                         savedHostTool: .portScan) {
+                model.start()
             }
-            .padding(16)
-            .animation(.snappy, value: model.openPorts)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Проверка портов")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+            modeCard
+            if model.total > 0 {
+                progressCard
+            }
+            if !model.openPorts.isEmpty {
+                resultsCard
+            } else if !model.isRunning && model.scanned > 0 {
+                Text("Открытых портов не найдено")
+                    .foregroundStyle(.secondary).padding(.top, 24)
+            }
+        } bottom: {
             RunButton(title: "Сканировать", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { model.stop() } else { requestStart() }
             }
         }
+        .animation(.snappy, value: model.openPorts)
+        .navigationTitle("Проверка портов")
+        .toolTitleDisplayMode()
         .sensitiveConsent(.portScan, isPresented: $showConsent) { model.start() }
         .onAppear {
             if let presetHost { model.host = presetHost }

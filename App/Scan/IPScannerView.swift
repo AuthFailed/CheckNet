@@ -62,34 +62,27 @@ struct IPScannerView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.range, placeholder: "CIDR или диапазон",
-                             icon: "barcode.viewfinder", disabled: model.isRunning) { requestStart() }
+        ToolScaffold {
+            HostInputBar(text: $model.range, placeholder: "CIDR или диапазон",
+                         icon: "barcode.viewfinder", disabled: model.isRunning) { requestStart() }
 
-                if model.total > 0 {
-                    progressCard
-                }
-                if !model.hosts.isEmpty {
-                    hostsCard
-                } else if !model.isRunning && model.scanned > 0 {
-                    Text("Активных хостов не найдено").foregroundStyle(.secondary).padding(.top, 24)
-                }
+            if model.total > 0 {
+                progressCard
             }
-            .padding(16)
-            .animation(.snappy, value: model.hosts)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Сканер диапазона")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+            if !model.hosts.isEmpty {
+                hostsCard
+            } else if !model.isRunning && model.scanned > 0 {
+                Text("Активных хостов не найдено").foregroundStyle(.secondary).padding(.top, 24)
+            }
+        } bottom: {
             RunButton(title: "Сканировать", running: model.isRunning,
                       disabled: model.range.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { model.stop() } else { requestStart() }
             }
         }
+        .animation(.snappy, value: model.hosts)
+        .navigationTitle("Сканер диапазона")
+        .toolTitleDisplayMode()
         .sensitiveConsent(.ipScanner, isPresented: $showConsent) { model.start() }
         .onAppear { if autostart { requestStart() } }
     }

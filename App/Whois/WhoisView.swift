@@ -26,33 +26,26 @@ struct WhoisView: View {
     @State private var showRaw = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
-                             disabled: model.isRunning, savedHostTool: .whois) { Task { await model.run() } }
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                } else if let result = model.result {
-                    if !result.fields.isEmpty { fieldsCard(result) }
-                    rawDisclosure(result)
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
+                         disabled: model.isRunning, savedHostTool: .whois) { Task { await model.run() } }
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
+            } else if let result = model.result {
+                if !result.fields.isEmpty { fieldsCard(result) }
+                rawDisclosure(result)
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
             }
-            .padding(16)
-            .animation(.snappy, value: model.result)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Whois")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+        } bottom: {
             RunButton(title: "Запросить", running: model.isRunning,
                       disabled: model.query.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.result)
+        .navigationTitle("Whois")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.query = presetHost }
             if autostart { Task { await model.run() } }

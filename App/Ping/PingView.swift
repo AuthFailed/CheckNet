@@ -19,29 +19,24 @@ struct PingView: View {
     @FocusState private var hostFieldFocused: Bool
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                hostCard
-                switch model.phase {
-                case .idle:
-                    idleHint
-                case .running:
-                    liveResults
-                case .finished:
-                    summaryResults
-                case .failed(let message):
-                    failureCard(message)
-                }
+        ToolScaffold {
+            hostCard
+            switch model.phase {
+            case .idle:
+                idleHint
+            case .running:
+                liveResults
+            case .finished:
+                summaryResults
+            case .failed(let message):
+                failureCard(message)
             }
-            .padding(16)
-            .animation(.snappy(duration: 0.28), value: model.phase)
+        } bottom: {
+            bottomBar
         }
-        .scrollDismissesKeyboard(.interactively)
-        .background(backgroundColor)
+        .animation(.snappy(duration: 0.28), value: model.phase)
         .navigationTitle("Ping")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
+        .toolTitleDisplayMode()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showSettings = true } label: {
@@ -63,7 +58,6 @@ struct PingView: View {
                 }
             }
         }
-        .safeAreaInset(edge: .bottom) { bottomBar }
         .sheet(isPresented: $showSettings) {
             PingSettingsView(model: model)
         }
@@ -105,14 +99,6 @@ struct PingView: View {
             if openSettings { showSettings = true }
             if autostart { model.start() }
         }
-    }
-
-    private var backgroundColor: Color {
-        #if os(iOS)
-        Color(.systemGroupedBackground)
-        #else
-        Color(nsColor: .windowBackgroundColor)
-        #endif
     }
 
     // MARK: Host card
