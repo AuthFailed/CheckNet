@@ -6,6 +6,7 @@ struct WebhookScheduleView: View {
     @Environment(WebhookScheduler.self) private var scheduler
     @State private var draft = WebhookSchedule()
     @State private var loaded = false
+    @State private var showHistory = false
 
     private let intervals = [5, 15, 30, 60, 180, 360]
 
@@ -55,6 +56,19 @@ struct WebhookScheduleView: View {
                     }
                 }
             }
+
+            Section {
+                Button {
+                    showHistory = true
+                } label: {
+                    Label("История автозапусков", systemImage: "clock.arrow.circlepath")
+                }
+            } footer: {
+                Text("Отдельная история результатов, запущенных по расписанию, — не смешивается с ручными тестами.")
+            }
+        }
+        .sheet(isPresented: $showHistory) {
+            HistoryView(source: .scheduled, title: "История автозапусков")
         }
         .navigationTitle("Расписание")
         #if os(iOS)
