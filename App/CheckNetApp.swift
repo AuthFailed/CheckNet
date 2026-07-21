@@ -43,8 +43,15 @@ struct CheckNetApp: App {
     }
 
     private var mainWindowContent: some View {
+        #if os(macOS)
+        // The Mac has its own root: one sidebar, one detail column, rather than
+        // an adaptive tab bar with a split view nested inside each tab.
+        withEnvironment(MacRootView())
+            .onAppear { WebhookReporter.settings = webhooks }
+        #else
         withEnvironment(RootTabView())
             .onAppear { WebhookReporter.settings = webhooks }
+        #endif
     }
 
     /// Scheduling is foreground-only; pause it when the app isn't active so it

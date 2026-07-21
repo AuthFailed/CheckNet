@@ -58,7 +58,7 @@ struct ScheduledTasksView: View {
                     .font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer()
-            Toggle("", isOn: Binding(
+            Toggle("Запускать по расписанию", isOn: Binding(
                 get: { task.isEnabled },
                 set: { var t = task; t.isEnabled = $0; store.update(t) }
             ))

@@ -117,10 +117,22 @@ struct RunButton: View {
         // width cap as the content above — a 1300 pt wide button on an iPad
         // reads as a layout bug, not as emphasis.
         .frame(maxWidth: ToolLayout.contentWidth)
+        #if os(macOS)
+        // The primary action of the window: Enter runs the check from anywhere,
+        // which is what the Return key does in every other Mac app.
+        .keyboardShortcut(.defaultAction)
+        #endif
         .padding(.horizontal, 16)
         .padding(.vertical, isShort ? 5 : 10)
         .frame(maxWidth: .infinity)
-        .background(.bar)
+        // A bar, not a card: it spans the window and is separated by a rule.
+        // `.bar` alone rendered as a grey slab floating inside the content inset.
+        .background(alignment: .top) {
+            VStack(spacing: 0) {
+                Divider()
+                Rectangle().fill(.bar)
+            }
+        }
     }
 }
 
