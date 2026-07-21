@@ -7,28 +7,23 @@ struct SpeedTestView: View {
     @State private var showServerPicker = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                serverCard
-                switch model.phase {
-                case .running, .done:
-                    gaugeCard
-                    if !model.samples.isEmpty { chartCard }
-                case .failed(let msg):
-                    ErrorBanner(message: msg)
-                default:
-                    EmptyView()
-                }
+        ToolScaffold {
+            serverCard
+            switch model.phase {
+            case .running, .done:
+                gaugeCard
+                if !model.samples.isEmpty { chartCard }
+            case .failed(let msg):
+                ErrorBanner(message: msg)
+            default:
+                EmptyView()
             }
-            .padding(16)
-            .animation(.snappy, value: model.phase)
+        } bottom: {
+            bottomBar
         }
-        .background(Palette.groupedBackground)
+        .animation(.snappy, value: model.phase)
         .navigationTitle("Тест скорости")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) { bottomBar }
+        .toolTitleDisplayMode()
         .task { await model.loadServers() }
         .sheet(isPresented: $showServerPicker) {
             ServerPickerView(model: model)

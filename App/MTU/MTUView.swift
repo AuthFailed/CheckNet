@@ -42,40 +42,33 @@ struct MTUView: View {
     @State private var model = MTUModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "ruler",
-                             disabled: model.isRunning, savedHostTool: .mtuDiscovery) { model.start() }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "ruler",
+                         disabled: model.isRunning, savedHostTool: .mtuDiscovery) { model.start() }
 
-                if model.isRunning, let probe = model.currentProbe {
-                    HStack(spacing: 10) {
-                        ProgressView().controlSize(.small)
-                        Text("Проба \(probe + 28) байт…").foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    .padding(14).card()
+            if model.isRunning, let probe = model.currentProbe {
+                HStack(spacing: 10) {
+                    ProgressView().controlSize(.small)
+                    Text("Проба \(probe + 28) байт…").foregroundStyle(.secondary)
+                    Spacer()
                 }
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                }
-                if let result = model.result {
-                    resultCard(result)
-                }
+                .padding(14).card()
             }
-            .padding(16)
-            .animation(.snappy, value: model.result)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("MTU discovery")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
+            }
+            if let result = model.result {
+                resultCard(result)
+            }
+        } bottom: {
             RunButton(title: "Определить MTU", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 model.toggle()
             }
         }
+        .animation(.snappy, value: model.result)
+        .navigationTitle("MTU discovery")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }

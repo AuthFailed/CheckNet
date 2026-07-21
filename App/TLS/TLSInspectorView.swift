@@ -31,54 +31,47 @@ struct TLSInspectorView: View {
     @State private var model = TLSInspectorModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Хост (напр. example.com)",
-                             icon: "lock.shield", disabled: model.isRunning,
-                             savedHostTool: .tlsInspector) {
-                    Task { await model.run() }
-                } trailing: {
-                    AnyView(
-                        HStack(spacing: 2) {
-                            Text(":").foregroundStyle(.secondary)
-                            TextField("порт", value: $model.port, format: .number)
-                                .frame(width: 46)
-                                .multilineTextAlignment(.leading)
-                                .font(.system(.body, design: .monospaced))
-                                #if os(iOS)
-                                .keyboardType(.numberPad)
-                                #endif
-                                .disabled(model.isRunning)
-                        }
-                    )
-                }
-
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                } else if let info = model.info {
-                    handshakeCard(info)
-                    ForEach(Array(info.certificates.enumerated()), id: \.offset) { idx, cert in
-                        certCard(cert, index: idx, isLeaf: idx == 0)
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Хост (напр. example.com)",
+                         icon: "lock.shield", disabled: model.isRunning,
+                         savedHostTool: .tlsInspector) {
+                Task { await model.run() }
+            } trailing: {
+                AnyView(
+                    HStack(spacing: 2) {
+                        Text(":").foregroundStyle(.secondary)
+                        TextField("порт", value: $model.port, format: .number)
+                            .frame(width: 46)
+                            .multilineTextAlignment(.leading)
+                            .font(.system(.body, design: .monospaced))
+                            #if os(iOS)
+                            .keyboardType(.numberPad)
+                            #endif
+                            .disabled(model.isRunning)
                     }
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
-                }
+                )
             }
-            .padding(16)
-            .animation(.snappy, value: model.info)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("TLS-инспектор")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
+            } else if let info = model.info {
+                handshakeCard(info)
+                ForEach(Array(info.certificates.enumerated()), id: \.offset) { idx, cert in
+                    certCard(cert, index: idx, isLeaf: idx == 0)
+                }
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
+            }
+        } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }
                 Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.info)
+        .navigationTitle("TLS-инспектор")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { Task { await model.run() } }

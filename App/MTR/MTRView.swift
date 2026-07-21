@@ -41,36 +41,29 @@ struct MTRView: View {
     @State private var model = MTRModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "chart.line.uptrend.xyaxis",
-                             disabled: model.isRunning, savedHostTool: .mtr) { model.start() }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "chart.line.uptrend.xyaxis",
+                         disabled: model.isRunning, savedHostTool: .mtr) { model.start() }
 
-                if !model.resolvedIP.isEmpty {
-                    HStack {
-                        Text(model.resolvedIP).font(.subheadline.monospaced())
-                        Spacer()
-                        if model.isRunning { Text("Раунд \(model.round)").font(.caption).foregroundStyle(.secondary) }
-                    }
-                    .padding(.horizontal, 4)
+            if !model.resolvedIP.isEmpty {
+                HStack {
+                    Text(model.resolvedIP).font(.subheadline.monospaced())
+                    Spacer()
+                    if model.isRunning { Text("Раунд \(model.round)").font(.caption).foregroundStyle(.secondary) }
                 }
-
-                if !model.hops.isEmpty {
-                    tableCard
-                }
+                .padding(.horizontal, 4)
             }
-            .padding(16)
-            .animation(.snappy, value: model.hops)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("MTR")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+
+            if !model.hops.isEmpty {
+                tableCard
+            }
+        } bottom: {
             RunButton(title: "Запустить MTR", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) { model.toggle() }
         }
+        .animation(.snappy, value: model.hops)
+        .navigationTitle("MTR")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }

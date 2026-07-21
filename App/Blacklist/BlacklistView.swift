@@ -30,31 +30,24 @@ struct BlacklistView: View {
     @State private var model = BlacklistModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
-                             disabled: model.isRunning, savedHostTool: .blacklist) { Task { await model.run() } }
-                if let report = model.report {
-                    summaryCard(report)
-                    listCard(report)
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
+                         disabled: model.isRunning, savedHostTool: .blacklist) { Task { await model.run() } }
+            if let report = model.report {
+                summaryCard(report)
+                listCard(report)
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
             }
-            .padding(16)
-            .animation(.snappy, value: model.report?.listedCount)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Блэклисты")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+        } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,
                       disabled: model.ip.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.report?.listedCount)
+        .navigationTitle("Блэклисты")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.ip = presetHost }
             if autostart { Task { await model.run() } }
