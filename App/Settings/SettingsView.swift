@@ -58,6 +58,11 @@ struct SettingsView: View {
 
                 Section("Интеграции") {
                     NavigationLink {
+                        NetworkProfilesView()
+                    } label: {
+                        Label("Профили сети", systemImage: "wifi")
+                    }
+                    NavigationLink {
                         WebhookSettingsView()
                     } label: {
                         Label("Вебхуки", systemImage: "paperplane")

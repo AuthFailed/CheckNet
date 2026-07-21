@@ -6,6 +6,7 @@ struct CheckNetApp: App {
     @State private var savedHosts = SavedHostsStore()
     @State private var settings = AppSettings()
     @State private var webhooks = WebhookSettings()
+    @State private var networkProfiles = NetworkProfileStore()
 
     init() {
         // Surface the iOS Local Network prompt up front so tests aren't silently
@@ -20,6 +21,7 @@ struct CheckNetApp: App {
                 .environment(savedHosts)
                 .environment(settings)
                 .environment(webhooks)
+                .environment(networkProfiles)
                 .onAppear { WebhookReporter.settings = webhooks }
         }
         #if os(macOS)
