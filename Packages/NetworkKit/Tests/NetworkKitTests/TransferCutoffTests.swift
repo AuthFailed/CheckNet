@@ -22,7 +22,8 @@ final class TransferCutoffTests: XCTestCase {
 
     // MARK: - Individual probes against real hosts
 
-    func testSingleSegmentReaches() async {
+    func testSingleSegmentReaches() async throws {
+        try requiresInternet()
         let probe = await TransferCutoffCheck().probeSingleSegment(host: TransferCutoffCheck.defaultTarget)
         print("single segment: \(probe.outcome) — \(probe.detail)")
         XCTAssertEqual(probe.outcome, .passed, "one-segment request should reach an uncensored network")
@@ -32,14 +33,16 @@ final class TransferCutoffTests: XCTestCase {
     /// The decisive arm. On a clean network the same bytes split across ~30
     /// packets must also arrive — if this freezes here, the probe itself is
     /// broken rather than the network being filtered.
-    func testPacketCountReachesOnCleanNetwork() async {
+    func testPacketCountReachesOnCleanNetwork() async throws {
+        try requiresInternet()
         let probe = await TransferCutoffCheck().probePacketCount(host: TransferCutoffCheck.defaultTarget)
         print("packet count: \(probe.outcome) — \(probe.detail) [\(probe.segmentsSent) segments]")
         XCTAssertEqual(probe.outcome, .passed)
         XCTAssertGreaterThan(probe.segmentsSent, 10, "request should have been split into many packets")
     }
 
-    func testByteAccumulationReachesOnCleanNetwork() async {
+    func testByteAccumulationReachesOnCleanNetwork() async throws {
+        try requiresInternet()
         let probe = await TransferCutoffCheck().probeByteAccumulation(host: TransferCutoffCheck.defaultTarget)
         print("byte accumulation: \(probe.outcome) — \(probe.detail) [\(probe.bytesSent) bytes]")
         XCTAssertEqual(probe.outcome, .passed)
@@ -48,7 +51,8 @@ final class TransferCutoffTests: XCTestCase {
 
     // MARK: - Full check
 
-    func testFullCheckOnCleanNetwork() async {
+    func testFullCheckOnCleanNetwork() async throws {
+        try requiresInternet()
         let finding = await TransferCutoffCheck().run()
         print("cutoff verdict: \(finding.verdict) — \(finding.headline)")
         for line in finding.evidence { print("  · \(line)") }
@@ -57,7 +61,8 @@ final class TransferCutoffTests: XCTestCase {
 
     /// A host that refuses us must read as `failed`, never as a freeze —
     /// otherwise every unreachable server would be reported as censorship.
-    func testRefusedConnectionIsNotReportedAsFreeze() async {
+    func testRefusedConnectionIsNotReportedAsFreeze() async throws {
+        try requiresInternet()
         // Port 9 (discard) is closed on Cloudflare's edge.
         let probe = await TransferCutoffCheck().probeSingleSegment(host: TransferCutoffCheck.defaultTarget, port: 9, readTimeout: 3)
         print("closed port: \(probe.outcome) — \(probe.detail)")

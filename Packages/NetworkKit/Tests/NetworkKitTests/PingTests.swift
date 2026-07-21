@@ -3,6 +3,7 @@ import XCTest
 
 final class PingTests: XCTestCase {
     func testResolveKnownHost() async throws {
+        try requiresInternet()
         let endpoints = try await HostResolver.resolve(host: "one.one.one.one", family: .ipv4)
         XCTAssertFalse(endpoints.isEmpty)
         XCTAssertTrue(endpoints.allSatisfy { $0.family == .ipv4 })
@@ -18,6 +19,7 @@ final class PingTests: XCTestCase {
     }
 
     func testPingCloudflare() async throws {
+        try requiresInternet()
         let pinger = ICMPPinger()
         let config = PingConfig(count: 4, interval: 0.2, timeout: 2.0)
         var replies = 0
@@ -49,6 +51,7 @@ final class PingTests: XCTestCase {
     }
 
     func testPingReportsTTL() async throws {
+        try requiresInternet()
         let pinger = ICMPPinger()
         var ttls: [Int] = []
         for await event in pinger.ping(host: "8.8.8.8", config: PingConfig(count: 3, interval: 0.2, timeout: 2)) {
@@ -59,7 +62,8 @@ final class PingTests: XCTestCase {
         for t in ttls { XCTAssertTrue((1...255).contains(t)) }
     }
 
-    func testPingBadHostSurfacesFailure() async {
+    func testPingBadHostSurfacesFailure() async throws {
+        try requiresInternet()
         let pinger = ICMPPinger()
         var failure: String?
         var finishedOK = false

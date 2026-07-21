@@ -61,7 +61,8 @@ final class JA3Tests: XCTestCase {
 
     // MARK: - Live probes
 
-    func testEveryProfileGetsServerHello() async {
+    func testEveryProfileGetsServerHello() async throws {
+        try requiresInternet()
         for profile in JA3Profile.allCases {
             let result = await JA3Probe().run(host: "github.com", profile: profile)
             print("\(profile.rawValue) → \(result.reaction.label) [\(Int(result.elapsedMillis)) ms, \(result.bytesReceived) B]")
@@ -73,7 +74,8 @@ final class JA3Tests: XCTestCase {
 
     /// The SNI is independent of the connection endpoint — the property that
     /// makes this usable for SNI-blocking tests.
-    func testCustomSNIStillHandshakes() async {
+    func testCustomSNIStillHandshakes() async throws {
+        try requiresInternet()
         let result = await JA3Probe().run(host: "github.com", serverName: "example.com", profile: .chrome)
         print("custom SNI → \(result.reaction.label)")
         XCTAssertTrue(result.tcpConnected)
@@ -83,7 +85,8 @@ final class JA3Tests: XCTestCase {
                        "reaching the server, even with a foreign SNI, is not interference")
     }
 
-    func testTCPFailureIsNotInterference() async {
+    func testTCPFailureIsNotInterference() async throws {
+        try requiresInternet()
         // Port 9 (discard) is closed on github's edge → TCP never establishes.
         let result = await JA3Probe().run(host: "github.com", profile: .chrome, port: 9, connectTimeout: 4)
         print("closed port → \(result.reaction.label)")
