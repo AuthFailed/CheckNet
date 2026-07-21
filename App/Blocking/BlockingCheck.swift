@@ -180,6 +180,8 @@ struct BlockingCheckView: View {
         }
         .sheet(isPresented: $showWebhookFields) {
             NavigationStack { WebhookFieldsView(schema: WebhookCatalog.blocking) }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSchedule) {
             NavigationStack {
@@ -202,6 +204,8 @@ struct BlockingCheckView: View {
                 #endif
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
             }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 

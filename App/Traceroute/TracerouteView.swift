@@ -108,7 +108,7 @@ struct TracerouteView: View {
             Text("\(hop.ttl)")
                 .font(.system(.callout, design: .monospaced).weight(.semibold))
                 .foregroundStyle(hop.reachedDestination ? .green : .secondary)
-                .frame(width: 24, alignment: .trailing)
+                .frame(minWidth: 24, alignment: .trailing)
             VStack(alignment: .leading, spacing: 3) {
                 if hop.isTimeout {
                     Text("* * *").foregroundStyle(.secondary).font(.system(.callout, design: .monospaced))

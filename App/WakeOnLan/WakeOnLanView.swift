@@ -60,7 +60,7 @@ struct WakeOnLanView: View {
                 send()
             } label: {
                 Label("Разбудить", systemImage: "power")
-                    .font(.headline).frame(maxWidth: .infinity).frame(height: 52)
+                    .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
                     .foregroundStyle(.white)
                     .background(macValid ? AnyShapeStyle(Color.blue) : AnyShapeStyle(Color.gray.opacity(0.4)),
                                 in: RoundedRectangle(cornerRadius: 15))
@@ -83,11 +83,24 @@ struct WakeOnLanView: View {
     }
 
     private func fieldRow<Content: View>(icon: String, title: String, @ViewBuilder content: () -> Content) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon).foregroundStyle(.secondary).frame(width: 20)
-            Text(LocalizedStringKey(title)).foregroundStyle(.secondary).frame(width: 92, alignment: .leading)
-            content()
-            Spacer(minLength: 0)
+        // No fixed 92 pt label column: German and Turkish labels are longer than
+        // the Russian ones and were truncated. At accessibility sizes label and
+        // value cannot share a line at all, so the row stacks instead.
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                Image(systemName: icon).foregroundStyle(.secondary).frame(minWidth: 20)
+                Text(LocalizedStringKey(title)).foregroundStyle(.secondary)
+                content()
+                Spacer(minLength: 0)
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                Label {
+                    Text(LocalizedStringKey(title)).foregroundStyle(.secondary)
+                } icon: {
+                    Image(systemName: icon).foregroundStyle(.secondary)
+                }
+                content()
+            }
         }
         .padding(.horizontal, 14).padding(.vertical, 11)
     }

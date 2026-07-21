@@ -281,9 +281,9 @@ struct ToolRowView: View {
             }
             InfoButton(title: tool.title, systemImage: tool.systemImage,
                        message: tool.info, note: tool.sensitivityNote)
-            Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
+            // No hand-drawn chevron: in compact the NavigationLink supplies the
+            // disclosure indicator (drawing our own gave every row two), and in
+            // the sidebar the selection highlight is the affordance.
         }
         .padding(.vertical, 2)
     }
@@ -385,6 +385,7 @@ private struct CatalogChrome: ViewModifier {
             }
             .sheet(isPresented: $showHistory) {
                 HistoryView()
+                    .presentationDetents([.large])
             }
     }
 }

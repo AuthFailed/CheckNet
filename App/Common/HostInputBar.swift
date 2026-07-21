@@ -92,7 +92,7 @@ struct RunButton: View {
             Label(running ? LocalizedStringKey("Остановить") : title, systemImage: running ? "stop.fill" : "play.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
-                .frame(height: 52)
+                .frame(minHeight: 52)
                 .foregroundStyle(running ? .red : .white)
                 .background(running ? AnyShapeStyle(Color.red.opacity(0.14)) : AnyShapeStyle(Color.blue),
                             in: RoundedRectangle(cornerRadius: 15))
