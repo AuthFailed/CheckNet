@@ -3,6 +3,7 @@ import XCTest
 
 final class SpeedTests: XCTestCase {
     func testFetchServerList() async throws {
+        try requiresInternet()
         let servers: [IperfServer]
         do {
             servers = try await IperfServerList().fetch()
@@ -25,6 +26,7 @@ final class SpeedTests: XCTestCase {
     }
 
     func testIperfDownloadAgainstPublicServer() async throws {
+        try requiresInternet()
         let servers: [IperfServer]
         do { servers = try await IperfServerList().fetch() }
         catch { throw XCTSkip("server list unreachable") }

@@ -18,16 +18,39 @@ struct NetworkProfilesView: View {
 
     var body: some View {
         Form {
-            Section {
-                Button {
-                    Task { await runForCurrentNetwork() }
-                } label: {
-                    Label("Проверить текущую сеть", systemImage: "wifi")
+            // Offering a button that cannot succeed is worse than saying why.
+            // Without the Access Wi-Fi Information entitlement iOS never reports
+            // the SSID, so the screen explains that instead — and does not ask
+            // for location, which is only needed for a lookup that can't happen.
+            if CurrentNetwork.isSSIDReadable {
+                Section {
+                    Button {
+                        Task { await runForCurrentNetwork() }
+                    } label: {
+                        Label("Проверить текущую сеть", systemImage: "wifi")
+                    }
+                    .disabled(isBusy)
+                    statusRow
+                } footer: {
+                    Text("Читает имя текущей Wi-Fi-сети и запускает профиль для неё. Для чтения имени сети нужны Wi-Fi-права приложения и разрешение на геопозицию (требование iOS).")
                 }
-                .disabled(isBusy)
-                statusRow
-            } footer: {
-                Text("Читает имя текущей Wi-Fi-сети и запускает профиль для неё. Для чтения имени сети нужны Wi-Fi-права приложения и разрешение на геопозицию (требование iOS).")
+            } else {
+                Section {
+                    Label {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Определение сети недоступно")
+                                .font(.callout.weight(.medium))
+                                .foregroundStyle(.primary)
+                            Text("iOS отдаёт имя Wi-Fi-сети только приложениям с правом «Access Wi-Fi Information». Его подписывает лишь платный аккаунт разработчика, поэтому в этой сборке автоопределение сети выключено.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "wifi.exclamationmark").foregroundStyle(.orange)
+                    }
+                } footer: {
+                    Text("Профили ниже при этом не бесполезны: условие «При подключении к Wi-Fi …» проверяет сама система в «Командах», и автоматизация запускает проверку без прав на имя сети.")
+                }
             }
 
             Section("Профили") {
@@ -56,7 +79,7 @@ struct NetworkProfilesView: View {
         }
         .navigationTitle("Профили сети")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .sheet(item: $editing) { profile in
             NetworkProfileEditor(profile: profile)
@@ -182,7 +205,7 @@ struct NetworkProfileEditor: View {
             }
             .navigationTitle(isNew ? "Новый профиль" : "Профиль")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

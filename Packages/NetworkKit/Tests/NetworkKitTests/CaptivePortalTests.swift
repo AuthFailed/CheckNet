@@ -4,7 +4,8 @@ import XCTest
 final class CaptivePortalTests: XCTestCase {
     /// On a normal (non-captive) network, Apple's probe returns its Success page
     /// verbatim.
-    func testOpenNetworkDetected() async {
+    func testOpenNetworkDetected() async throws {
+        try requiresInternet()
         let result = await CaptivePortalCheck().run()
         print("captive: \(result.state.label) — \(result.detail)")
         XCTAssertEqual(result.state, .open, "this test network is not behind a captive portal")

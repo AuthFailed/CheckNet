@@ -39,7 +39,7 @@ struct ScheduledTasksView: View {
         }
         .navigationTitle("Расписание")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .sheet(isPresented: $showHistory) {
             HistoryView(source: .scheduled, title: "История автозапусков")

@@ -45,7 +45,7 @@ struct WhoisView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Whois")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Запросить", running: model.isRunning,

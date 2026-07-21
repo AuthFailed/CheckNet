@@ -98,7 +98,34 @@ targets:
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
         TARGETED_DEVICE_FAMILY: "1,2"
+        # Extract Text("…") keys into Localizable.xcstrings on every build.
+        # With this off the catalog silently drifted: new UI shipped with keys
+        # that were never in the catalogue, so they could never be translated.
+        SWIFT_EMIT_LOC_STRINGS: YES
         CODE_SIGN_ENTITLEMENTS: App/CheckNet.entitlements
+        # macOS needs the sandbox + networking entitlements, which iOS neither
+        # has nor accepts — hence a separate file per SDK.
+        CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: App/CheckNet-macOS.entitlements
+    scheme:
+      testTargets:
+        - CheckNetTests
+
+  # Logic tests for the code under Shared/. Those sources are compiled straight
+  # into the bundle rather than linked from the app, so the tests need no host
+  # application and run on both destinations.
+  CheckNetTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: Tests/CheckNetTests
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet.tests
+        PRODUCT_NAME: CheckNetTests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        SWIFT_APPROACHABLE_CONCURRENCY: YES
 
   CheckNetWidgets:
     type: app-extension

@@ -1,5 +1,7 @@
 import Foundation
+#if canImport(ActivityKit)
 import ActivityKit
+#endif
 
 /// A compact snapshot of the most recent check for a host — surfaced in
 /// widgets, the Dynamic Island, and the app.
@@ -60,6 +62,7 @@ struct CheckRecord: Codable, Hashable, Sendable, Identifiable {
     var kind: HistorySource { source ?? .manual }
 }
 
+#if canImport(ActivityKit) && !os(macOS)
 /// ActivityKit attributes for a live ping session (Dynamic Island + Lock Screen).
 struct PingActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
@@ -74,3 +77,4 @@ struct PingActivityAttributes: ActivityAttributes {
     var host: String
     var ip: String
 }
+#endif

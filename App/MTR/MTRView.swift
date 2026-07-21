@@ -65,7 +65,7 @@ struct MTRView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("MTR")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Запустить MTR", running: model.isRunning,

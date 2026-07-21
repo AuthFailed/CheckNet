@@ -40,7 +40,7 @@ struct PingView: View {
         .background(backgroundColor)
         .navigationTitle("Ping")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -88,7 +88,7 @@ struct PingView: View {
                 }
                 .navigationTitle("Расписание Ping")
                 #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
+                .toolbarTitleDisplayMode(.inline)
                 #endif
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
             }

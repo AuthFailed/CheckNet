@@ -159,7 +159,7 @@ struct BlockingCheckView: View {
         .background(Palette.groupedBackground)
         .navigationTitle(check.title)
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
@@ -198,7 +198,7 @@ struct BlockingCheckView: View {
                 }
                 .navigationTitle("Расписание · \(check.title)")
                 #if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
+                .toolbarTitleDisplayMode(.inline)
                 #endif
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
             }

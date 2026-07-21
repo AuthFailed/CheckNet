@@ -5,6 +5,7 @@ final class ServicesTests: XCTestCase {
     // MARK: Whois
 
     func testWhoisDomain() async throws {
+        try requiresInternet()
         let result = try await WhoisClient().lookup("google.com")
         XCTAssertFalse(result.raw.isEmpty)
         print("whois google.com via \(result.server); fields: \(result.fields.map { "\($0.key)=\($0.value)" })")
@@ -15,6 +16,7 @@ final class ServicesTests: XCTestCase {
     }
 
     func testWhoisReferralFollowed() async throws {
+        try requiresInternet()
         let result = try await WhoisClient().lookup("apple.com")
         // After following referrals we should not still be on IANA.
         XCTAssertNotEqual(result.server, "whois.iana.org")
@@ -23,7 +25,8 @@ final class ServicesTests: XCTestCase {
 
     // MARK: Blacklist
 
-    func testBlacklistCleanIP() async {
+    func testBlacklistCleanIP() async throws {
+        try requiresInternet()
         // Google DNS is not a spam source; expect no listings.
         let report = await BlacklistChecker().check(ip: "8.8.8.8",
                                                     providers: Array(BlacklistProvider.all.prefix(4)))

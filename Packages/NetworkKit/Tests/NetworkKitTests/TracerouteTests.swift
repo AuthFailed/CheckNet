@@ -3,6 +3,7 @@ import XCTest
 
 final class TracerouteTests: XCTestCase {
     func testTraceToCloudflare() async throws {
+        try requiresInternet()
         let tracer = Traceroute()
         var hops: [TracerouteHop] = []
         var started = false
@@ -33,6 +34,7 @@ final class TracerouteTests: XCTestCase {
     }
 
     func testTraceHopOrdering() async throws {
+        try requiresInternet()
         let tracer = Traceroute()
         var lastTTL = 0
         for await event in tracer.trace(host: "8.8.8.8",

@@ -51,7 +51,7 @@ struct DNSCompareView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Сравнение резолверов")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Сравнить", running: model.isRunning,
@@ -137,7 +137,7 @@ struct DNSTamperView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Детект DNS-подмены")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить", running: model.isRunning,

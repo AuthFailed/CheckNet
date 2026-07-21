@@ -1,4 +1,5 @@
 import Foundation
+#if canImport(ActivityKit) && !os(macOS)
 import ActivityKit
 
 /// Manages the ping Live Activity (Lock Screen + Dynamic Island) for a run.
@@ -51,3 +52,18 @@ final class PingLiveActivityController: @unchecked Sendable {
         await current.end(.init(state: state, staleDate: nil), dismissalPolicy: .after(.now + 4))
     }
 }
+#else
+
+/// macOS has no Live Activities. The stub keeps the call sites in
+/// `PingViewModel` free of platform conditionals; every entry point is a no-op
+/// and `isSupported` is always `false`.
+final class PingLiveActivityController: @unchecked Sendable {
+    var isSupported: Bool { false }
+
+    func start(host: String, ip: String) {}
+
+    func update(latency: Double?, loss: Double, received: Int, transmitted: Int, status: PingSnapshot.Status) async {}
+
+    func end(latency: Double?, loss: Double, received: Int, transmitted: Int, status: PingSnapshot.Status) async {}
+}
+#endif
