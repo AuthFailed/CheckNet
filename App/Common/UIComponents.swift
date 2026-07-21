@@ -56,6 +56,9 @@ struct PulseModifier: ViewModifier {
 struct PulseRing: View {
     let value: Double?
     @State private var animate = false
+    /// Scales with the user's text size, so the ring grows with the number it
+    /// encircles instead of clipping it.
+    @ScaledMetric(relativeTo: .title2) private var diameter: CGFloat = 64
 
     var body: some View {
         ZStack {
@@ -68,11 +71,11 @@ struct PulseRing: View {
                                value: animate)
             }
             Text(value.map { String(format: $0 >= 100 ? "%.0f" : "%.0f", $0) } ?? "—")
-                .font(.system(size: 22, weight: .bold, design: .monospaced))
+                .font(.title2.weight(.bold).monospaced())
                 .foregroundStyle(.blue)
                 .contentTransition(.numericText())
         }
-        .frame(width: 64, height: 64)
+        .frame(width: diameter, height: diameter)
         .onAppear { animate = true }
     }
 }

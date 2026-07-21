@@ -102,7 +102,9 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Настройки")
-            .sheet(isPresented: $showHistory) { HistoryView() }
+            .sheet(isPresented: $showHistory) {
+                HistoryView().presentationDetents([.large])
+            }
         }
     }
 

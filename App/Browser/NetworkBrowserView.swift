@@ -84,7 +84,7 @@ struct NetworkBrowserView: View {
             Image(systemName: icon(for: device))
                 .font(.title3)
                 .foregroundStyle(device.isGateway ? .orange : (device.isSelf ? .blue : .secondary))
-                .frame(width: 32)
+                .frame(minWidth: 32)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(device.displayName).font(.callout.weight(.medium)).lineLimit(1)

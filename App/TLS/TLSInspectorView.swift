@@ -41,7 +41,7 @@ struct TLSInspectorView: View {
                     HStack(spacing: 2) {
                         Text(":").foregroundStyle(.secondary)
                         TextField("порт", value: $model.port, format: .number)
-                            .frame(width: 46)
+                            .frame(minWidth: 46)
                             .multilineTextAlignment(.leading)
                             .font(.system(.body, design: .monospaced))
                             #if os(iOS)

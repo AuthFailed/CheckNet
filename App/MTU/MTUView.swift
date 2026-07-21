@@ -40,6 +40,7 @@ struct MTUView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = MTUModel()
+    @ScaledMetric(relativeTo: .body) private var statRule: CGFloat = 34
 
     var body: some View {
         ToolScaffold {
@@ -87,9 +88,9 @@ struct MTUView: View {
             Divider()
             HStack {
                 metric("\(result.maxPayload)", "ICMP payload")
-                Divider().frame(height: 34)
+                Divider().frame(height: statRule)
                 metric("\(result.pathMTU)", "MTU")
-                Divider().frame(height: 34)
+                Divider().frame(height: statRule)
                 metric("\(result.probes.count)", "проб")
             }
             if result.pathMTU < 1500 {

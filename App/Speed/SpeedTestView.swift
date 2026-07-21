@@ -4,6 +4,8 @@ import NetworkKit
 
 struct SpeedTestView: View {
     @State private var model = SpeedTestModel()
+    @ScaledMetric(relativeTo: .body) private var statRule: CGFloat = 44
+    @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 120
     @State private var showServerPicker = false
 
     var body: some View {
@@ -26,7 +28,10 @@ struct SpeedTestView: View {
         .toolTitleDisplayMode()
         .task { await model.loadServers() }
         .sheet(isPresented: $showServerPicker) {
+            // A long, searchable server list grouped by geography — half height
+            // would show two rows.
             ServerPickerView(model: model)
+                .presentationDetents([.large])
         }
     }
 
@@ -93,7 +98,7 @@ struct SpeedTestView: View {
             }
             HStack {
                 resultCell(title: "Загрузка", value: model.downloadMbps, color: .blue, icon: "arrow.down")
-                Divider().frame(height: 44)
+                Divider().frame(height: statRule)
                 resultCell(title: "Отдача", value: model.uploadMbps, color: .green, icon: "arrow.up")
             }
         }
@@ -118,7 +123,7 @@ struct SpeedTestView: View {
                     .foregroundStyle(sample.direction == .download ? Color.blue : Color.green)
                     .interpolationMethod(.monotone)
             }
-            .frame(height: 120)
+            .frame(height: chartHeight)
         }
         .padding(16).card()
     }
