@@ -1,15 +1,44 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 enum HistoryExporter {
-    static func json(_ records: [CheckRecord]) -> URL? {
+    /// The export formats are machine-readable on purpose, so their column
+    /// names and JSON keys stay in English and are **not** localized: an export
+    /// has to import into the same spreadsheet or script regardless of the UI
+    /// language the user happened to pick.
+    enum Format {
+        case csv, json
+
+        var filename: String {
+            switch self {
+            case .csv: "checknet-history.csv"
+            case .json: "checknet-history.json"
+            }
+        }
+
+        var contentType: UTType {
+            switch self {
+            case .csv: .commaSeparatedText
+            case .json: .json
+            }
+        }
+    }
+
+    static func data(_ records: [CheckRecord], format: Format) throws -> Data {
+        switch format {
+        case .json: try json(records)
+        case .csv: try csv(records)
+        }
+    }
+
+    private static func json(_ records: [CheckRecord]) throws -> Data {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
-        guard let data = try? encoder.encode(records) else { return nil }
-        return write(data, filename: "checknet-history.json")
+        return try encoder.encode(records)
     }
 
-    static func csv(_ records: [CheckRecord]) -> URL? {
+    private static func csv(_ records: [CheckRecord]) throws -> Data {
         var lines = ["timestamp,tool,host,latency_ms,loss_pct,succeeded,detail"]
         let formatter = ISO8601DateFormatter()
         for r in records {
@@ -18,30 +47,81 @@ enum HistoryExporter {
             let detail = "\"\(r.detail.replacingOccurrences(of: "\"", with: "\"\""))\""
             lines.append("\(formatter.string(from: r.timestamp)),\(r.tool),\(r.host),\(latency),\(loss),\(r.succeeded),\(detail)")
         }
-        guard let data = lines.joined(separator: "\n").data(using: .utf8) else { return nil }
-        return write(data, filename: "checknet-history.csv")
+        guard let data = lines.joined(separator: "\n").data(using: .utf8) else {
+            throw CocoaError(.fileWriteInapplicableStringEncoding)
+        }
+        return data
     }
 
     /// A one-line-per-field text summary of a single record, for sharing.
-    static func shareText(_ r: CheckRecord) -> String {
-        let f = DateFormatter(); f.dateStyle = .medium; f.timeStyle = .medium
+    ///
+    /// Unlike the file exports this is prose a person reads, so it follows the
+    /// UI language and the caller's locale for the timestamp.
+    static func shareText(_ r: CheckRecord, locale: Locale) -> String {
+        let time = r.timestamp.formatted(
+            Date.FormatStyle(date: .abbreviated, time: .standard).locale(locale)
+        )
+        let outcome = r.succeeded
+            ? String(localized: "успех", locale: locale)
+            : String(localized: "проблема", locale: locale)
         var lines = [
             "CheckNet — \(r.tool)",
-            "Хост: \(r.host)",
-            "Время: \(f.string(from: r.timestamp))",
-            "Результат: \(r.succeeded ? "успех" : "проблема")"
+            String(localized: "Хост: \(r.host)", locale: locale),
+            String(localized: "Время: \(time)", locale: locale),
+            String(localized: "Результат: \(outcome)", locale: locale)
         ]
-        if let latency = r.latencyMillis { lines.append("Задержка: \(String(format: "%.1f", latency)) мс") }
-        if let loss = r.lossPercent { lines.append("Потери: \(String(format: "%.0f", loss))%") }
+        if let latency = r.latencyMillis {
+            let value = String(format: "%.1f", latency)
+            lines.append(String(localized: "Задержка: \(value) мс", locale: locale))
+        }
+        if let loss = r.lossPercent {
+            let value = String(format: "%.0f", loss)
+            lines.append(String(localized: "Потери: \(value)%", locale: locale))
+        }
         lines.append(r.detail)
         return lines.joined(separator: "\n")
     }
+}
 
-    private static func write(_ data: Data, filename: String) -> URL? {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        try? data.write(to: url, options: .atomic)
-        return url
+/// A history export handed to the share sheet.
+///
+/// The bytes are serialized and written to disk inside the transfer
+/// representation, which the system calls only once the user has actually
+/// picked a share destination. Building the file eagerly instead meant
+/// re-encoding up to 2000 records and writing them to disk on every layout
+/// pass of the history screen.
+/// One representation per type, rather than one type switching on a format:
+/// each export declares a single content type, which leaves no room for the
+/// wrong representation to be picked.
+struct HistoryCSVExport: Transferable {
+    let records: [CheckRecord]
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .commaSeparatedText) { export in
+            SentTransferredFile(try writeExport(export.records, format: .csv))
+        }
+        .suggestedFileName(HistoryExporter.Format.csv.filename)
     }
+}
+
+struct HistoryJSONExport: Transferable {
+    let records: [CheckRecord]
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .json) { export in
+            SentTransferredFile(try writeExport(export.records, format: .json))
+        }
+        .suggestedFileName(HistoryExporter.Format.json.filename)
+    }
+}
+
+private func writeExport(_ records: [CheckRecord], format: HistoryExporter.Format) throws -> URL {
+    let data = try HistoryExporter.data(records, format: format)
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent(format.filename)
+    // No `try?` here: a failed write used to make the share item vanish with
+    // no explanation. Thrown, it reaches the share sheet's own error report.
+    try data.write(to: url, options: .atomic)
+    return url
 }
 
 /// Test history. `source` scopes it: manual history is the default; the schedule
@@ -50,16 +130,20 @@ struct HistoryView: View {
     var source: HistorySource = .manual
     var title: String = "История"
 
+    /// One day's records, precomputed. Grouping and sorting used to run inside
+    /// `body`, i.e. on every render.
+    private struct DayGroup: Identifiable {
+        let day: Date
+        let records: [CheckRecord]
+        var id: Date { day }
+    }
+
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.locale) private var locale
     @State private var records: [CheckRecord] = []
+    @State private var groups: [DayGroup] = []
     @State private var expanded: Set<UUID> = []
     @State private var showClearConfirm = false
-
-    private var grouped: [(day: Date, records: [CheckRecord])] {
-        let cal = Calendar.current
-        let groups = Dictionary(grouping: records) { cal.startOfDay(for: $0.timestamp) }
-        return groups.keys.sorted(by: >).map { ($0, groups[$0]!.sorted { $0.timestamp > $1.timestamp }) }
-    }
 
     var body: some View {
         NavigationStack {
@@ -69,17 +153,21 @@ struct HistoryView: View {
                                            description: Text("Результаты проверок будут появляться здесь."))
                 } else {
                     List {
-                        ForEach(grouped, id: \.day) { group in
-                            Section(dayTitle(group.day)) {
+                        ForEach(groups) { group in
+                            Section {
                                 ForEach(group.records) { record in
                                     row(record)
                                 }
+                            } header: {
+                                dayTitle(group.day)
                             }
                         }
                     }
                 }
             }
-            .navigationTitle(title)
+            // A plain String would be taken verbatim and never look up a
+            // translation, leaving the title Russian in every other language.
+            .navigationTitle(LocalizedStringKey(title))
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
@@ -89,28 +177,43 @@ struct HistoryView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
-                        if let url = HistoryExporter.csv(records) {
-                            ShareLink("Экспорт CSV", item: url)
-                        }
-                        if let url = HistoryExporter.json(records) {
-                            ShareLink("Экспорт JSON", item: url)
-                        }
+                        ShareLink("Экспорт CSV",
+                                  item: HistoryCSVExport(records: records),
+                                  preview: SharePreview("checknet-history.csv"))
+                        ShareLink("Экспорт JSON",
+                                  item: HistoryJSONExport(records: records),
+                                  preview: SharePreview("checknet-history.json"))
                         Divider()
                         Button("Очистить историю", role: .destructive) { showClearConfirm = true }
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
                     .disabled(records.isEmpty)
+                    .accessibilityLabel("Экспорт и очистка истории")
                 }
             }
             .confirmationDialog("Очистить всю историю?", isPresented: $showClearConfirm, titleVisibility: .visible) {
                 Button("Очистить", role: .destructive) {
                     SharedStore.clearHistory(source: source)
                     records = []
+                    groups = []
                 }
             }
         }
-        .onAppear { records = SharedStore.history(source: source) }
+        .onAppear { reload() }
+    }
+
+    private func reload() {
+        records = SharedStore.history(source: source)
+        regroup()
+    }
+
+    private func regroup() {
+        let cal = Calendar.current
+        let byDay = Dictionary(grouping: records) { cal.startOfDay(for: $0.timestamp) }
+        groups = byDay.keys.sorted(by: >).map { day in
+            DayGroup(day: day, records: byDay[day]!.sorted { $0.timestamp > $1.timestamp })
+        }
     }
 
     private func row(_ record: CheckRecord) -> some View {
@@ -150,7 +253,7 @@ struct HistoryView: View {
             Button(role: .destructive) {
                 delete(record)
             } label: { Label("Удалить", systemImage: "trash") }
-            ShareLink(item: HistoryExporter.shareText(record)) {
+            ShareLink(item: HistoryExporter.shareText(record, locale: locale)) {
                 Label("Поделиться", systemImage: "square.and.arrow.up")
             }
         }
@@ -159,11 +262,15 @@ struct HistoryView: View {
     private func expandedDetail(_ record: CheckRecord) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             LabeledContent("Инструмент", value: record.tool)
-            LabeledContent("Время", value: record.timestamp.formatted(date: .abbreviated, time: .standard))
+            LabeledContent {
+                Text(record.timestamp, format: Date.FormatStyle(date: .abbreviated, time: .standard).locale(locale))
+            } label: {
+                Text("Время")
+            }
             if let loss = record.lossPercent {
                 LabeledContent("Потери", value: "\(Int(loss))%")
             }
-            ShareLink(item: HistoryExporter.shareText(record)) {
+            ShareLink(item: HistoryExporter.shareText(record, locale: locale)) {
                 Label("Поделиться результатом", systemImage: "square.and.arrow.up")
             }
             .font(.callout)
@@ -182,14 +289,15 @@ struct HistoryView: View {
         SharedStore.deleteHistory(id: record.id)
         records.removeAll { $0.id == record.id }
         expanded.remove(record.id)
+        regroup()
     }
 
-    private func dayTitle(_ day: Date) -> String {
-        let f = DateFormatter()
-        f.locale = Locale(identifier: "ru_RU")
-        if Calendar.current.isDateInToday(day) { return "Сегодня" }
-        if Calendar.current.isDateInYesterday(day) { return "Вчера" }
-        f.dateStyle = .medium
-        return f.string(from: day)
+    /// Section header for a day. "Сегодня"/"Вчера" go through the string
+    /// catalog, and every other date is formatted with the locale the user
+    /// selected in Settings rather than a hardcoded `ru_RU`.
+    private func dayTitle(_ day: Date) -> Text {
+        if Calendar.current.isDateInToday(day) { return Text("Сегодня") }
+        if Calendar.current.isDateInYesterday(day) { return Text("Вчера") }
+        return Text(day, format: Date.FormatStyle(date: .abbreviated).locale(locale))
     }
 }
