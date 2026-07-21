@@ -57,10 +57,16 @@ public struct TransferCutoffCheck: Sendable {
         self.fingerprint = fingerprint
     }
 
-    /// Foreign-AS hosts where the behaviour is reported. Paired with a domestic
+    /// Foreign-AS host where the behaviour is reported, paired with a domestic
     /// control so "foreign freezes, domestic doesn't" can be stated.
-    public static let defaultTarget = "cloudflare.com"
-    public static let defaultControl = "yandex.ru"
+    ///
+    /// Deliberately an ordinary site *inside* a foreign provider's network, not
+    /// the CDN's own front door: hitting cloudflare.com with slow-drip and
+    /// large-POST probes trips its bot defences, which then looks like a freeze
+    /// on a perfectly clean network (see issue #4). A plain third-party host in
+    /// Hetzner has no such defence.
+    public static let defaultTarget = "king.hr"        // Hetzner DE, from ProbeCatalog
+    public static let defaultControl = "selectel.ru"   // Russian control
 
     private static let padStep = 4000
     private static let maxPadStepCount = 15
