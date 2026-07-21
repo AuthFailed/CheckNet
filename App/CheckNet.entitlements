@@ -14,7 +14,10 @@
 	         <key>com.apple.developer.networking.wifi-info</key>
 	         <true/>
 
-	     CurrentNetwork already degrades gracefully without it (reports
-	     "нет доступа к имени сети"), so no code change is required. -->
+	     and flip `CurrentNetwork.isSSIDReadable` to `true` in the same commit —
+	     that flag is the code-side half of this switch. While it is false the
+	     app hides the "check current network" action and explains why, instead
+	     of offering a button that cannot work or asking for location it cannot
+	     use. -->
 </dict>
 </plist>
