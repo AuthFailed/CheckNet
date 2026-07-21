@@ -7,10 +7,15 @@ struct CheckNetApp: App {
     @State private var settings = AppSettings()
     @State private var webhooks = WebhookSettings()
     @State private var networkProfiles = NetworkProfileStore()
-    @State private var scheduler = WebhookScheduler()
+    @State private var scheduledTasks: ScheduledTaskStore
+    @State private var scheduler: TaskScheduler
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        let store = ScheduledTaskStore()
+        _scheduledTasks = State(initialValue: store)
+        _scheduler = State(initialValue: TaskScheduler(store: store))
+
         // Surface the iOS Local Network prompt up front so tests aren't silently
         // blocked on first launch (no-op on macOS / simulator).
         LocalNetworkPermission.shared.request()
@@ -24,6 +29,7 @@ struct CheckNetApp: App {
                 .environment(settings)
                 .environment(webhooks)
                 .environment(networkProfiles)
+                .environment(scheduledTasks)
                 .environment(scheduler)
                 .onAppear { WebhookReporter.settings = webhooks }
         }
@@ -31,10 +37,10 @@ struct CheckNetApp: App {
         .defaultSize(width: 460, height: 900)
         #endif
         .onChange(of: scenePhase) { _, phase in
-            // The schedule is foreground-only; pause it when the app isn't active
+            // Scheduling is foreground-only; pause it when the app isn't active
             // so it doesn't waste a suspended tick, resume when it returns.
             switch phase {
-            case .active: scheduler.startIfNeeded()
+            case .active: scheduler.start()
             default: scheduler.stop()
             }
         }

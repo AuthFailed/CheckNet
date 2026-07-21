@@ -13,6 +13,7 @@ struct PingView: View {
     @State private var model = PingViewModel()
     @State private var showSettings = false
     @State private var showWebhookFields = false
+    @State private var showSchedule = false
     @State private var showSavePrompt = false
     @State private var showIntermediate = false
     @FocusState private var hostFieldFocused: Bool
@@ -44,15 +45,20 @@ struct PingView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showSettings = true } label: {
-                    Image(systemName: "slider.horizontal.3")
+                    Image(systemName: "slider.horizontal.3").accessibilityLabel("Настройки теста")
                 }
             }
-            // Only when webhooks are on: a shortcut to what this test sends.
+            ToolbarItem(placement: .primaryAction) {
+                Button { showSchedule = true } label: {
+                    Image(systemName: "clock.arrow.2.circlepath").accessibilityLabel("Расписание")
+                }
+            }
+            // Next to the settings button, only when webhooks are on: what this
+            // test sends.
             if webhooks.isEnabled {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showWebhookFields = true } label: {
-                        Image(systemName: "paperplane")
-                            .accessibilityLabel("Данные вебхука для этого теста")
+                        Image(systemName: "paperplane").accessibilityLabel("Данные вебхука для этого теста")
                     }
                 }
             }
@@ -63,6 +69,29 @@ struct PingView: View {
         }
         .sheet(isPresented: $showWebhookFields) {
             NavigationStack { WebhookFieldsView(schema: WebhookCatalog.ping) }
+        }
+        .sheet(isPresented: $showSchedule) {
+            NavigationStack {
+                Form {
+                    SchedulingSection(
+                        makeKind: {
+                            let host = model.host.trimmingCharacters(in: .whitespaces)
+                            return host.isEmpty ? nil : .ping(host: host)
+                        },
+                        matches: { task in
+                            if case .ping(let h) = task.kind {
+                                return h.caseInsensitiveCompare(model.host.trimmingCharacters(in: .whitespaces)) == .orderedSame
+                            }
+                            return false
+                        }
+                    )
+                }
+                .navigationTitle("Расписание Ping")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
+            }
         }
         .alert("Сохранить хост", isPresented: $showSavePrompt) {
             Button("Сохранить") { savedHosts.add(name: model.host, value: model.host, tool: .ping) }

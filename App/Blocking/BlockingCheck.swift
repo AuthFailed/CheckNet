@@ -114,7 +114,10 @@ final class BlockingCheckModel {
 
 struct BlockingCheckView: View {
     let check: BlockingCheck
+    @Environment(WebhookSettings.self) private var webhooks
     @State private var model: BlockingCheckModel
+    @State private var showWebhookFields = false
+    @State private var showSchedule = false
 
     init(check: BlockingCheck) {
         self.check = check
@@ -160,7 +163,44 @@ struct BlockingCheckView: View {
         #endif
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button { showSchedule = true } label: {
+                    Image(systemName: "clock.arrow.2.circlepath").accessibilityLabel("Расписание")
+                }
+            }
+            if webhooks.isEnabled {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showWebhookFields = true } label: {
+                        Image(systemName: "paperplane").accessibilityLabel("Данные вебхука")
+                    }
+                }
+            }
+            ToolbarItem(placement: .primaryAction) {
                 InfoButton(title: check.title, systemImage: check.systemImage, message: check.explanation)
+            }
+        }
+        .sheet(isPresented: $showWebhookFields) {
+            NavigationStack { WebhookFieldsView(schema: WebhookCatalog.blocking) }
+        }
+        .sheet(isPresented: $showSchedule) {
+            NavigationStack {
+                Form {
+                    SchedulingSection(
+                        makeKind: {
+                            let target = model.target.trimmingCharacters(in: .whitespaces)
+                            let host = target.isEmpty ? check.defaultTarget : target
+                            return .blocking(checkID: check.rawValue, target: host)
+                        },
+                        matches: { task in
+                            if case .blocking(let id, _) = task.kind { return id == check.rawValue }
+                            return false
+                        }
+                    )
+                }
+                .navigationTitle("Расписание · \(check.title)")
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
             }
         }
         .safeAreaInset(edge: .bottom) {
