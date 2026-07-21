@@ -123,6 +123,28 @@ jobs:
           CHECKNET_SKIP_NETWORK_TESTS: "1"
         run: swift test --package-path Packages/NetworkKit
 
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      # App-layer logic tests (Shared/). No network and no host app, so they run
+      # on the macOS destination — no simulator to boot and no device name that
+      # can vanish from a runner image.
+      - name: Run app tests
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNet \
+            -destination 'platform=macOS' \
+            -only-testing:CheckNetTests \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGNING_REQUIRED=NO \
+            test
+
   network-tests:
     name: Network tests (live hosts, informational)
     runs-on: macos-latest
