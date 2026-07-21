@@ -70,7 +70,7 @@ struct SpeedTestView: View {
         .disabled(model.phase == .running)
     }
 
-    private var serverStatusText: String {
+    private var serverStatusText: LocalizedStringKey {
         switch model.phase {
         case .loadingServers: return "Загрузка серверов…"
         case .pinging: return "Проверка серверов \(model.pingProgress.done)/\(model.pingProgress.total)…"

@@ -133,7 +133,7 @@ struct WebhookFieldsView: View {
                             }
                         }
                     } header: {
-                        Text(field.label)
+                        Text(LocalizedStringKey(field.label))
                     } footer: {
                         Text("Промежуточные результаты. Можно отключить весь список или отдельные поля в каждом элементе.")
                     }
@@ -148,7 +148,7 @@ struct WebhookFieldsView: View {
                 }
             }
         }
-        .navigationTitle(schema.toolLabel)
+        .navigationTitle(LocalizedStringKey(schema.toolLabel))
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
