@@ -30,6 +30,10 @@ struct MacRootView: View {
     @State private var mode: Mode = .tests
     @State private var selection: Selection?
     @State private var query = ""
+    /// Last known result per host, so the sidebar reports state instead of
+    /// being a static menu. Refreshed when a check finishes writing history.
+    @State private var snapshots: [PingSnapshot] = []
+    @State private var recent: [CheckRecord] = []
 
     var body: some View {
         NavigationSplitView {
@@ -47,7 +51,7 @@ struct MacRootView: View {
     private var sidebar: some View {
         List(selection: $selection) {
             Section {
-                Picker("", selection: $mode) {
+                Picker("Раздел", selection: $mode) {
                     ForEach(Mode.allCases) { m in
                         Label(m.title, systemImage: m.symbol).tag(m)
                     }
@@ -61,7 +65,8 @@ struct MacRootView: View {
                 ForEach(filteredToolSections) { section in
                     Section(LocalizedStringKey(section.title)) {
                         ForEach(section.tools) { tool in
-                            row(tool.title, tool.systemImage, soon: !tool.isImplemented)
+                            row(tool.title, tool.systemImage,
+                                soon: !tool.isImplemented, badge: badge(for: tool))
                                 .tag(Selection.tool(tool))
                         }
                     }
@@ -84,11 +89,38 @@ struct MacRootView: View {
         }
         .searchable(text: $query, prompt: "Поиск")
         .navigationTitle("CheckNet")
+        .onAppear(perform: reload)
+        // Cheap poll rather than a store observer: the checks write through
+        // SharedStore from several places, including out-of-process intents.
+        .onReceive(Timer.publish(every: 3, on: .main, in: .common).autoconnect()) { _ in
+            reload()
+        }
     }
 
-    private func row(_ title: String, _ symbol: String, soon: Bool = false) -> some View {
+    private func reload() {
+        snapshots = SharedStore.snapshots()
+        recent = Array(SharedStore.history(source: .manual).prefix(6))
+    }
+
+    /// The most recent result for a tool, shown on its sidebar row.
+    private func badge(for tool: Tool) -> (text: String, tint: Color)? {
+        guard let record = recent.first(where: { $0.tool == tool.title }) else { return nil }
+        if let latency = record.latencyMillis, record.succeeded {
+            return (String(format: "%.0f мс", latency), .secondary)
+        }
+        return record.succeeded ? ("ок", .secondary) : ("сбой", .red)
+    }
+
+    private func row(_ title: String, _ symbol: String, soon: Bool = false,
+                     badge: (text: String, tint: Color)? = nil) -> some View {
         HStack(spacing: 8) {
             Label(LocalizedStringKey(title), systemImage: symbol)
+            if let badge {
+                Spacer(minLength: 6)
+                Text(badge.text)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(badge.tint)
+            }
             if soon {
                 Spacer(minLength: 6)
                 Text("скоро")
@@ -127,12 +159,59 @@ struct MacRootView: View {
             case .reachability:
                 ReachabilityView()
             case nil:
-                ContentUnavailableView(
-                    "Выберите инструмент",
-                    systemImage: "wrench.and.screwdriver",
-                    description: Text("Слева — все проверки, сгруппированные по разделам. Выберите любую, чтобы запустить её.")
-                )
+                emptyDetail
             }
+        }
+    }
+
+    /// Not a dead end: a fresh window shows what was checked last, and each row
+    /// reopens that tool. It also answers "what do I do first".
+    @ViewBuilder
+    private var emptyDetail: some View {
+        if recent.isEmpty {
+            ContentUnavailableView(
+                "Выберите инструмент",
+                systemImage: "wrench.and.screwdriver",
+                description: Text("Слева — все проверки. Выберите любую, чтобы запустить её.")
+            )
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Недавние проверки")
+                        .font(.title3.weight(.semibold))
+                    ForEach(recent) { record in
+                        Button {
+                            if let tool = Tool.allCases.first(where: { $0.title == record.tool }) {
+                                selection = .tool(tool)
+                            }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: record.succeeded ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    .foregroundStyle(record.succeeded ? .green : .red)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(LocalizedStringKey(record.tool)).font(.callout.weight(.medium))
+                                    Text(record.host).font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if let latency = record.latencyMillis {
+                                    Text(String(format: "%.0f мс", latency))
+                                        .font(.callout.monospacedDigit())
+                                        .foregroundStyle(.secondary)
+                                }
+                                Text(record.timestamp, style: .time)
+                                    .font(.caption2).foregroundStyle(.tertiary)
+                            }
+                            .padding(.horizontal, 14).padding(.vertical, 11)
+                            .card()
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: ToolLayout.contentWidth)
+                .frame(maxWidth: .infinity)
+            }
+            .background(Palette.groupedBackground)
         }
     }
 }

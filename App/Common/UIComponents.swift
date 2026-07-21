@@ -10,7 +10,7 @@ struct CardModifier: ViewModifier {
             .background(Palette.card, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(Palette.hairline, lineWidth: 0.5)
+                    .strokeBorder(Palette.hairline, lineWidth: Palette.hairlineWidth)
             )
     }
 }
@@ -36,7 +36,25 @@ enum Palette {
         Color(nsColor: .windowBackgroundColor)
         #endif
     }
-    static let hairline = Color.primary.opacity(0.06)
+    /// Border for cards and input fields. It has to read as an edge: on macOS
+    /// the card background is the same colour as the window behind it, so a
+    /// 6 % hairline was invisible and fields looked like floating text.
+    static var hairline: Color {
+        #if os(macOS)
+        Color.primary.opacity(0.22)
+        #else
+        Color.primary.opacity(0.12)
+        #endif
+    }
+
+    /// Hairlines are 0.5 pt on Retina iOS; on macOS that renders too faint.
+    static var hairlineWidth: CGFloat {
+        #if os(macOS)
+        1
+        #else
+        0.5
+        #endif
+    }
 }
 
 // MARK: - Pulse animation
