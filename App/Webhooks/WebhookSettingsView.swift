@@ -80,6 +80,14 @@ struct WebhookSettingsView: View {
                 Text("По умолчанию отправляются все данные, которые умеет отдавать инструмент. Здесь можно отключить ненужные поля.")
             }
 
+            Section("Автоматизация") {
+                NavigationLink {
+                    WebhookScheduleView()
+                } label: {
+                    Label("Расписание", systemImage: "clock.arrow.2.circlepath")
+                }
+            }
+
             Section {
                 Button {
                     isSendingTest = true
