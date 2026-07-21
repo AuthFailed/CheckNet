@@ -24,41 +24,34 @@ struct DNSCompareView: View {
     @State private var model = DNSCompareModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.left.arrow.right",
-                             disabled: model.isRunning, savedHostTool: .dnsCompare) { Task { await model.run() } }
-                HStack {
-                    Text("Тип записи").foregroundStyle(.secondary)
-                    Spacer()
-                    Picker("", selection: $model.recordType) {
-                        ForEach([DNSRecordType.a, .aaaa, .mx, .txt, .ns], id: \.self) { Text($0.label).tag($0) }
-                    }.labelsHidden()
-                }
-                .padding(.horizontal, 14).padding(.vertical, 8)
-                .card()
-
-                ForEach(model.rows) { row in
-                    resolverCard(row)
-                }
-                if model.isRunning && model.rows.isEmpty {
-                    ProgressView().padding(.top, 40)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.left.arrow.right",
+                         disabled: model.isRunning, savedHostTool: .dnsCompare) { Task { await model.run() } }
+            HStack {
+                Text("Тип записи").foregroundStyle(.secondary)
+                Spacer()
+                Picker("", selection: $model.recordType) {
+                    ForEach([DNSRecordType.a, .aaaa, .mx, .txt, .ns], id: \.self) { Text($0.label).tag($0) }
+                }.labelsHidden()
             }
-            .padding(16)
-            .animation(.snappy, value: model.rows.count)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Сравнение резолверов")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+            .padding(.horizontal, 14).padding(.vertical, 8)
+            .card()
+
+            ForEach(model.rows) { row in
+                resolverCard(row)
+            }
+            if model.isRunning && model.rows.isEmpty {
+                ProgressView().padding(.top, 40)
+            }
+        } bottom: {
             RunButton(title: "Сравнить", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.rows.count)
+        .navigationTitle("Сравнение резолверов")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { Task { await model.run() } }
@@ -120,31 +113,24 @@ struct DNSTamperView: View {
     @State private var model = DNSTamperModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Домен", icon: "exclamationmark.shield",
-                             disabled: model.isRunning, savedHostTool: .dnsTamper) { Task { await model.run() } }
-                if let report = model.report {
-                    verdictCard(report)
-                    findingsCard(report)
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Домен", icon: "exclamationmark.shield",
+                         disabled: model.isRunning, savedHostTool: .dnsTamper) { Task { await model.run() } }
+            if let report = model.report {
+                verdictCard(report)
+                findingsCard(report)
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
             }
-            .padding(16)
-            .animation(.snappy, value: model.report?.suspicious)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Детект DNS-подмены")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+        } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.report?.suspicious)
+        .navigationTitle("Детект DNS-подмены")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { Task { await model.run() } }

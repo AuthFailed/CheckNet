@@ -43,6 +43,7 @@ struct ScheduledTasksView: View {
         #endif
         .sheet(isPresented: $showHistory) {
             HistoryView(source: .scheduled, title: "История автозапусков")
+                .presentationDetents([.large])
         }
     }
 

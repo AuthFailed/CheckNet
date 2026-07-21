@@ -48,42 +48,35 @@ struct BonjourView: View {
     @State private var model = BonjourModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                if model.isRunning {
-                    HStack(spacing: 10) {
-                        ProgressView().controlSize(.small)
-                        Text("Поиск сервисов mDNS…").foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(model.services.count)").font(.headline).foregroundStyle(.blue)
-                    }
-                    .padding(14).card()
+        ToolScaffold {
+            if model.isRunning {
+                HStack(spacing: 10) {
+                    ProgressView().controlSize(.small)
+                    Text("Поиск сервисов mDNS…").foregroundStyle(.secondary)
+                    Spacer()
+                    Text("\(model.services.count)").font(.headline).foregroundStyle(.blue)
                 }
-
-                if model.services.isEmpty && !model.isRunning {
-                    ContentUnavailableView(
-                        "Нет сервисов",
-                        systemImage: "bonjour",
-                        description: Text("Запустите поиск, чтобы найти устройства и сервисы Bonjour в сети.")
-                    )
-                    .padding(.top, 40)
-                }
-
-                ForEach(model.grouped, id: \.type) { group in
-                    groupCard(group)
-                }
+                .padding(14).card()
             }
-            .padding(16)
-            .animation(.snappy, value: model.services)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Bonjour / mDNS")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+
+            if model.services.isEmpty && !model.isRunning {
+                ContentUnavailableView(
+                    "Нет сервисов",
+                    systemImage: "bonjour",
+                    description: Text("Запустите поиск, чтобы найти устройства и сервисы Bonjour в сети.")
+                )
+                .padding(.top, 40)
+            }
+
+            ForEach(model.grouped, id: \.type) { group in
+                groupCard(group)
+            }
+        } bottom: {
             RunButton(title: "Искать сервисы", running: model.isRunning) { model.toggle() }
         }
+        .animation(.snappy, value: model.services)
+        .navigationTitle("Bonjour / mDNS")
+        .toolTitleDisplayMode()
     }
 
     private func groupCard(_ group: (type: String, label: String, services: [BonjourService])) -> some View {

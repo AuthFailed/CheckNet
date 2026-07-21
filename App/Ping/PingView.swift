@@ -17,31 +17,30 @@ struct PingView: View {
     @State private var showSavePrompt = false
     @State private var showIntermediate = false
     @FocusState private var hostFieldFocused: Bool
+    /// Column rules scale with the numbers they separate.
+    @ScaledMetric(relativeTo: .body) private var statRule: CGFloat = 34
+    @ScaledMetric(relativeTo: .body) private var smallRule: CGFloat = 30
+    @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 120
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                hostCard
-                switch model.phase {
-                case .idle:
-                    idleHint
-                case .running:
-                    liveResults
-                case .finished:
-                    summaryResults
-                case .failed(let message):
-                    failureCard(message)
-                }
+        ToolScaffold {
+            hostCard
+            switch model.phase {
+            case .idle:
+                idleHint
+            case .running:
+                liveResults
+            case .finished:
+                summaryResults
+            case .failed(let message):
+                failureCard(message)
             }
-            .padding(16)
-            .animation(.snappy(duration: 0.28), value: model.phase)
+        } bottom: {
+            bottomBar
         }
-        .scrollDismissesKeyboard(.interactively)
-        .background(backgroundColor)
+        .animation(.snappy(duration: 0.28), value: model.phase)
         .navigationTitle("Ping")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
+        .toolTitleDisplayMode()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showSettings = true } label: {
@@ -63,12 +62,13 @@ struct PingView: View {
                 }
             }
         }
-        .safeAreaInset(edge: .bottom) { bottomBar }
         .sheet(isPresented: $showSettings) {
             PingSettingsView(model: model)
         }
         .sheet(isPresented: $showWebhookFields) {
             NavigationStack { WebhookFieldsView(schema: WebhookCatalog.ping) }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSchedule) {
             NavigationStack {
@@ -92,6 +92,8 @@ struct PingView: View {
                 #endif
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
             }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .alert("Сохранить хост", isPresented: $showSavePrompt) {
             Button("Сохранить") { savedHosts.add(name: model.host, value: model.host, tool: .ping) }
@@ -105,14 +107,6 @@ struct PingView: View {
             if openSettings { showSettings = true }
             if autostart { model.start() }
         }
-    }
-
-    private var backgroundColor: Color {
-        #if os(iOS)
-        Color(.systemGroupedBackground)
-        #else
-        Color(nsColor: .windowBackgroundColor)
-        #endif
     }
 
     // MARK: Host card
@@ -228,17 +222,17 @@ struct PingView: View {
                             .lineLimit(2)
                     } else {
                         Sparkline(values: model.sparkline)
-                            .frame(height: 34)
+                            .frame(height: statRule)
                     }
                 }
             }
             Divider()
             HStack {
                 statCell(value: "\(model.stats.received)/\(model.stats.transmitted)", label: "получено")
-                Divider().frame(height: 34)
+                Divider().frame(height: statRule)
                 statCell(value: "\(fmt(model.stats.lossPercent))%", label: "потери",
                          color: model.stats.lossPercent > 0 ? .orange : .green)
-                Divider().frame(height: 34)
+                Divider().frame(height: statRule)
                 statCell(value: model.stats.avg.map { fmt($0) } ?? "—", label: "средн., мс")
             }
         }
@@ -316,11 +310,11 @@ struct PingView: View {
             Divider()
             HStack {
                 statCell(value: model.stats.min.map { fmt($0) } ?? "—", label: "мин")
-                Divider().frame(height: 30)
+                Divider().frame(height: smallRule)
                 statCell(value: model.stats.avg.map { fmt($0) } ?? "—", label: "средн.", color: .blue)
-                Divider().frame(height: 30)
+                Divider().frame(height: smallRule)
                 statCell(value: model.stats.max.map { fmt($0) } ?? "—", label: "макс")
-                Divider().frame(height: 30)
+                Divider().frame(height: smallRule)
                 statCell(value: model.stats.jitter.map { fmt($0) } ?? "—", label: "джиттер")
             }
         }
@@ -343,7 +337,7 @@ struct PingView: View {
             }
             .chartYAxis { AxisMarks(position: .leading) }
             .chartXAxis(.hidden)
-            .frame(height: 120)
+            .frame(height: chartHeight)
         }
         .padding(16)
         .card()
@@ -388,7 +382,7 @@ struct PingView: View {
             if model.phase == .finished {
                 ShareLink(item: shareText) {
                     Label("Поделиться", systemImage: "square.and.arrow.up")
-                        .font(.headline).frame(maxWidth: .infinity).frame(height: 52)
+                        .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
                         .foregroundStyle(.white)
                         .background(.blue, in: RoundedRectangle(cornerRadius: 15))
                 }
@@ -401,7 +395,7 @@ struct PingView: View {
                 Button { model.toggle() } label: {
                     Label(model.isRunning ? LocalizedStringKey("Остановить") : LocalizedStringKey("Запустить проверку"),
                           systemImage: model.isRunning ? "stop.fill" : "play.fill")
-                        .font(.headline).frame(maxWidth: .infinity).frame(height: 52)
+                        .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
                         .foregroundStyle(model.isRunning ? .red : .white)
                         .background(model.isRunning ? AnyShapeStyle(Color.red.opacity(0.14))
                                                     : AnyShapeStyle(Color.blue),

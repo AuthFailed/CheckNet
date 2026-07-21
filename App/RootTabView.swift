@@ -19,10 +19,19 @@ struct RootTabView: View {
             Tab("Блокировки", systemImage: "hand.raised", value: 1) {
                 BlockingView()
             }
+            // Not on macOS: settings live in the ⌘, scene there, and a
+            // Settings tab as well would be two doors to the same room.
+            #if !os(macOS)
             Tab("Настройки", systemImage: "gearshape", value: 2) {
                 SettingsView()
             }
+            #endif
         }
+        // On iPhone this stays the Liquid Glass tab bar. Where there is room —
+        // iPad regular width, a Mac window — the system turns the same three
+        // tabs into a sidebar, which is what those platforms expect instead of
+        // a tab bar pinned to the bottom of a 13" screen.
+        .tabViewStyle(.sidebarAdaptable)
         .preferredColorScheme(settings.theme.colorScheme)
         .environment(\.locale, settings.language.localeIdentifier.map(Locale.init) ?? .current)
         .onOpenURL { url in
