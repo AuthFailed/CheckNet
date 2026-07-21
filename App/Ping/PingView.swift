@@ -193,12 +193,11 @@ struct PingView: View {
 
     // MARK: Live
 
+    @ViewBuilder
     private var liveResults: some View {
-        VStack(spacing: 16) {
-            liveMeterCard
-            if !model.replies.isEmpty {
-                responsesCard
-            }
+        liveMeterCard
+        if !model.replies.isEmpty {
+            responsesCard
         }
     }
 
@@ -284,12 +283,13 @@ struct PingView: View {
         }
     }
 
+    /// Deliberately not wrapped in a VStack: the scaffold arranges these, so on
+    /// a wide window they flow into columns instead of arriving as one tall item.
+    @ViewBuilder
     private var summaryResults: some View {
-        VStack(spacing: 14) {
-            summaryHeaderCard
-            if model.stats.rttSamples.count > 1 { latencyChartCard }
-            if !model.replies.isEmpty { intermediateDisclosure }
-        }
+        summaryHeaderCard
+        if model.stats.rttSamples.count > 1 { latencyChartCard }
+        if !model.replies.isEmpty { intermediateDisclosure }
     }
 
     private var summaryHeaderCard: some View {
