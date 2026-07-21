@@ -42,7 +42,7 @@ struct QRScannerSheet: View {
                 }
             }
             .navigationTitle("Сканировать QR")
-            .navigationBarTitleDisplayMode(.inline)
+            .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Отмена") { dismiss() }

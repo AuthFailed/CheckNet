@@ -43,7 +43,7 @@ struct NATView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("CGNAT / NAT")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить NAT", running: model.isRunning) {

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The Mac app runs sandboxed. Without the two networking entitlements
+	     every check fails silently: outgoing probes (ping, DNS, TLS, port scan)
+	     need the client entitlement, and the listeners used by Bonjour browsing
+	     and the iperf3 reverse test need the server one. -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	<!-- No app group here on purpose. Nothing on the Mac shares storage with
+	     the app: the widget extension is iOS-only (platformFilter in
+	     project.yml), so the group would exist for no consumer. It would also
+	     force a provisioning profile, breaking ad-hoc local builds, and on
+	     macOS it needs a Team ID prefix (<TeamID>.group.…) anyway. AppGroup
+	     already falls back to standard defaults and the app's own documents
+	     directory when the container is missing. -->
+</dict>
+</plist>

@@ -42,7 +42,9 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    #if !os(macOS)
                     Toggle("Live Activity в Dynamic Island", isOn: $settings.liveActivitiesEnabled)
+                    #endif
                     Toggle("Обратный DNS по умолчанию", isOn: $settings.reverseDNSByDefault)
                     Toggle("Предупреждать о сканирующих проверках", isOn: $settings.confirmSensitiveTests)
                     Button {
@@ -160,7 +162,7 @@ struct SavedHostsEditor: View {
         }
         .navigationTitle(kind.title)
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
     }
 

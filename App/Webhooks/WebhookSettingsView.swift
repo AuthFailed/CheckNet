@@ -109,7 +109,7 @@ struct WebhookSettingsView: View {
         }
         .navigationTitle("Вебхуки")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
     }
 }
@@ -150,7 +150,7 @@ struct WebhookFieldsView: View {
         }
         .navigationTitle(schema.toolLabel)
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
     }
 

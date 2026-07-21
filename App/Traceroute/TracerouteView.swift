@@ -67,7 +67,7 @@ struct TracerouteView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Трассировка")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Трассировать", running: model.isRunning,

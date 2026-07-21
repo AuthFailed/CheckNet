@@ -93,7 +93,7 @@ struct PortScanView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Проверка портов")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Сканировать", running: model.isRunning,

@@ -62,7 +62,7 @@ struct DNSLookupView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("DNS")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Запросить", running: model.isRunning,

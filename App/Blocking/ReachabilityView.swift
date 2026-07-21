@@ -125,7 +125,7 @@ struct ReachabilityView: View {
         }
         .navigationTitle("Доступность")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить", running: model.isRunning, disabled: false) {
