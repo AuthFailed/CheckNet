@@ -1,4 +1,5 @@
 import SwiftUI
+import NetworkKit
 
 /// How the checks are grouped in the list.
 ///
@@ -43,10 +44,20 @@ enum BlockingSection: String, CaseIterable, Identifiable {
 /// own connection is subject to (transparency/diagnostics).
 struct BlockingView: View {
     @State private var path: [BlockingRoute] = []
+    @State private var portal: CaptivePortalResult?
+    @State private var checkingPortal = false
 
     var body: some View {
         NavigationStack(path: $path) {
             List {
+                // A captive portal rewrites every request, so surface it first —
+                // otherwise every check below reports a false positive.
+                if let portal, portal.state != .open {
+                    Section {
+                        captivePortalBanner(portal)
+                    }
+                }
+
                 ForEach(BlockingSection.allCases) { section in
                     Section {
                         if section == .availability {
@@ -81,7 +92,32 @@ struct BlockingView: View {
                 case .reachability: ReachabilityView()
                 }
             }
+            .task { await checkPortal() }
+            .refreshable { await checkPortal() }
         }
+    }
+
+    private func checkPortal() async {
+        guard !checkingPortal else { return }
+        checkingPortal = true
+        portal = await CaptivePortalCheck().run()
+        checkingPortal = false
+    }
+
+    private func captivePortalBanner(_ portal: CaptivePortalResult) -> some View {
+        HStack(spacing: 13) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.title2)
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Сеть перехватывает трафик").font(.headline)
+                Text(LocalizedStringKey(portal.detail)).font(.caption).foregroundStyle(.secondary)
+                Text("Пока не выполнен вход, проверки ниже могут ошибаться.")
+                    .font(.caption2).foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.vertical, 4)
+        .listRowBackground(Color.orange.opacity(0.12))
     }
 
     private var sweepRow: some View {
