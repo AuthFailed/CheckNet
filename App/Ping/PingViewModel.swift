@@ -193,6 +193,17 @@ final class PingViewModel {
         if replies.count > 200 { replies.removeLast(replies.count - 200) }
         if stats.resolvedIP.isEmpty { stats.resolvedIP = reply.sourceIP }
         bumpElapsed()
+        emitLiveWebhookIfDue()
+    }
+
+    /// While live mode is on, stream the running result — but no faster than once
+    /// a second, so a fast ping doesn't flood the receiver.
+    private var lastLiveWebhook: Date?
+    private func emitLiveWebhookIfDue() {
+        let now = Date()
+        if let last = lastLiveWebhook, now.timeIntervalSince(last) < 1.0 { return }
+        lastLiveWebhook = now
+        WebhookReporter.reportPingLive(stats, samples: replies.reversed())
     }
 
     private func bumpElapsed() {

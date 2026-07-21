@@ -169,7 +169,10 @@ public enum WebhookPayloadBuilder {
         switch value {
         case .string(let s): return s
         case .int(let i): return i
-        case .double(let d): return d
+        // Swift's shortest round-trippable string ("81.84", not
+        // "81.840000000000003") fed through Decimal keeps JSONSerialization from
+        // re-introducing floating-point noise.
+        case .double(let d): return NSDecimalNumber(string: String(d))
         case .bool(let b): return b
         case .date(let d): return isoString(d)
         case .null: return NSNull()

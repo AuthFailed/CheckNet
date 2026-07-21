@@ -37,24 +37,28 @@ public enum WebhookCatalog {
         ]
     )
 
-    /// Values for a completed ping run.
+    /// Milliseconds rounded to 2 decimals — clean, common-sense numbers in the
+    /// payload instead of full floating-point noise.
+    private static func ms(_ value: Double) -> WebhookValue { .double((value * 100).rounded() / 100) }
+
+    /// Values for a ping run (final, or a live snapshot mid-run).
     public static func pingValues(_ stats: PingStatistics, samples: [PingReply]) -> [String: WebhookValue] {
         var values: [String: WebhookValue] = [
             "host": .string(stats.host),
             "resolvedIP": .string(stats.resolvedIP),
-            "lossPercent": .double(stats.lossPercent),
+            "lossPercent": ms(stats.lossPercent),
             "transmitted": .int(stats.transmitted),
             "received": .int(stats.received)
         ]
-        values["avgMillis"] = stats.avg.map(WebhookValue.double) ?? .null
-        values["minMillis"] = stats.min.map(WebhookValue.double) ?? .null
-        values["maxMillis"] = stats.max.map(WebhookValue.double) ?? .null
-        values["jitterMillis"] = stats.jitter.map(WebhookValue.double) ?? .null
-        values["stddevMillis"] = stats.stddev.map(WebhookValue.double) ?? .null
+        values["avgMillis"] = stats.avg.map(ms) ?? .null
+        values["minMillis"] = stats.min.map(ms) ?? .null
+        values["maxMillis"] = stats.max.map(ms) ?? .null
+        values["jitterMillis"] = stats.jitter.map(ms) ?? .null
+        values["stddevMillis"] = stats.stddev.map(ms) ?? .null
         values["samples"] = .objects(samples.map { reply in
             [
                 "sequence": .int(reply.sequence),
-                "rttMillis": .double(reply.rttMillis),
+                "rttMillis": ms(reply.rttMillis),
                 "ttl": reply.ttl.map(WebhookValue.int) ?? .null,
                 "sourceIP": .string(reply.sourceIP)
             ]
