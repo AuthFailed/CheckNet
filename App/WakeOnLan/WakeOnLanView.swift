@@ -62,7 +62,7 @@ struct WakeOnLanView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Wake-on-LAN")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             Button {

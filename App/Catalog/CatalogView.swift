@@ -42,9 +42,17 @@ struct CatalogView: View {
                     searchResults
                 }
             }
+            #if os(iOS)
             .listStyle(.insetGrouped)
+            #else
+            .listStyle(.inset)
+            #endif
             .navigationTitle("Инструменты")
+            #if os(iOS)
             .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Поиск")
+            #else
+            .searchable(text: $query, prompt: "Поиск")
+            #endif
             .navigationDestination(for: ToolRoute.self) { route in
                 ToolDestinationView(route: route)
             }

@@ -35,6 +35,15 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            Packages/NetworkKit/.build
+            ~/.swiftpm
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('Packages/NetworkKit/Package.resolved', 'Packages/NetworkKit/Package.swift') }}
+          restore-keys: swiftpm-${{ runner.os }}-
+
       - name: Build NetworkKit (SwiftPM core)
         run: swift build --package-path Packages/NetworkKit
 
@@ -51,6 +60,118 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             build
+
+  build-macos:
+    name: Build (macOS app)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      # The Mac app is signed ad-hoc: it carries the sandbox and networking
+      # entitlements, which automatic signing would demand a team for.
+      - name: Build app (macOS)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNet \
+            -configuration Debug \
+            -destination 'platform=macOS' \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+  unit-tests:
+    name: Unit tests (offline, blocking)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            Packages/NetworkKit/.build
+            ~/.swiftpm
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('Packages/NetworkKit/Package.resolved', 'Packages/NetworkKit/Package.swift') }}
+          restore-keys: swiftpm-${{ runner.os }}-
+
+      # Deterministic tests only — parsers, encoders, catalogues, local-server
+      # webhook delivery. This job is the gate: it must never be flaky, so a red
+      # cross here always means the change broke something.
+      - name: Run deterministic tests
+        env:
+          CHECKNET_SKIP_NETWORK_TESTS: "1"
+        run: swift test --package-path Packages/NetworkKit
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      # App-layer logic tests (Shared/). No network and no host app, so they run
+      # on the macOS destination — no simulator to boot and no device name that
+      # can vanish from a runner image.
+      - name: Run app tests
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNet \
+            -destination 'platform=macOS' \
+            -only-testing:CheckNetTests \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGNING_REQUIRED=NO \
+            test
+
+  network-tests:
+    name: Network tests (live hosts, informational)
+    runs-on: macos-latest
+    # A hosted runner filters ICMP and reaches third-party hosts unreliably, so
+    # a failure here is a signal to investigate, not a reason to block a PR.
+    # The real gate for network checks stays a local `swift test` run.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            Packages/NetworkKit/.build
+            ~/.swiftpm
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('Packages/NetworkKit/Package.resolved', 'Packages/NetworkKit/Package.swift') }}
+          restore-keys: swiftpm-${{ runner.os }}-
+
+      - name: Run the full suite against real hosts
+        run: swift test --package-path Packages/NetworkKit
 
   lint:
     name: Lint & optimization (SwiftLint)

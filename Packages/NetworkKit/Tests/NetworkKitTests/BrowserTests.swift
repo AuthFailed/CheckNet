@@ -31,7 +31,8 @@ final class BrowserTests: XCTestCase {
         for (ip, mac) in entries.prefix(5) { print("  \(ip) -> \(mac) [\(MACVendor.lookup(mac: mac) ?? "?")]") }
     }
 
-    func testBrowseSmallRange() async {
+    func testBrowseSmallRange() async throws {
+        try requiresInternet()
         // Browse the two Cloudflare anycast IPs as a fixed range (fast, deterministic).
         var devices: [DiscoveredDevice] = []
         for await event in NetworkBrowser().browse(cidr: "1.1.1.1-1.1.1.1", timeout: 2.0) {

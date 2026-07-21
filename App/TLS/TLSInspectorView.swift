@@ -70,7 +70,7 @@ struct TLSInspectorView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("TLS-инспектор")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить", running: model.isRunning,

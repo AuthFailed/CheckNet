@@ -33,6 +33,7 @@ final class ScanTests: XCTestCase {
     // MARK: MTU discovery
 
     func testMTUDiscovery() async throws {
+        try requiresInternet()
         var result: MTUResult?
         for await progress in MTUDiscovery().discover(host: "1.1.1.1", perProbeTimeout: 1.0) {
             if case .finished(let r) = progress { result = r }
@@ -47,6 +48,7 @@ final class ScanTests: XCTestCase {
     // MARK: IP range scan (small, local loopback-ish range to stay fast)
 
     func testRangeScanFindsHost() async throws {
+        try requiresInternet()
         // 1.1.1.1 and 1.0.0.1 both answer; scan the tiny range around them.
         var alive: [DiscoveredHost] = []
         for await event in IPRangeScanner().scan(range: "1.1.1.1-1.1.1.1", timeout: 2.0, resolveNames: false) {

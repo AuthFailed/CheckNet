@@ -79,7 +79,7 @@ struct BonjourView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Bonjour / mDNS")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Искать сервисы", running: model.isRunning) { model.toggle() }

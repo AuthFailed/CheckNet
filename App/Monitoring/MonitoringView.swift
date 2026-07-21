@@ -38,7 +38,7 @@ struct MonitoringView: View {
         .background(Palette.groupedBackground)
         .navigationTitle("Мониторинг")
         #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         #endif
         .safeAreaInset(edge: .bottom) {
             if !manager.entries.isEmpty {
