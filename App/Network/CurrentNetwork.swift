@@ -17,6 +17,17 @@ import CoreLocation
 /// when both are satisfied. Until the entitlement is available this resolves to
 /// `.unavailable` with the reason, rather than failing silently.
 enum CurrentNetwork {
+    /// Whether the build carries **Access Wi-Fi Information**.
+    ///
+    /// The entitlement can only be signed by a paid developer account, so it is
+    /// currently commented out in `App/CheckNet.entitlements`. This flag is the
+    /// code-side half of that switch: flip both together, never one alone.
+    ///
+    /// Without it `NEHotspotNetwork.fetchCurrent` always reports no network, so
+    /// the app must not pretend otherwise — and must not ask for location, which
+    /// is only a prerequisite for a lookup that cannot succeed.
+    static let isSSIDReadable = false
+
     enum Result: Sendable, Equatable {
         case ssid(String)
         /// Connected to Wi-Fi, but the SSID is withheld (permission/entitlement).
@@ -27,6 +38,10 @@ enum CurrentNetwork {
 
     static func current() async -> Result {
         #if os(iOS)
+        guard isSSIDReadable else {
+            return .unavailable(reason: "У сборки нет прав на чтение имени Wi-Fi-сети.")
+        }
+
         // Location permission is a prerequisite; request it if undetermined.
         let status = await LocationGate.shared.authorize()
         switch status {
