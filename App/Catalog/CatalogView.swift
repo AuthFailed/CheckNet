@@ -94,12 +94,17 @@ struct CatalogView: View {
     private var splitLayout: some View {
         NavigationSplitView {
             catalogList
-                // Without an explicit width the column collapses on macOS —
-                // where `.sidebarAdaptable` already spends one column on the
-                // tab list — and tool names wrap one letter per line until the
-                // user drags the divider open.
-                .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 480)
                 .modifier(CatalogChrome(query: $query, showHistory: $showHistory))
+                // `.sidebarAdaptable` already spends one column on the tab list,
+                // so this one starts near zero and tool names wrap a letter per
+                // line until the divider is dragged open.
+                //
+                // Both halves are needed. The column width states the intent,
+                // but AppKit restores a saved divider position per window, so a
+                // stale narrow value from an earlier run wins over `ideal`. The
+                // frame is the floor that a restored position cannot go under.
+                .frame(minWidth: 240)
+                .navigationSplitViewColumnWidth(min: 240, ideal: 300, max: 480)
         } detail: {
             NavigationStack {
                 if let selection {
