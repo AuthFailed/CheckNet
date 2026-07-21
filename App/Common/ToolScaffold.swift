@@ -1,57 +1,135 @@
 import SwiftUI
 
-/// The shared skeleton of a tool screen.
-///
-/// Every tool repeated the same four things by hand — a `ScrollView` around a
-/// `VStack(spacing: 16)` with 16 pt padding, the grouped background, the
-/// snappy phase animation, and a `RunButton` pinned via `safeAreaInset`. None
-/// of them limited the content width, so on iPad and Mac a card stretched to
-/// the full window and a two-word result sat alone on a 1300 pt line.
-///
-/// The width cap is the readable-width convention: text stops growing past a
-/// comfortable measure and the column centres instead. On iPhone the cap never
-/// binds (the widest phone is far below it), so no size-class check is needed —
-/// the same code is correct on every device.
-///
-/// Only the container is standardised here. How result cards should *arrange*
-/// themselves once there is room for two columns is a visual design question,
-/// deliberately left out of this type until it has been designed.
 enum ToolLayout {
-    /// Roughly the width at which a line of text stops being comfortable to
-    /// read. Cards and the run button share it, so a screen reads the same on
-    /// iPad as on iPhone instead of stretching to the window.
+    /// Readable measure for a single column of cards.
     static let contentWidth: CGFloat = 640
+    /// Leading column on iPad at full width.
+    static let leadingColumnWidth: CGFloat = 360
+    /// Leading rail in landscape on a phone — narrower, because there height is
+    /// what is scarce, not width.
+    static let railWidth: CGFloat = 320
+    /// Narrowest a result module may become before the grid drops a column.
+    static let moduleMinWidth: CGFloat = 360
+    static let spacing: CGFloat = 16
 }
 
-struct ToolScaffold<Content: View, Bottom: View>: View {
-    var spacing: CGFloat = 16
+/// The shared skeleton of a tool screen, in the three arrangements the design
+/// calls for. Which one applies follows the size classes, not the device:
+///
+/// - **stack** — compact width, regular height (iPhone portrait, iPad Split ½).
+///   One column capped at 640 pt, run button pinned in the bottom safe area.
+/// - **rail** — compact width, compact height (iPhone landscape). A 320 pt
+///   leading rail holds the input *and* the run button, each side scrolls
+///   independently, and there is no bottom bar: in landscape a pinned bar eats
+///   a fifth of the screen.
+/// - **twoColumn** — regular width (iPad at full width, Mac). A 360 pt leading
+///   column, results in an adaptive grid beside it.
+///
+/// `leading` is the input and whatever belongs with it; `content` is the result
+/// modules, which flow into columns when there is room. This split is the point:
+/// a host field is not a result and must not be laid into the grid next to one.
+/// Screens that pass no `leading` keep the plain single column, so screens can
+/// migrate one at a time.
+struct ToolScaffold<Leading: View, Content: View, Bottom: View>: View {
+    enum Mode { case stack, rail, twoColumn }
+
+    var spacing: CGFloat = ToolLayout.spacing
+    @ViewBuilder var leading: () -> Leading
     @ViewBuilder var content: () -> Content
     @ViewBuilder var bottom: () -> Bottom
 
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var hSize
+    @Environment(\.verticalSizeClass) private var vSize
+    #endif
+
+    private var mode: Mode {
+        #if os(iOS)
+        if hSize == .regular { return .twoColumn }
+        return vSize == .compact ? .rail : .stack
+        #else
+        return .twoColumn
+        #endif
+    }
+
+    /// A screen that hasn't been split yet keeps the old behaviour rather than
+    /// showing an empty leading column.
+    private var isSplit: Bool { Leading.self != EmptyView.self }
+
     var body: some View {
+        Group {
+            if isSplit, mode != .stack {
+                splitLayout
+            } else {
+                stackLayout
+            }
+        }
+        .background(Palette.groupedBackground)
+    }
+
+    // MARK: Stack
+
+    private var stackLayout: some View {
         ScrollView {
             VStack(spacing: spacing) {
+                leading()
                 content()
             }
-            .padding(16)
+            .padding(ToolLayout.spacing)
             .frame(maxWidth: ToolLayout.contentWidth)
-            // The inner frame caps the width, this one centres that column in
-            // whatever space is left.
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
-        .background(Palette.groupedBackground)
-        .safeAreaInset(edge: .bottom) {
-            bottom()
+        .safeAreaInset(edge: .bottom) { bottom() }
+    }
+
+    // MARK: Rail and two-column
+
+    private var splitLayout: some View {
+        HStack(alignment: .top, spacing: 0) {
+            ScrollView {
+                VStack(spacing: spacing) {
+                    leading()
+                    // Here the run button travels with the input instead of
+                    // being pinned across the bottom.
+                    bottom()
+                }
+                .padding(ToolLayout.spacing)
+            }
+            .frame(width: mode == .rail ? ToolLayout.railWidth : ToolLayout.leadingColumnWidth)
+            .scrollDismissesKeyboard(.interactively)
+
+            Divider()
+
+            ScrollView {
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: ToolLayout.moduleMinWidth), spacing: spacing)],
+                    alignment: .leading,
+                    spacing: spacing
+                ) {
+                    content()
+                }
+                .padding(ToolLayout.spacing)
+            }
         }
     }
 }
 
-extension ToolScaffold where Bottom == EmptyView {
-    /// A tool screen with no pinned run button (results-only screens such as
-    /// the interface list).
-    init(spacing: CGFloat = 16, @ViewBuilder content: @escaping () -> Content) {
-        self.init(spacing: spacing, content: content, bottom: { EmptyView() })
+// MARK: - Convenience initialisers
+
+extension ToolScaffold where Leading == EmptyView, Bottom == EmptyView {
+    /// Results-only screen: no input, no run button.
+    init(spacing: CGFloat = ToolLayout.spacing, @ViewBuilder content: @escaping () -> Content) {
+        self.init(spacing: spacing, leading: { EmptyView() }, content: content, bottom: { EmptyView() })
+    }
+}
+
+extension ToolScaffold where Leading == EmptyView {
+    /// Not yet split into input and results — behaves exactly as before.
+    init(spacing: CGFloat = ToolLayout.spacing,
+         @ViewBuilder content: @escaping () -> Content,
+         @ViewBuilder bottom: @escaping () -> Bottom) {
+        self.init(spacing: spacing, leading: { EmptyView() }, content: content, bottom: bottom)
     }
 }
 
@@ -60,9 +138,7 @@ extension View {
     /// Wires the ⌘R / ⌘. menu commands to one screen's run and stop actions.
     ///
     /// Menu commands are built once, outside any view, so they cannot reach a
-    /// tool's model directly — they arrive through `ToolCommandBus`. Applying
-    /// this in `ToolScaffold`'s users means the shortcut works on every tool
-    /// rather than only the one screen that happened to observe the bus.
+    /// tool's model directly — they arrive through `ToolCommandBus`.
     func toolCommands(isRunning: Bool, run: @escaping () -> Void, stop: @escaping () -> Void) -> some View {
         onChange(of: ToolCommandBus.shared.latest?.id) { _, _ in
             switch ToolCommandBus.shared.latest?.command {
