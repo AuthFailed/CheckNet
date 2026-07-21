@@ -98,7 +98,12 @@ struct RunButton: View {
                             in: RoundedRectangle(cornerRadius: 15))
         }
         .disabled(disabled)
+        // The bar spans the window, but the control inside it follows the same
+        // width cap as the content above — a 1300 pt wide button on an iPad
+        // reads as a layout bug, not as emphasis.
+        .frame(maxWidth: ToolLayout.contentWidth)
         .padding(.horizontal, 16).padding(.vertical, 10)
+        .frame(maxWidth: .infinity)
         .background(.bar)
     }
 }
