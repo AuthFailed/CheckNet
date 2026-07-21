@@ -23,7 +23,7 @@ final class TransferCutoffTests: XCTestCase {
     // MARK: - Individual probes against real hosts
 
     func testSingleSegmentReaches() async {
-        let probe = await TransferCutoffCheck().probeSingleSegment(host: "cloudflare.com")
+        let probe = await TransferCutoffCheck().probeSingleSegment(host: TransferCutoffCheck.defaultTarget)
         print("single segment: \(probe.outcome) — \(probe.detail)")
         XCTAssertEqual(probe.outcome, .passed, "one-segment request should reach an uncensored network")
         XCTAssertEqual(probe.segmentsSent, 1)
@@ -33,14 +33,14 @@ final class TransferCutoffTests: XCTestCase {
     /// packets must also arrive — if this freezes here, the probe itself is
     /// broken rather than the network being filtered.
     func testPacketCountReachesOnCleanNetwork() async {
-        let probe = await TransferCutoffCheck().probePacketCount(host: "cloudflare.com")
+        let probe = await TransferCutoffCheck().probePacketCount(host: TransferCutoffCheck.defaultTarget)
         print("packet count: \(probe.outcome) — \(probe.detail) [\(probe.segmentsSent) segments]")
         XCTAssertEqual(probe.outcome, .passed)
         XCTAssertGreaterThan(probe.segmentsSent, 10, "request should have been split into many packets")
     }
 
     func testByteAccumulationReachesOnCleanNetwork() async {
-        let probe = await TransferCutoffCheck().probeByteAccumulation(host: "cloudflare.com")
+        let probe = await TransferCutoffCheck().probeByteAccumulation(host: TransferCutoffCheck.defaultTarget)
         print("byte accumulation: \(probe.outcome) — \(probe.detail) [\(probe.bytesSent) bytes]")
         XCTAssertEqual(probe.outcome, .passed)
         XCTAssertGreaterThan(probe.bytesSent, 40_000, "should have pushed past the 16-20 KB range")
@@ -59,7 +59,7 @@ final class TransferCutoffTests: XCTestCase {
     /// otherwise every unreachable server would be reported as censorship.
     func testRefusedConnectionIsNotReportedAsFreeze() async {
         // Port 9 (discard) is closed on Cloudflare's edge.
-        let probe = await TransferCutoffCheck().probeSingleSegment(host: "cloudflare.com", port: 9, readTimeout: 3)
+        let probe = await TransferCutoffCheck().probeSingleSegment(host: TransferCutoffCheck.defaultTarget, port: 9, readTimeout: 3)
         print("closed port: \(probe.outcome) — \(probe.detail)")
         XCTAssertEqual(probe.outcome, .failed)
     }
