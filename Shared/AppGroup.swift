@@ -11,9 +11,17 @@ enum AppGroup {
     }
 
     /// A file URL inside the shared container for larger payloads (history).
+    ///
+    /// The group container is used only when it actually exists on disk. Without
+    /// the app-group entitlement — an unsandboxed process, a test bundle, the Mac
+    /// build — `containerURL(forSecurityApplicationGroupIdentifier:)` still hands
+    /// back a path, but nothing has created the directory, so every write to it
+    /// fails. Combined with the `try?` on the write that looked exactly like a
+    /// working app that silently kept no history.
     static func containerURL(for filename: String) -> URL {
         let fm = FileManager.default
-        if let container = fm.containerURL(forSecurityApplicationGroupIdentifier: identifier) {
+        if let container = fm.containerURL(forSecurityApplicationGroupIdentifier: identifier),
+           fm.fileExists(atPath: container.path) {
             return container.appendingPathComponent(filename)
         }
         // Fallback: app's own documents directory.
