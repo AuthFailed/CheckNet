@@ -30,7 +30,7 @@ struct DNSCompareView: View {
             HStack {
                 Text("Тип записи").foregroundStyle(.secondary)
                 Spacer()
-                Picker("", selection: $model.recordType) {
+                Picker("Тип записи", selection: $model.recordType) {
                     ForEach([DNSRecordType.a, .aaaa, .mx, .txt, .ns], id: \.self) { Text($0.label).tag($0) }
                 }.labelsHidden()
             }
