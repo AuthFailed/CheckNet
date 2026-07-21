@@ -1,10 +1,7 @@
 import Foundation
-#if canImport(WidgetKit)
-import WidgetKit
-#endif
 
 /// Reads and writes shared state (last snapshots, monitored hosts, history)
-/// used across the app, widgets and Live Activities.
+/// used across the app, App Intents and Live Activities.
 enum SharedStore {
     private static let snapshotsKey = "checknet.snapshots"
     private static let monitoredKey = "checknet.monitoredHosts"
@@ -21,9 +18,6 @@ enum SharedStore {
         if let data = try? JSONEncoder().encode(all) {
             AppGroup.defaults.set(data, forKey: snapshotsKey)
         }
-        #if canImport(WidgetKit) && !os(macOS)
-        WidgetCenter.shared.reloadAllTimelines()
-        #endif
     }
 
     static func snapshots() -> [PingSnapshot] {
