@@ -78,6 +78,8 @@
 	<string>Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>CheckNet сканирует локальную сеть для обнаружения устройств, Bonjour-сервисов и проверки хостов.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Доступ к геопозиции нужен только чтобы прочитать имя текущей Wi-Fi-сети — iOS отдаёт SSID лишь с этим разрешением. Координаты не используются и никуда не отправляются.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

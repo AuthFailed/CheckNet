@@ -6,5 +6,9 @@
 	<array>
 		<string>group.com.chrsnv.checknet</string>
 	</array>
+	<!-- Reading the current Wi-Fi SSID for network profiles. Takes effect only
+	     when signed with a provisioning profile that carries this capability. -->
+	<key>com.apple.developer.networking.wifi-info</key>
+	<true/>
 </dict>
 </plist>
