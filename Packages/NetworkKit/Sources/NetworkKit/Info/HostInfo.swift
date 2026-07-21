@@ -22,7 +22,7 @@ public enum ReverseDNS {
         let rc = getnameinfo(node.pointee.ai_addr, node.pointee.ai_addrlen,
                              &host, socklen_t(host.count), nil, 0, NI_NAMEREQD)
         guard rc == 0 else { return nil }
-        let name = String(cString: host)
+        let name = String(nullTerminated: host)
         return name == ip ? nil : name
     }
 }
@@ -130,7 +130,7 @@ public enum NetworkInterfaces {
         var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
         let len = family == .ipv4 ? socklen_t(MemoryLayout<sockaddr_in>.size) : socklen_t(MemoryLayout<sockaddr_in6>.size)
         getnameinfo(addr, len, &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST)
-        var s = String(cString: host)
+        var s = String(nullTerminated: host)
         // Strip IPv6 scope id suffix (e.g. fe80::1%en0).
         if let pct = s.firstIndex(of: "%") { s = String(s[..<pct]) }
         return s

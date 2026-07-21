@@ -78,8 +78,14 @@ struct SettingsView: View {
 
                 Section {
                     Button {
+                        // The callback arrives on the permission helper's own
+                        // queue, so hop back before touching view state.
                         LocalNetworkPermission.shared.request { granted in
-                            permissionResult = granted ? "Доступ к локальной сети активен." : "Доступ к локальной сети не подтверждён — разрешите его в Настройках iOS."
+                            Task { @MainActor in
+                                permissionResult = granted
+                                    ? "Доступ к локальной сети активен."
+                                    : "Доступ к локальной сети не подтверждён — разрешите его в Настройках iOS."
+                            }
                         }
                     } label: {
                         Label("Запросить доступ к локальной сети", systemImage: "wifi")
