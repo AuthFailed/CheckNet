@@ -86,13 +86,28 @@ struct RunButton: View {
     var running: Bool
     var disabled: Bool = false
     var action: () -> Void
+    #if os(iOS)
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    #endif
+
+    /// In landscape on a phone the screen is ~390 pt tall, and a 52 pt button
+    /// with 10 pt of padding above and below eats a fifth of it. The control
+    /// shrinks to the 44 pt minimum tap target there instead of keeping a size
+    /// tuned for portrait.
+    private var isShort: Bool {
+        #if os(iOS)
+        verticalSizeClass == .compact
+        #else
+        false
+        #endif
+    }
 
     var body: some View {
         Button(action: action) {
             Label(running ? LocalizedStringKey("Остановить") : title, systemImage: running ? "stop.fill" : "play.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 52)
+                .frame(minHeight: isShort ? 44 : 52)
                 .foregroundStyle(running ? .red : .white)
                 .background(running ? AnyShapeStyle(Color.red.opacity(0.14)) : AnyShapeStyle(Color.blue),
                             in: RoundedRectangle(cornerRadius: 15))
@@ -102,7 +117,8 @@ struct RunButton: View {
         // width cap as the content above — a 1300 pt wide button on an iPad
         // reads as a layout bug, not as emphasis.
         .frame(maxWidth: ToolLayout.contentWidth)
-        .padding(.horizontal, 16).padding(.vertical, 10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, isShort ? 5 : 10)
         .frame(maxWidth: .infinity)
         .background(.bar)
     }
