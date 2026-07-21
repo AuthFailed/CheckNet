@@ -43,38 +43,31 @@ struct TracerouteView: View {
     @State private var model = TracerouteModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Хост или IP",
-                             icon: "point.topleft.down.to.point.bottomright.curvepath",
-                             disabled: model.isRunning, savedHostTool: .traceroute) { model.start() }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Хост или IP",
+                         icon: "point.topleft.down.to.point.bottomright.curvepath",
+                         disabled: model.isRunning, savedHostTool: .traceroute) { model.start() }
 
-                Toggle("Разрешать имена (rDNS)", isOn: $model.resolveNames)
-                    .padding(.horizontal, 14).padding(.vertical, 6)
-                    .card()
-                    .disabled(model.isRunning)
+            Toggle("Разрешать имена (rDNS)", isOn: $model.resolveNames)
+                .padding(.horizontal, 14).padding(.vertical, 6)
+                .card()
+                .disabled(model.isRunning)
 
-                if !model.resolvedIP.isEmpty {
-                    statusRow
-                }
-                if !model.hops.isEmpty {
-                    hopsCard
-                }
+            if !model.resolvedIP.isEmpty {
+                statusRow
             }
-            .padding(16)
-            .animation(.snappy, value: model.hops)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Трассировка")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+            if !model.hops.isEmpty {
+                hopsCard
+            }
+        } bottom: {
             RunButton(title: "Трассировать", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 model.toggle()
             }
         }
+        .animation(.snappy, value: model.hops)
+        .navigationTitle("Трассировка")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }
