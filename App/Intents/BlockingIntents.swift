@@ -66,7 +66,7 @@ struct CheckReachabilityIntent: AppIntent {
         let reachable = results.filter { $0.status == .reachable }.count
         let obstructed = results.filter { $0.status == .obstructed }.count
 
-        var outcome = CheckOutcome()
+        let outcome = CheckOutcome()
         outcome.succeeded = obstructed == 0
         outcome.verdict = obstructed == 0 ? "clean" : "restricted"
         outcome.headline = "Доступно \(reachable) из \(results.count)"
@@ -99,7 +99,7 @@ struct CheckPushDeliveryIntent: AppIntent {
         let results = await sweep.run(category: .pushNotification)
         let blocked = results.filter { $0.status != .reachable }
 
-        var outcome = CheckOutcome()
+        let outcome = CheckOutcome()
         outcome.succeeded = blocked.isEmpty
         outcome.verdict = blocked.isEmpty ? "clean" : "restricted"
         outcome.target = "push"

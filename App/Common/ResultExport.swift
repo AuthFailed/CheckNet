@@ -42,23 +42,17 @@ enum ResultExport {
 }
 
 /// A PNG of a result, produced only when the share sheet asks for it.
-struct ResultImage<Content: View>: Transferable {
+///
+/// Deliberately not generic over the view: a generic `Content` would be captured
+/// as a non-Sendable metatype inside the transfer closure. The rendering is
+/// closed over instead, so this type carries only a name and a function.
+struct ResultImage: Transferable {
     let name: String
-    /// Marked `@MainActor` at the call boundary instead of on the property, so
-    /// the memberwise initializer stays nonisolated and the type can be built
-    /// from a view body.
-    let content: @MainActor @Sendable () -> Content
-
-    init(name: String, content: @escaping @MainActor @Sendable () -> Content) {
-        self.name = name
-        self.content = content
-    }
+    let render: @MainActor @Sendable () -> Data?
 
     static var transferRepresentation: some TransferRepresentation {
         DataRepresentation(exportedContentType: .png) { item in
-            await MainActor.run {
-                ResultExport.png(item.content()) ?? Data()
-            }
+            await MainActor.run { item.render() ?? Data() }
         }
         .suggestedFileName { $0.name + ".png" }
     }
@@ -82,7 +76,7 @@ struct ResultShareMenu<Content: View>: View {
     var body: some View {
         Menu {
             ShareLink(
-                item: ResultImage(name: name, content: snapshot),
+                item: ResultImage(name: name) { ResultExport.png(snapshot()) },
                 preview: SharePreview("Результат проверки")
             ) {
                 Label("Поделиться картинкой", systemImage: "photo")
