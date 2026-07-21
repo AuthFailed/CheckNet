@@ -159,7 +159,7 @@ struct BlockingCheckView: View {
             }
         }
         .animation(.snappy, value: model.finding?.verdict)
-        .navigationTitle(check.title)
+        .navigationTitle(LocalizedStringKey(check.title))
         .toolTitleDisplayMode()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
