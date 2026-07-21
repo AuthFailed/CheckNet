@@ -235,6 +235,8 @@ final class PingViewModel {
             succeeded: stats.received > 0,
             detail: "\(stats.received)/\(stats.transmitted), \(Int(stats.lossPercent))% потерь, avg \(stats.avg.map { String(format: "%.0f", $0) } ?? "—") мс"
         ))
+        // Samples are stored newest-first for the UI; send them chronologically.
+        WebhookReporter.reportPing(stats, samples: replies.reversed())
     }
 
     private func resolveReverse(_ ip: String) async {

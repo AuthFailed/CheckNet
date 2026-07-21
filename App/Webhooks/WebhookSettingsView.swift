@@ -1,4 +1,5 @@
 import SwiftUI
+import NetworkKit
 
 /// Configure where check results are sent.
 struct WebhookSettingsView: View {
@@ -31,7 +32,24 @@ struct WebhookSettingsView: View {
             }
 
             Section {
-                SecureField("Необязательно", text: $settings.secret)
+                HStack {
+                    SecureField("Необязательно", text: $settings.secret)
+                    if settings.secret.isEmpty {
+                        Button {
+                            settings.generateSecret()
+                        } label: {
+                            Image(systemName: "wand.and.stars").accessibilityLabel("Сгенерировать секрет")
+                        }
+                        .buttonStyle(.borderless)
+                    } else {
+                        Button(role: .destructive) {
+                            settings.clearSecret()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill").accessibilityLabel("Очистить секрет")
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
             } header: {
                 Text("Секрет для подписи")
             } footer: {
@@ -42,6 +60,24 @@ struct WebhookSettingsView: View {
                 Picker("События", selection: $settings.trigger) {
                     ForEach(WebhookTrigger.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
+                Picker("Формат", selection: $settings.format) {
+                    ForEach(WebhookFormat.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
+                }
+            }
+
+            Section {
+                ForEach(WebhookCatalog.schemas, id: \.toolKey) { schema in
+                    NavigationLink {
+                        WebhookFieldsView(schema: schema)
+                    } label: {
+                        LabeledContent(schema.toolLabel,
+                                       value: "\(settings.selectedFields(forTool: schema.toolKey).count) полей")
+                    }
+                }
+            } header: {
+                Text("Данные по инструментам")
+            } footer: {
+                Text("По умолчанию отправляются все данные, которые умеет отдавать инструмент. Здесь можно отключить ненужные поля.")
             }
 
             Section {
@@ -70,5 +106,53 @@ struct WebhookSettingsView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+    }
+}
+
+/// Toggle which of a tool's fields (and intermediate sub-fields) are sent.
+struct WebhookFieldsView: View {
+    @Environment(WebhookSettings.self) private var settings
+    let schema: WebhookSchema
+
+    var body: some View {
+        Form {
+            ForEach(schema.fields) { field in
+                if field.isList {
+                    Section {
+                        fieldToggle(field.key, field.label)
+                        // Sub-fields are only meaningful while the list is on.
+                        if settings.isFieldSelected(toolKey: schema.toolKey, path: field.key) {
+                            ForEach(field.children) { child in
+                                fieldToggle("\(field.key).\(child.key)", child.label)
+                                    .padding(.leading, 12)
+                            }
+                        }
+                    } header: {
+                        Text(field.label)
+                    } footer: {
+                        Text("Промежуточные результаты. Можно отключить весь список или отдельные поля в каждом элементе.")
+                    }
+                } else {
+                    fieldToggle(field.key, field.label)
+                }
+            }
+
+            Section {
+                Button("Сбросить к значениям по умолчанию") {
+                    settings.resetFields(forTool: schema.toolKey)
+                }
+            }
+        }
+        .navigationTitle(schema.toolLabel)
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+    }
+
+    private func fieldToggle(_ path: String, _ label: String) -> some View {
+        Toggle(LocalizedStringKey(label), isOn: Binding(
+            get: { settings.isFieldSelected(toolKey: schema.toolKey, path: path) },
+            set: { settings.setField(toolKey: schema.toolKey, path: path, on: $0) }
+        ))
     }
 }
