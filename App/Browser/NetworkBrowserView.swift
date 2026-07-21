@@ -38,30 +38,23 @@ struct NetworkBrowserView: View {
     @State private var model = NetworkBrowserModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                if model.total > 0 {
-                    progressCard
-                }
-                if !model.devices.isEmpty {
-                    devicesCard
-                } else if !model.isRunning {
-                    ContentUnavailableView("Обзор сети", systemImage: "rectangle.connected.to.line.below",
-                                           description: Text("Найдём устройства в вашей сети с IP, MAC и вендором."))
-                    .padding(.top, 40)
-                }
+        ToolScaffold {
+            if model.total > 0 {
+                progressCard
             }
-            .padding(16)
-            .animation(.snappy, value: model.devices)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Обзор сети")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+            if !model.devices.isEmpty {
+                devicesCard
+            } else if !model.isRunning {
+                ContentUnavailableView("Обзор сети", systemImage: "rectangle.connected.to.line.below",
+                                       description: Text("Найдём устройства в вашей сети с IP, MAC и вендором."))
+                .padding(.top, 40)
+            }
+        } bottom: {
             RunButton(title: "Сканировать сеть", running: model.isRunning) { model.toggle() }
         }
+        .animation(.snappy, value: model.devices)
+        .navigationTitle("Обзор сети")
+        .toolTitleDisplayMode()
     }
 
     private var progressCard: some View {
@@ -91,7 +84,7 @@ struct NetworkBrowserView: View {
             Image(systemName: icon(for: device))
                 .font(.title3)
                 .foregroundStyle(device.isGateway ? .orange : (device.isSelf ? .blue : .secondary))
-                .frame(width: 32)
+                .frame(minWidth: 32)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(device.displayName).font(.callout.weight(.medium)).lineLimit(1)

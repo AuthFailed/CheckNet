@@ -149,7 +149,9 @@ struct HostSharingView: View {
         }
         #if os(iOS)
         .sheet(isPresented: $showScanner, onDismiss: presentScannedHosts) {
+            // Full height only: a live viewfinder is hard to aim in a half sheet.
             QRScannerSheet(onFound: handleScan)
+                .presentationDetents([.large])
         }
         #endif
     }
@@ -334,5 +336,9 @@ struct ImportHostsSheet: View {
                 }
             }
         }
+        // Set here rather than at each call site: this sheet is presented both
+        // from the share screen and from an incoming `checknet://` link.
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }

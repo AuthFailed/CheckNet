@@ -19,37 +19,30 @@ struct NATView: View {
     @State private var model = NATModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                if let report = model.report {
-                    typeCard(report)
-                    addressCard(report)
-                    if !report.findings.isEmpty { findingsCard(report) }
-                } else if model.isRunning {
-                    VStack(spacing: 10) {
-                        ProgressView()
-                        Text("Анализ маршрута и внешнего адреса…").font(.caption).foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 60)
-                } else {
-                    ContentUnavailableView("Проверка NAT", systemImage: "arrow.triangle.branch",
-                                           description: Text("Определим тип NAT, внешний адрес и наличие CGNAT."))
-                    .padding(.top, 40)
+        ToolScaffold {
+            if let report = model.report {
+                typeCard(report)
+                addressCard(report)
+                if !report.findings.isEmpty { findingsCard(report) }
+            } else if model.isRunning {
+                VStack(spacing: 10) {
+                    ProgressView()
+                    Text("Анализ маршрута и внешнего адреса…").font(.caption).foregroundStyle(.secondary)
                 }
+                .padding(.top, 60)
+            } else {
+                ContentUnavailableView("Проверка NAT", systemImage: "arrow.triangle.branch",
+                                       description: Text("Определим тип NAT, внешний адрес и наличие CGNAT."))
+                .padding(.top, 40)
             }
-            .padding(16)
-            .animation(.snappy, value: model.report?.natType)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("CGNAT / NAT")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+        } bottom: {
             RunButton(title: "Проверить NAT", running: model.isRunning) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.report?.natType)
+        .navigationTitle("CGNAT / NAT")
+        .toolTitleDisplayMode()
         .onAppear { if autostart { Task { await model.run() } } }
     }
 

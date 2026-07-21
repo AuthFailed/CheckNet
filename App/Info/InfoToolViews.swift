@@ -37,32 +37,25 @@ struct HostToIPView: View {
     @State private var model = HostToIPModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.right.circle",
-                             disabled: model.isRunning, savedHostTool: .hostToIP) { Task { await model.run() } }
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                } else if let result = model.result {
-                    addressCard(result)
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
-                }
+        ToolScaffold {
+            HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.right.circle",
+                         disabled: model.isRunning, savedHostTool: .hostToIP) { Task { await model.run() } }
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
+            } else if let result = model.result {
+                addressCard(result)
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
             }
-            .padding(16)
-            .animation(.snappy, value: model.result)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Host → IP")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+        } bottom: {
             RunButton(title: "Разрешить", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .animation(.snappy, value: model.result)
+        .navigationTitle("Host → IP")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.host = presetHost }
             if autostart { Task { await model.run() } }
@@ -129,37 +122,30 @@ struct ReverseDNSView: View {
     @State private var model = ReverseDNSModel()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "arrow.uturn.backward",
-                             disabled: model.isRunning, savedHostTool: .reverseDns) { Task { await model.run() } }
-                if let error = model.errorMessage {
-                    ErrorBanner(message: error)
-                } else if model.didRun {
-                    VStack(spacing: 0) {
-                        InfoRow(label: "IP", value: model.ip, mono: true)
-                        Divider().padding(.leading, 14)
-                        InfoRow(label: "PTR", value: model.name ?? "нет записи", mono: true,
-                                valueColor: model.name == nil ? .secondary : .primary)
-                    }
-                    .card()
-                } else if model.isRunning {
-                    ProgressView().padding(.top, 40)
+        ToolScaffold {
+            HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "arrow.uturn.backward",
+                         disabled: model.isRunning, savedHostTool: .reverseDns) { Task { await model.run() } }
+            if let error = model.errorMessage {
+                ErrorBanner(message: error)
+            } else if model.didRun {
+                VStack(spacing: 0) {
+                    InfoRow(label: "IP", value: model.ip, mono: true)
+                    Divider().padding(.leading, 14)
+                    InfoRow(label: "PTR", value: model.name ?? "нет записи", mono: true,
+                            valueColor: model.name == nil ? .secondary : .primary)
                 }
+                .card()
+            } else if model.isRunning {
+                ProgressView().padding(.top, 40)
             }
-            .padding(16)
-        }
-        .background(Palette.groupedBackground)
-        .navigationTitle("Обратный DNS")
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
-        .safeAreaInset(edge: .bottom) {
+        } bottom: {
             RunButton(title: "Найти PTR", running: model.isRunning,
                       disabled: model.ip.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { return }; Task { await model.run() }
             }
         }
+        .navigationTitle("Обратный DNS")
+        .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { model.ip = presetHost }
             if autostart { Task { await model.run() } }

@@ -217,6 +217,8 @@ struct NetworkProfileEditor: View {
                 }
             }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     private func toggle(_ check: BlockingCheck) {

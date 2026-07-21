@@ -125,42 +125,42 @@ struct BlockingCheckView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                Text(LocalizedStringKey(check.explanation))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(14)
-                    .card()
+        ToolScaffold {
+            Text(LocalizedStringKey(check.explanation))
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(14)
+                .card()
 
-                if check.needsTarget {
-                    HostInputBar(text: $model.target, placeholder: "Домен для проверки",
-                                 icon: check.systemImage, disabled: model.isRunning,
-                                 savedHostTool: .dnsTamper) {
-                        Task { await model.run() }
-                    }
-                }
-
-                if let finding = model.finding {
-                    verdictCard(finding)
-                    if !finding.evidence.isEmpty { evidenceCard(finding) }
-                } else if model.isRunning {
-                    VStack(spacing: 10) {
-                        ProgressView()
-                        Text("Проверяем ваше соединение…").font(.caption).foregroundStyle(.secondary)
-                    }
-                    .padding(.top, 40)
+            if check.needsTarget {
+                HostInputBar(text: $model.target, placeholder: "Домен для проверки",
+                             icon: check.systemImage, disabled: model.isRunning,
+                             savedHostTool: .dnsTamper) {
+                    Task { await model.run() }
                 }
             }
-            .padding(16)
-            .animation(.snappy, value: model.finding?.verdict)
+
+            if let finding = model.finding {
+                verdictCard(finding)
+                if !finding.evidence.isEmpty { evidenceCard(finding) }
+            } else if model.isRunning {
+                VStack(spacing: 10) {
+                    ProgressView()
+                    Text("Проверяем ваше соединение…").font(.caption).foregroundStyle(.secondary)
+                }
+                .padding(.top, 40)
+            }
+        } bottom: {
+            RunButton(title: "Проверить", running: model.isRunning,
+                      disabled: check.needsTarget && model.target.trimmingCharacters(in: .whitespaces).isEmpty) {
+                if model.isRunning { return }
+                Task { await model.run() }
+            }
         }
-        .background(Palette.groupedBackground)
+        .animation(.snappy, value: model.finding?.verdict)
         .navigationTitle(check.title)
-        #if os(iOS)
-        .toolbarTitleDisplayMode(.inline)
-        #endif
+        .toolTitleDisplayMode()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showSchedule = true } label: {
@@ -180,6 +180,8 @@ struct BlockingCheckView: View {
         }
         .sheet(isPresented: $showWebhookFields) {
             NavigationStack { WebhookFieldsView(schema: WebhookCatalog.blocking) }
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showSchedule) {
             NavigationStack {
@@ -202,13 +204,8 @@ struct BlockingCheckView: View {
                 #endif
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
             }
-        }
-        .safeAreaInset(edge: .bottom) {
-            RunButton(title: "Проверить", running: model.isRunning,
-                      disabled: check.needsTarget && model.target.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }
-                Task { await model.run() }
-            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 
