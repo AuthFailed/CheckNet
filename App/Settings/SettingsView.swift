@@ -56,7 +56,12 @@ struct SettingsView: View {
                     Text("Сканирование портов и диапазонов IP в чужих сетях может расцениваться как атака. Когда включено, приложение спрашивает согласие перед запуском таких проверок.")
                 }
 
-                Section("Интеграции") {
+                Section("Автоматизация") {
+                    NavigationLink {
+                        ScheduledTasksView()
+                    } label: {
+                        Label("Расписание", systemImage: "clock.arrow.2.circlepath")
+                    }
                     NavigationLink {
                         NetworkProfilesView()
                     } label: {
