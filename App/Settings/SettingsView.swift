@@ -85,7 +85,7 @@ struct SettingsView: View {
                         Label("Запросить доступ к локальной сети", systemImage: "wifi")
                     }
                     if let permissionResult {
-                        Text(permissionResult).font(.caption).foregroundStyle(.secondary)
+                        Text(LocalizedStringKey(permissionResult)).font(.caption).foregroundStyle(.secondary)
                     }
                 } header: {
                     Text("Разрешения")
@@ -162,7 +162,7 @@ struct SavedHostsEditor: View {
                 }
             }
         }
-        .navigationTitle(kind.title)
+        .navigationTitle(LocalizedStringKey(kind.title))
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
