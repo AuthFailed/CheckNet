@@ -9,8 +9,10 @@ struct PingView: View {
 
     @Environment(SavedHostsStore.self) private var savedHosts
     @Environment(AppSettings.self) private var settings
+    @Environment(WebhookSettings.self) private var webhooks
     @State private var model = PingViewModel()
     @State private var showSettings = false
+    @State private var showWebhookFields = false
     @State private var showSavePrompt = false
     @State private var showIntermediate = false
     @FocusState private var hostFieldFocused: Bool
@@ -45,10 +47,22 @@ struct PingView: View {
                     Image(systemName: "slider.horizontal.3")
                 }
             }
+            // Only when webhooks are on: a shortcut to what this test sends.
+            if webhooks.isEnabled {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { showWebhookFields = true } label: {
+                        Image(systemName: "paperplane")
+                            .accessibilityLabel("Данные вебхука для этого теста")
+                    }
+                }
+            }
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
         .sheet(isPresented: $showSettings) {
             PingSettingsView(model: model)
+        }
+        .sheet(isPresented: $showWebhookFields) {
+            NavigationStack { WebhookFieldsView(schema: WebhookCatalog.ping) }
         }
         .alert("Сохранить хост", isPresented: $showSavePrompt) {
             Button("Сохранить") { savedHosts.add(name: model.host, value: model.host, tool: .ping) }

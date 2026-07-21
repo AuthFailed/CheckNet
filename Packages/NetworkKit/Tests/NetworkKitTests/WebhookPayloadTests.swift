@@ -78,6 +78,18 @@ final class WebhookPayloadTests: XCTestCase {
         XCTAssertEqual(json["host"] as? String, "1.1.1.1")
     }
 
+    /// Rounded fractional milliseconds must serialise cleanly, without
+    /// floating-point tails like "81.840000000000003".
+    func testFractionalNumbersAreClean() {
+        let vals = WebhookCatalog.pingValues(
+            PingStatistics(host: "h", resolvedIP: "h", transmitted: 2, received: 2, rttSamples: [81.84, 82.0]),
+            samples: [])
+        let (body, _) = WebhookPayloadBuilder.build(schema: schema, values: vals, selected: schema.defaultPaths, format: .jsonNested)
+        let text = String(decoding: body, as: UTF8.self)
+        XCTAssertTrue(text.contains("\"avgMillis\":81.92"), "avg should be a clean 2-decimal number; got: \(text)")
+        XCTAssertFalse(text.contains("0000000"), "no floating-point tail allowed: \(text)")
+    }
+
     func testFormURLEncoded() {
         let (body, ct) = WebhookPayloadBuilder.build(schema: schema, values: values, selected: schema.defaultPaths, format: .formURLEncoded)
         XCTAssertEqual(ct, "application/x-www-form-urlencoded")

@@ -49,6 +49,11 @@ final class WebhookSettings {
     var format: WebhookFormat {
         didSet { defaults.set(format.rawValue, forKey: Keys.format) }
     }
+    /// Send intermediate results while a test is still running, not just the
+    /// final result. Off by default — it's a stream of extra requests.
+    var liveMode: Bool {
+        didSet { defaults.set(liveMode, forKey: Keys.liveMode) }
+    }
 
     /// Per-tool field selection. Absent tool ⇒ that tool's schema default
     /// (everything on), so it works natively until the user narrows it.
@@ -69,6 +74,7 @@ final class WebhookSettings {
         static let trigger = "checknet.webhook.trigger"
         static let format = "checknet.webhook.format"
         static let selection = "checknet.webhook.fields"
+        static let liveMode = "checknet.webhook.live"
     }
 
     init() {
@@ -77,6 +83,7 @@ final class WebhookSettings {
         secret = defaults.string(forKey: Keys.secret) ?? ""
         trigger = WebhookTrigger(rawValue: defaults.string(forKey: Keys.trigger) ?? "") ?? .allChecks
         format = WebhookFormat(rawValue: defaults.string(forKey: Keys.format) ?? "") ?? .jsonNested
+        liveMode = defaults.bool(forKey: Keys.liveMode)
         if let data = defaults.data(forKey: Keys.selection),
            let decoded = try? JSONDecoder().decode([String: Set<String>].self, from: data) {
             fieldSelection = decoded
@@ -229,6 +236,15 @@ enum WebhookReporter {
 
     static func reportPing(_ stats: PingStatistics, samples: [PingReply]) {
         report(toolKey: "ping", event: "check.ping",
+               succeeded: stats.received > 0,
+               values: WebhookCatalog.pingValues(stats, samples: samples))
+    }
+
+    /// A live, mid-run snapshot. Only fires when live mode is on; the event name
+    /// distinguishes it from the final `check.ping`.
+    static func reportPingLive(_ stats: PingStatistics, samples: [PingReply]) {
+        guard settings?.liveMode == true else { return }
+        report(toolKey: "ping", event: "check.ping.live",
                succeeded: stats.received > 0,
                values: WebhookCatalog.pingValues(stats, samples: samples))
     }

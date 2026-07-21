@@ -56,13 +56,18 @@ struct WebhookSettingsView: View {
                 Text("Если задан, каждый запрос подписывается: заголовок X-CheckNet-Signature содержит sha256=HMAC-SHA256 от тела. Получатель может убедиться, что запрос пришёл именно от этого устройства.")
             }
 
-            Section("Что отправлять") {
+            Section {
                 Picker("События", selection: $settings.trigger) {
                     ForEach(WebhookTrigger.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
                 Picker("Формат", selection: $settings.format) {
                     ForEach(WebhookFormat.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
+                Toggle("Live-режим", isOn: $settings.liveMode)
+            } header: {
+                Text("Что отправлять")
+            } footer: {
+                Text("В live-режиме промежуточные результаты теста отправляются по ходу выполнения (не чаще раза в секунду), а не только финальный итог.")
             }
 
             Section {
