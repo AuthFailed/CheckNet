@@ -98,6 +98,10 @@ targets:
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
         TARGETED_DEVICE_FAMILY: "1,2"
+        # Extract Text("…") keys into Localizable.xcstrings on every build.
+        # With this off the catalog silently drifted: new UI shipped with keys
+        # that were never in the catalogue, so they could never be translated.
+        SWIFT_EMIT_LOC_STRINGS: YES
         CODE_SIGN_ENTITLEMENTS: App/CheckNet.entitlements
         # macOS needs the sandbox + networking entitlements, which iOS neither
         # has nor accepts — hence a separate file per SDK.
