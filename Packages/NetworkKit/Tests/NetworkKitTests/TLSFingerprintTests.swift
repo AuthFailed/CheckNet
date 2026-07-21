@@ -5,7 +5,8 @@ final class TLSFingerprintTests: XCTestCase {
     /// Every profile must complete a handshake against a normal host. A profile
     /// that can't connect anywhere would report "обрыв" on every network and be
     /// worse than useless.
-    func testEveryFingerprintCompletesHandshake() async {
+    func testEveryFingerprintCompletesHandshake() async throws {
+        try requiresInternet()
         for fingerprint in TLSFingerprint.allCases {
             let sweep = ReachabilitySweep(fingerprint: fingerprint)
             let result = await sweep.check(ProbeCatalog.target(id: "SVC.GH")!)
@@ -29,7 +30,8 @@ final class TLSFingerprintTests: XCTestCase {
 
     /// The cutoff check must accept a profile too — fingerprint-conditional
     /// filtering is exactly what this lets a user test for.
-    func testCutoffCheckHonoursFingerprint() async {
+    func testCutoffCheckHonoursFingerprint() async throws {
+        try requiresInternet()
         let probe = await TransferCutoffCheck(fingerprint: .tls12).probeSingleSegment(host: "cloudflare.com")
         print("cutoff over TLS 1.2: \(probe.outcome) — \(probe.detail)")
         XCTAssertEqual(probe.outcome, .passed)

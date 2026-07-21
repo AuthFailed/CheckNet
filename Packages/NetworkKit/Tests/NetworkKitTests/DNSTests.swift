@@ -5,6 +5,7 @@ final class DNSTests: XCTestCase {
     let client = DNSClient()
 
     func testAQuery() async throws {
+        try requiresInternet()
         let res = try await client.query(name: "example.com", type: .a, resolver: "1.1.1.1")
         XCTAssertEqual(res.responseCode, .noError)
         XCTAssertFalse(res.answers.isEmpty)
@@ -19,6 +20,7 @@ final class DNSTests: XCTestCase {
     }
 
     func testMXQuery() async throws {
+        try requiresInternet()
         let res = try await client.query(name: "google.com", type: .mx, resolver: "8.8.8.8")
         XCTAssertEqual(res.responseCode, .noError)
         let mx = res.answers.filter { $0.type == .mx }
@@ -27,6 +29,7 @@ final class DNSTests: XCTestCase {
     }
 
     func testTXTQuery() async throws {
+        try requiresInternet()
         let res = try await client.query(name: "cloudflare.com", type: .txt, resolver: "1.1.1.1")
         XCTAssertEqual(res.responseCode, .noError)
         let txt = res.answers.filter { $0.type == .txt }
@@ -35,6 +38,7 @@ final class DNSTests: XCTestCase {
     }
 
     func testAAAAQuery() async throws {
+        try requiresInternet()
         let res = try await client.query(name: "google.com", type: .aaaa, resolver: "8.8.8.8")
         let aaaa = res.answers.filter { $0.type == .aaaa }
         XCTAssertFalse(aaaa.isEmpty, "no AAAA: \(res.answers)")
@@ -43,12 +47,14 @@ final class DNSTests: XCTestCase {
     }
 
     func testNXDomain() async throws {
+        try requiresInternet()
         let res = try await client.query(name: "nonexistent-\(UInt32.random(in: 0...9_999_999)).invalid", type: .a, resolver: "1.1.1.1")
         XCTAssertTrue(res.responseCode == .nxDomain || res.responseCode == .noError && res.answers.isEmpty,
                       "expected NXDOMAIN, got \(res.responseCode.label)")
     }
 
     func testDNSSECAuthenticated() async throws {
+        try requiresInternet()
         // cloudflare.com is DNSSEC-signed; 1.1.1.1 validates → AD bit set.
         let res = try await client.query(name: "cloudflare.com", type: .a, resolver: "1.1.1.1",
                                          options: .init(timeout: 3, dnssec: true))
@@ -57,6 +63,7 @@ final class DNSTests: XCTestCase {
     }
 
     func testResolverComparison() async throws {
+        try requiresInternet()
         let rows = await client.compareResolvers(name: "wikipedia.org", type: .a,
                                                  resolvers: Array(DNSResolverInfo.presets.prefix(3)))
         XCTAssertEqual(rows.count, 3)

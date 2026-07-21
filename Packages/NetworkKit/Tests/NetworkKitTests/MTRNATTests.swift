@@ -3,6 +3,7 @@ import XCTest
 
 final class MTRNATTests: XCTestCase {
     func testMTRAccumulates() async throws {
+        try requiresInternet()
         var lastTable: [MTRHop] = []
         var rounds = 0
         for await event in MTRSession().run(host: "1.1.1.1",
@@ -27,6 +28,7 @@ final class MTRNATTests: XCTestCase {
     }
 
     func testSTUNPublicIP() async throws {
+        try requiresInternet()
         let addr = try await STUNClient().discover()
         print("public IP via STUN: \(addr.ip):\(addr.port)")
         // Should be a valid dotted quad, not a private address.
@@ -46,6 +48,7 @@ final class MTRNATTests: XCTestCase {
     }
 
     func testNATDetectRuns() async throws {
+        try requiresInternet()
         let report = await NATDetector().detect()
         print("NAT type: \(report.natType.rawValue), local=\(report.localIP ?? "?"), public=\(report.publicIP ?? "?")")
         print("findings: \(report.findings)")

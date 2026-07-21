@@ -41,7 +41,8 @@ final class ReachabilitySweepTests: XCTestCase {
 
     // MARK: - Live probes
 
-    func testSingleTargetReachable() async {
+    func testSingleTargetReachable() async throws {
+        try requiresInternet()
         let target = ProbeCatalog.target(id: "SVC.GH")!
         let result = await ReachabilitySweep().check(target)
         print("github: \(result.status) — \(result.failure?.label ?? "ok") \(result.handshakeMillis.map { "\(Int($0)) ms" } ?? "")")
@@ -51,7 +52,8 @@ final class ReachabilitySweepTests: XCTestCase {
 
     /// APNs reachability is the whole point of the push category — if this can't
     /// be probed, the category is decoration.
-    func testPushEndpointsProbe() async {
+    func testPushEndpointsProbe() async throws {
+        try requiresInternet()
         let results = await ReachabilitySweep().run(category: .pushNotification)
         for r in results { print("push \(r.target.host): \(r.status.label)") }
         XCTAssertEqual(results.count, ProbeCatalog.targets(in: .pushNotification).count)
@@ -59,7 +61,8 @@ final class ReachabilitySweepTests: XCTestCase {
                       "api.push.apple.com should be reachable from a clean network")
     }
 
-    func testSweepPreservesOrderAndSummarises() async {
+    func testSweepPreservesOrderAndSummarises() async throws {
+        try requiresInternet()
         let targets = Array(ProbeCatalog.targets(in: .russianInfrastructure).prefix(4))
         let sweep = ReachabilitySweep()
         let results = await sweep.run(targets: targets)
@@ -71,7 +74,8 @@ final class ReachabilitySweepTests: XCTestCase {
         XCTAssertEqual(summaries.reduce(0) { $0 + $1.total }, targets.count)
     }
 
-    func testVerdictOnCleanNetwork() async {
+    func testVerdictOnCleanNetwork() async throws {
+        try requiresInternet()
         let sweep = ReachabilitySweep()
         let targets = Array(ProbeCatalog.targets(in: .foreignInfrastructure).prefix(6))
             + ProbeCatalog.targets(in: .russianInfrastructure)
@@ -84,7 +88,8 @@ final class ReachabilitySweepTests: XCTestCase {
 
     /// A host that simply doesn't exist must read as unavailable, never as
     /// interference — otherwise catalogue rot turns into fake censorship reports.
-    func testDeadHostIsNotReportedAsObstruction() async {
+    func testDeadHostIsNotReportedAsObstruction() async throws {
+        try requiresInternet()
         let dead = ProbeTarget(
             id: "TEST.DEAD", provider: "Test", country: nil,
             host: "no-such-host-checknet-test.invalid", category: .foreignInfrastructure

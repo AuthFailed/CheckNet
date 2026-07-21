@@ -3,6 +3,7 @@ import XCTest
 
 final class TLSPortTests: XCTestCase {
     func testPortOpen443() async throws {
+        try requiresInternet()
         // Try several well-known HTTPS hosts; the sandbox occasionally rate-limits one.
         for host in ["8.8.8.8", "1.1.1.1", "9.9.9.9", "dns.google"] {
             let r = await PortScanner().check(host: host, port: 443, timeout: 3)
@@ -15,13 +16,15 @@ final class TLSPortTests: XCTestCase {
         throw XCTSkip("No HTTPS control host reachable from this environment")
     }
 
-    func testPortClosed() async {
+    func testPortClosed() async throws {
+        try requiresInternet()
         // Port 81 on cloudflare is filtered/closed → not open within timeout.
         let r = await PortScanner().check(host: "1.1.1.1", port: 81, timeout: 1.5)
         XCTAssertFalse(r.isOpen)
     }
 
-    func testScanCommonPorts() async {
+    func testScanCommonPorts() async throws {
+        try requiresInternet()
         var open: [Int] = []
         for await r in PortScanner().scan(host: "8.8.8.8", ports: [53, 443, 80, 22], timeout: 1.5) {
             if r.isOpen { open.append(r.port) }
@@ -32,6 +35,7 @@ final class TLSPortTests: XCTestCase {
     }
 
     func testTLSInspectCloudflare() async throws {
+        try requiresInternet()
         let info = try await TLSInspector().inspect(host: "cloudflare.com", port: 443)
         XCTAssertTrue(info.trustEvaluationPassed, "cloudflare.com should have a valid chain")
         XCTAssertTrue(info.negotiatedProtocol.contains("TLS"))
@@ -44,6 +48,7 @@ final class TLSPortTests: XCTestCase {
     }
 
     func testTLSExpiredCert() async throws {
+        try requiresInternet()
         // badssl provides an intentionally expired certificate.
         let info: TLSInfo
         do {
