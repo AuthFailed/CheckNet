@@ -186,7 +186,7 @@ private final class TraceRunner: @unchecked Sendable {
         var hostBuf = [CChar](repeating: 0, count: Int(NI_MAXHOST))
         guard getnameinfo(node.pointee.ai_addr, node.pointee.ai_addrlen,
                           &hostBuf, socklen_t(hostBuf.count), nil, 0, NI_NAMEREQD) == 0 else { return nil }
-        let name = String(cString: hostBuf)
+        let name = String(nullTerminated: hostBuf)
         return name == ip ? nil : name
     }
 }

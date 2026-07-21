@@ -13,11 +13,11 @@ final class LocalNetworkPermission: @unchecked Sendable {
     private let queue = DispatchQueue(label: "checknet.localnet.permission")
     private var browser: NWBrowser?
     private var listener: NWListener?
-    private var completion: ((Bool) -> Void)?
+    private var completion: (@Sendable (Bool) -> Void)?
     private var finished = false
 
     /// Requests the permission (idempotent per launch). `granted` is best-effort.
-    func request(_ completion: ((Bool) -> Void)? = nil) {
+    func request(_ completion: (@Sendable (Bool) -> Void)? = nil) {
         #if os(iOS)
         queue.async { [self] in
             guard listener == nil, browser == nil else { completion?(false); return }

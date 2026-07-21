@@ -35,8 +35,10 @@ final class SharedStoreTests: XCTestCase {
 
     func testConcurrentAppendsKeepEveryRecord() {
         let count = 200
+        // Built up front so the concurrent block captures only Sendable values.
+        let records = (0..<count).map { record($0) }
         DispatchQueue.concurrentPerform(iterations: count) { i in
-            SharedStore.appendHistory(self.record(i))
+            SharedStore.appendHistory(records[i])
         }
 
         let stored = SharedStore.history()
@@ -52,11 +54,13 @@ final class SharedStoreTests: XCTestCase {
         let doomed = record(999, tag: "doomed")
         SharedStore.appendHistory(doomed)
 
+        let records = (0..<100).map { record($0) }
+        let doomedID = doomed.id
         DispatchQueue.concurrentPerform(iterations: 100) { i in
             if i == 50 {
-                SharedStore.deleteHistory(id: doomed.id)
+                SharedStore.deleteHistory(id: doomedID)
             } else {
-                SharedStore.appendHistory(self.record(i))
+                SharedStore.appendHistory(records[i])
             }
         }
 

@@ -92,7 +92,10 @@ struct SpeedTestView: View {
                         .foregroundStyle(model.liveDirection == .download ? .blue : .green)
                         .contentTransition(.numericText())
                     let dirLabel: LocalizedStringKey = model.liveDirection == .download ? "Загрузка" : "Отдача"
-                    (Text(dirLabel) + Text(verbatim: " · Мбит/с"))
+                    // Interpolation rather than Text + Text: concatenation is
+                    // deprecated on macOS 26, and this keeps the unit out of the
+                    // translated part of the string.
+                    Text("\(Text(dirLabel)) · Мбит/с")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
             }

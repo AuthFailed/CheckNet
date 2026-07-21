@@ -151,6 +151,6 @@ public enum HostResolver {
                 inet_ntop(AF_INET6, &a, &buffer, socklen_t(INET6_ADDRSTRLEN))
             }
         }
-        return String(cString: buffer)
+        return String(nullTerminated: buffer)
     }
 }
