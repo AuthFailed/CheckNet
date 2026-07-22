@@ -23,15 +23,21 @@ struct PingView: View {
     @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 120
 
     var body: some View {
+        // Per the design: the host field and the verdict live in the leading
+        // column; the chart and the packet list are grid modules beside them.
         ToolScaffold {
             hostCard
+            if case .finished = model.phase { summaryHeaderCard }
+            if case .running = model.phase { liveMeterCard }
+        } content: {
             switch model.phase {
             case .idle:
                 idleHint
             case .running:
-                liveResults
+                if !model.replies.isEmpty { responsesCard }
             case .finished:
-                summaryResults
+                if model.stats.rttSamples.count > 1 { latencyChartCard }
+                if !model.replies.isEmpty { intermediateDisclosure }
             case .failed(let message):
                 failureCard(message)
             }
@@ -193,12 +199,11 @@ struct PingView: View {
 
     // MARK: Live
 
+    @ViewBuilder
     private var liveResults: some View {
-        VStack(spacing: 16) {
-            liveMeterCard
-            if !model.replies.isEmpty {
-                responsesCard
-            }
+        liveMeterCard
+        if !model.replies.isEmpty {
+            responsesCard
         }
     }
 
@@ -284,12 +289,13 @@ struct PingView: View {
         }
     }
 
+    /// Deliberately not wrapped in a VStack: the scaffold arranges these, so on
+    /// a wide window they flow into columns instead of arriving as one tall item.
+    @ViewBuilder
     private var summaryResults: some View {
-        VStack(spacing: 14) {
-            summaryHeaderCard
-            if model.stats.rttSamples.count > 1 { latencyChartCard }
-            if !model.replies.isEmpty { intermediateDisclosure }
-        }
+        summaryHeaderCard
+        if model.stats.rttSamples.count > 1 { latencyChartCard }
+        if !model.replies.isEmpty { intermediateDisclosure }
     }
 
     private var summaryHeaderCard: some View {
