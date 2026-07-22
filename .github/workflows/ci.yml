@@ -160,9 +160,8 @@ jobs:
           UDID=$(python3 Scripts/simulator_udid.py)
           xcodebuild \
             -project CheckNet.xcodeproj \
-            -scheme CheckNet \
+            -scheme CheckNetUITests \
             -destination "platform=iOS Simulator,id=$UDID" \
-            -only-testing:CheckNetUITests \
             CODE_SIGNING_ALLOWED=NO \
             test
 
