@@ -15,7 +15,7 @@ struct SpeedTestView: View {
             case .running, .done:
                 gaugeCard
             case .failed(let msg):
-                ErrorBanner(message: msg)
+                ErrorCard(message: msg) { model.startTest() }
             default:
                 EmptyView()
             }

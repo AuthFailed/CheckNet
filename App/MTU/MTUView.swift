@@ -56,7 +56,7 @@ struct MTUView: View {
                 .padding(14).card()
             }
             if let error = model.errorMessage {
-                ErrorBanner(message: error)
+                ErrorCard(message: error) { model.start() }
             }
         } content: {
             if let result = model.result {

@@ -48,7 +48,7 @@ struct DNSLookupView: View {
             controlsCard
 
             if let error = model.errorMessage {
-                ErrorBanner(message: error)
+                ErrorCard(message: error) { Task { await model.run() } }
             } else if let result = model.result {
                 statusCard(result)
             }
@@ -178,19 +178,5 @@ struct DNSLookupView: View {
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity)
             .padding(.top, 24)
-    }
-}
-
-/// Reusable inline error banner.
-struct ErrorBanner: View {
-    let message: String
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-            Text(LocalizedStringKey(message)).font(.callout).foregroundStyle(.primary)
-            Spacer()
-        }
-        .padding(14)
-        .card()
     }
 }

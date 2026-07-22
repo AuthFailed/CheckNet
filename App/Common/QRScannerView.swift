@@ -12,7 +12,7 @@ struct QRScannerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var access: CameraAccess = .undetermined
 
-    enum CameraAccess { case undetermined, granted, denied, unsupported }
+    enum CameraAccess: Equatable { case undetermined, granted, denied, unsupported, failed(String) }
 
     var body: some View {
         NavigationStack {
@@ -39,6 +39,17 @@ struct QRScannerSheet: View {
                     } description: {
                         Text("Это устройство не поддерживает сканирование камерой. Вставьте ссылку из буфера обмена.")
                     }
+                // The camera can also refuse to start after access was granted —
+                // another app holding it, or the session failing to configure.
+                // That used to leave a black rectangle and no explanation.
+                case .failed(let reason):
+                    ContentUnavailableView {
+                        Label("Камера не запустилась", systemImage: "video.slash")
+                    } description: {
+                        Text(LocalizedStringKey(reason))
+                    } actions: {
+                        Button("Повторить") { Task { await resolveAccess() } }
+                    }
                 }
             }
             .navigationTitle("Сканировать QR")
@@ -57,6 +68,8 @@ struct QRScannerSheet: View {
             DataScannerRepresentable { payload in
                 onFound(payload)
                 dismiss()
+            } onStartFailure: { reason in
+                access = .failed(reason)
             }
             .ignoresSafeArea(edges: .bottom)
 
@@ -88,6 +101,7 @@ struct QRScannerSheet: View {
 /// Hosts `DataScannerViewController` and reports the first QR payload it sees.
 private struct DataScannerRepresentable: UIViewControllerRepresentable {
     let onFound: (String) -> Void
+    let onStartFailure: (String) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(onFound: onFound) }
 
@@ -101,7 +115,13 @@ private struct DataScannerRepresentable: UIViewControllerRepresentable {
             isHighlightingEnabled: true
         )
         controller.delegate = context.coordinator
-        try? controller.startScanning()
+        do {
+            try controller.startScanning()
+        } catch {
+            // Reported after this pass of the view update, not during it.
+            let reason = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            Task { @MainActor in onStartFailure(reason) }
+        }
         return controller
     }
 

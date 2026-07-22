@@ -41,7 +41,7 @@ struct HostToIPView: View {
             HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.right.circle",
                          disabled: model.isRunning, savedHostTool: .hostToIP) { Task { await model.run() } }
             if let error = model.errorMessage {
-                ErrorBanner(message: error)
+                ErrorCard(message: error) { Task { await model.run() } }
             } else if model.result == nil, model.isRunning {
                 ProgressView().padding(.top, 40)
             }
@@ -128,7 +128,7 @@ struct ReverseDNSView: View {
             HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "arrow.uturn.backward",
                          disabled: model.isRunning, savedHostTool: .reverseDns) { Task { await model.run() } }
             if let error = model.errorMessage {
-                ErrorBanner(message: error)
+                ErrorCard(message: error) { Task { await model.run() } }
             } else if !model.didRun, model.isRunning {
                 ProgressView().padding(.top, 40)
             }
