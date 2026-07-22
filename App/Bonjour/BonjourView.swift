@@ -6,13 +6,14 @@ import NetworkKit
 final class BonjourModel {
     private(set) var isRunning = false
     private(set) var services: [BonjourService] = []
+    private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
     func toggle() { isRunning ? stop() : start() }
 
     func start() {
         stop()
-        services = []; isRunning = true
+        services = []; errorMessage = nil; isRunning = true
         task = Task { [weak self] in
             guard let self else { return }
             for await event in BonjourBrowser().browse(duration: 8.0) {
@@ -27,6 +28,8 @@ final class BonjourModel {
                     services.removeAll { $0 == svc }
                 case .finished:
                     break
+                case .failed(let reason):
+                    errorMessage = reason
                 }
             }
             isRunning = false
@@ -59,7 +62,11 @@ struct BonjourView: View {
                 .padding(14).card()
             }
 
-            if model.services.isEmpty && !model.isRunning {
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { model.start() }
+            }
+
+            if model.services.isEmpty && !model.isRunning && model.errorMessage == nil {
                 ContentUnavailableView(
                     "Нет сервисов",
                     systemImage: "bonjour",

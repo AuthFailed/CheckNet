@@ -70,6 +70,10 @@ public enum ScanEvent: Sendable {
     case progress(scanned: Int, total: Int)
     case host(DiscoveredHost)
     case finished(aliveCount: Int)
+    /// Terminal: nothing was scanned. A range the parser rejects used to arrive
+    /// as "finished, 0 alive", which reads as a quiet network rather than as a
+    /// typo in the range.
+    case failed(String)
 }
 
 /// Sweeps an IPv4 range with concurrent single-probe pings to find live hosts.
@@ -84,7 +88,7 @@ public final class IPRangeScanner: Sendable {
     ) -> AsyncStream<ScanEvent> {
         AsyncStream(bufferingPolicy: .unbounded) { continuation in
             guard let hosts = IPv4Range.hosts(from: range), !hosts.isEmpty else {
-                continuation.yield(.finished(aliveCount: 0))
+                continuation.yield(.failed("Некорректный диапазон: \(range)"))
                 continuation.finish()
                 return
             }

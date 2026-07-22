@@ -43,6 +43,8 @@ public enum MTREvent: Sendable {
     case started(resolvedIP: String)
     case update(hops: [MTRHop], round: Int)
     case finished
+    /// Terminal: the session never started. See `TracerouteEvent.failed`.
+    case failed(String)
 }
 
 /// Continuous traceroute + ping ("my traceroute"): every round probes each hop
@@ -84,13 +86,23 @@ private final class MTRRunner: @unchecked Sendable {
             do {
                 let endpoint = try await HostResolver.resolveFirst(host: host, family: .ipv4)
                 queue.async { [self] in run(endpoint: endpoint) }
-            } catch { continuation.finish() }
+            } catch {
+                if !isCancelled {
+                    continuation.yield(.failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription))
+                }
+                continuation.finish()
+            }
         }
     }
 
     private func run(endpoint: ResolvedEndpoint) {
-        guard case .success(let f) = SocketFactory.makeICMP(endpoint: endpoint, config: PingConfig(count: 1)) else {
-            continuation.finish(); return
+        let make = SocketFactory.makeICMP(endpoint: endpoint, config: PingConfig(count: 1))
+        guard case .success(let f) = make else {
+            if case .failure(let reason) = make, !isCancelled {
+                continuation.yield(.failed(NetworkError.socketCreationFailed(reason: reason).errorDescription ?? reason))
+            }
+            continuation.finish()
+            return
         }
         lock.lock(); fd = f; lock.unlock()
         continuation.yield(.started(resolvedIP: endpoint.ipString))

@@ -9,6 +9,7 @@ final class MTRModel {
     private(set) var resolvedIP = ""
     private(set) var hops: [MTRHop] = []
     private(set) var round = 0
+    private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
     func toggle() { isRunning ? stop() : start() }
@@ -17,7 +18,7 @@ final class MTRModel {
         let target = host.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty else { return }
         stop()
-        hops = []; round = 0; resolvedIP = ""; isRunning = true
+        hops = []; round = 0; resolvedIP = ""; errorMessage = nil; isRunning = true
         task = Task { [weak self] in
             guard let self else { return }
             for await event in MTRSession().run(host: target, config: .init(interval: 1.0, resolveNames: true)) {
@@ -26,6 +27,7 @@ final class MTRModel {
                 case .started(let ip): resolvedIP = ip
                 case .update(let h, let r): hops = h; round = r
                 case .finished: break
+                case .failed(let reason): errorMessage = reason
                 }
             }
             isRunning = false
@@ -48,6 +50,10 @@ struct MTRView: View {
         ToolScaffold {
             HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "chart.line.uptrend.xyaxis",
                          disabled: model.isRunning, savedHostTool: .mtr) { model.start() }
+
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { model.start() }
+            }
 
             if !model.resolvedIP.isEmpty {
                 HStack {

@@ -18,6 +18,8 @@ final class TracerouteTests: XCTestCase {
                 hops.append(hop)
             case .finished(let r):
                 reached = r
+            case .failed(let reason):
+                XCTFail("trace to 1.1.1.1 failed: \(reason)")
             }
         }
         XCTAssertTrue(started)

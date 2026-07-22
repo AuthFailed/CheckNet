@@ -8,13 +8,14 @@ final class NetworkBrowserModel {
     private(set) var devices: [DiscoveredDevice] = []
     private(set) var scanned = 0
     private(set) var total = 0
+    private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
     func toggle() { isRunning ? stop() : start() }
 
     func start() {
         stop()
-        devices = []; scanned = 0; total = 0; isRunning = true
+        devices = []; scanned = 0; total = 0; errorMessage = nil; isRunning = true
         task = Task { [weak self] in
             guard let self else { return }
             for await event in NetworkBrowser().browse() {
@@ -25,6 +26,7 @@ final class NetworkBrowserModel {
                     devices.append(d)
                     devices.sort { (IPv4Range.toUInt32($0.ip) ?? 0) < (IPv4Range.toUInt32($1.ip) ?? 0) }
                 case .finished: break
+                case .failed(let reason): errorMessage = reason
                 }
             }
             isRunning = false
@@ -39,10 +41,12 @@ struct NetworkBrowserView: View {
 
     var body: some View {
         ToolScaffold {
-            if model.total > 0 {
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { model.start() }
+            } else if model.total > 0 {
                 progressCard
             }
-            if model.devices.isEmpty, !model.isRunning {
+            if model.devices.isEmpty, !model.isRunning, model.errorMessage == nil {
                 ContentUnavailableView("Обзор сети", systemImage: "rectangle.connected.to.line.below",
                                        description: Text("Найдём устройства в вашей сети с IP, MAC и вендором."))
                 .padding(.top, 40)
