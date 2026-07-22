@@ -30,6 +30,8 @@ struct SpeedTestView: View {
             bottomBar
         }
         .animation(.snappy, value: model.phase)
+        .haptic(.success, trigger: model.phase) { $0 == .done }
+        .haptic(.failure, trigger: model.phase) { if case .failed = $0 { true } else { false } }
         .navigationTitle("Тест скорости")
         .toolTitleDisplayMode()
         .task { await model.loadServers() }

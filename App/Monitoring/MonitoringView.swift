@@ -41,6 +41,9 @@ struct MonitoringView: View {
             }
         }
         .animation(.snappy, value: manager.entries)
+        // Monitoring is the one screen people leave running while doing
+        // something else, so a host going down is worth feeling.
+        .haptic(.failure, trigger: manager.entries.filter { $0.status == .down }.count) { $0 > 0 }
         .navigationTitle("Мониторинг")
         .toolTitleDisplayMode()
     }

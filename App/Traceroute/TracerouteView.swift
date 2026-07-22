@@ -71,6 +71,9 @@ struct TracerouteView: View {
             }
         }
         .animation(.snappy, value: model.hops)
+        // A check runs for seconds; people put the phone down while it does.
+        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
+        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Трассировка")
         .toolTitleDisplayMode()
         .onAppear {

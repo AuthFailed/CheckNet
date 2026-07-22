@@ -4,6 +4,7 @@ import SwiftUI
 /// and Settings. The tab bar and its material come from the native `TabView`.
 struct RootTabView: View {
     @Environment(AppSettings.self) private var settings
+    @Environment(SavedHostsStore.self) private var savedHosts
     @State private var selection: Int = {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count { return Int(args[i + 1]) ?? 0 }
@@ -32,6 +33,10 @@ struct RootTabView: View {
         // tabs into a sidebar, which is what those platforms expect instead of
         // a tab bar pinned to the bottom of a 13" screen.
         .tabViewStyle(.sidebarAdaptable)
+        // Saving a host is confirmed by a row appearing in a menu the user is
+        // not looking at, so it gets a tap of its own. One place rather than
+        // each of the twenty screens that can save.
+        .haptic(.light, trigger: savedHosts.hosts.count)
         .preferredColorScheme(settings.theme.colorScheme)
         .environment(\.locale, settings.language.localeIdentifier.map(Locale.init) ?? .current)
         .onOpenURL { url in

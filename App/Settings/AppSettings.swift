@@ -88,6 +88,12 @@ final class AppSettings {
     var reverseDNSByDefault: Bool {
         didSet { UserDefaults.standard.set(reverseDNSByDefault, forKey: "checknet.rdnsDefault") }
     }
+    /// Tactile feedback on results and on the small confirmations (pin, save,
+    /// copy). A check runs for seconds and people look away while it does, so
+    /// the result is worth feeling rather than only seeing.
+    var hapticsEnabled: Bool {
+        didSet { UserDefaults.standard.set(hapticsEnabled, forKey: "checknet.haptics") }
+    }
     /// Warn and ask for consent before running scanning tools that some
     /// networks may treat as an attack (port scan, IP-range scan, Wake-on-LAN).
     var confirmSensitiveTests: Bool {
@@ -115,6 +121,7 @@ final class AppSettings {
         liveActivitiesEnabled = d.object(forKey: "checknet.liveActivities") as? Bool ?? true
         reverseDNSByDefault = d.object(forKey: "checknet.rdnsDefault") as? Bool ?? true
         confirmSensitiveTests = d.object(forKey: "checknet.confirmSensitive") as? Bool ?? true
+        hapticsEnabled = d.object(forKey: "checknet.haptics") as? Bool ?? true
         AppLocalization.apply(language.localeIdentifier)
     }
 }
