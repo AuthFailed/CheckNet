@@ -27,8 +27,11 @@ struct MonitoringView: View {
                 .padding(.top, 40)
             } else {
                 statusBanner
-                hostsCard
                 intervalCard
+            }
+        } content: {
+            if !manager.entries.isEmpty {
+                hostsCard
             }
         } bottom: {
             if !manager.entries.isEmpty {

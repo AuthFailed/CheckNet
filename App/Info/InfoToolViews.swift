@@ -42,10 +42,12 @@ struct HostToIPView: View {
                          disabled: model.isRunning, savedHostTool: .hostToIP) { Task { await model.run() } }
             if let error = model.errorMessage {
                 ErrorBanner(message: error)
-            } else if let result = model.result {
-                addressCard(result)
-            } else if model.isRunning {
+            } else if model.result == nil, model.isRunning {
                 ProgressView().padding(.top, 40)
+            }
+        } content: {
+            if model.errorMessage == nil, let result = model.result {
+                addressCard(result)
             }
         } bottom: {
             RunButton(title: "Разрешить", running: model.isRunning,
@@ -127,7 +129,11 @@ struct ReverseDNSView: View {
                          disabled: model.isRunning, savedHostTool: .reverseDns) { Task { await model.run() } }
             if let error = model.errorMessage {
                 ErrorBanner(message: error)
-            } else if model.didRun {
+            } else if !model.didRun, model.isRunning {
+                ProgressView().padding(.top, 40)
+            }
+        } content: {
+            if model.errorMessage == nil, model.didRun {
                 VStack(spacing: 0) {
                     InfoRow(label: "IP", value: model.ip, mono: true)
                     Divider().padding(.leading, 14)
@@ -135,8 +141,6 @@ struct ReverseDNSView: View {
                             valueColor: model.name == nil ? .secondary : .primary)
                 }
                 .card()
-            } else if model.isRunning {
-                ProgressView().padding(.top, 40)
             }
         } bottom: {
             RunButton(title: "Найти PTR", running: model.isRunning,

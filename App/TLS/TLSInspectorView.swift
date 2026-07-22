@@ -56,11 +56,16 @@ struct TLSInspectorView: View {
                 ErrorBanner(message: error)
             } else if let info = model.info {
                 handshakeCard(info)
-                ForEach(Array(info.certificates.enumerated()), id: \.offset) { idx, cert in
-                    certCard(cert, index: idx, isLeaf: idx == 0)
+            }
+        } content: {
+            if model.errorMessage == nil {
+                if let info = model.info {
+                    ForEach(Array(info.certificates.enumerated()), id: \.offset) { idx, cert in
+                        certCard(cert, index: idx, isLeaf: idx == 0)
+                    }
+                } else if model.isRunning {
+                    ProgressView().padding(.top, 40)
                 }
-            } else if model.isRunning {
-                ProgressView().padding(.top, 40)
             }
         } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,

@@ -42,12 +42,14 @@ struct NetworkBrowserView: View {
             if model.total > 0 {
                 progressCard
             }
-            if !model.devices.isEmpty {
-                devicesCard
-            } else if !model.isRunning {
+            if model.devices.isEmpty, !model.isRunning {
                 ContentUnavailableView("Обзор сети", systemImage: "rectangle.connected.to.line.below",
                                        description: Text("Найдём устройства в вашей сети с IP, MAC и вендором."))
                 .padding(.top, 40)
+            }
+        } content: {
+            if !model.devices.isEmpty {
+                devicesCard
             }
         } bottom: {
             RunButton(title: "Сканировать сеть", running: model.isRunning) { model.toggle() }

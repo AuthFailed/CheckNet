@@ -58,6 +58,7 @@ struct MTUView: View {
             if let error = model.errorMessage {
                 ErrorBanner(message: error)
             }
+        } content: {
             if let result = model.result {
                 resultCard(result)
             }

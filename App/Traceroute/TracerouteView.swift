@@ -56,6 +56,7 @@ struct TracerouteView: View {
             if !model.resolvedIP.isEmpty {
                 statusRow
             }
+        } content: {
             if !model.hops.isEmpty {
                 hopsCard
             }

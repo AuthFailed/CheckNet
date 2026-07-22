@@ -35,9 +35,12 @@ struct BlacklistView: View {
                          disabled: model.isRunning, savedHostTool: .blacklist) { Task { await model.run() } }
             if let report = model.report {
                 summaryCard(report)
-                listCard(report)
             } else if model.isRunning {
                 ProgressView().padding(.top, 40)
+            }
+        } content: {
+            if let report = model.report {
+                listCard(report)
             }
         } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,
