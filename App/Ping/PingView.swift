@@ -422,6 +422,8 @@ struct PingView: View {
                                     in: RoundedRectangle(cornerRadius: 15))
                 }
                 .disabled(model.host.trimmingCharacters(in: .whitespaces).isEmpty)
+                // Same hook as RunButton — Ping draws its own control here.
+                .accessibilityIdentifier("tool.runButton")
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 10)

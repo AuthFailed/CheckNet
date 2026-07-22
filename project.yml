@@ -109,6 +109,7 @@ targets:
     scheme:
       testTargets:
         - CheckNetTests
+        - CheckNetUITests
 
   # Logic tests for the code under Shared/. Those sources are compiled straight
   # into the bundle rather than linked from the app, so the tests need no host
@@ -126,6 +127,23 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
+
+  # UI tests exist for one reason: landscape size classes only change when a
+  # device really rotates, which no unit test can do.
+  CheckNetUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/CheckNetUITests
+    dependencies:
+      - target: CheckNet
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet.uitests
+        PRODUCT_NAME: CheckNetUITests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        TEST_TARGET_NAME: CheckNet
 
   CheckNetWidgets:
     type: app-extension
