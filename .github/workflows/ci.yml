@@ -151,6 +151,19 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             test
 
+      # Landscape size classes only change when a device really rotates, so this
+      # one needs a simulator rather than the macOS destination.
+      - name: Run landscape UI tests
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNet \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
+            -only-testing:CheckNetUITests \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
   network-tests:
     name: Network tests (live hosts, informational)
     runs-on: macos-latest
