@@ -128,18 +128,30 @@ struct CatalogView: View {
         }
     }
 
+    /// Two lists rather than one with a `.constant(nil)` selection: a list that
+    /// carries *any* selection binding puts its rows into selection mode, where
+    /// a tap marks the row instead of following its `NavigationLink`. That left
+    /// the phone catalog highlighting a row and going nowhere.
+    @ViewBuilder
     private var catalogList: some View {
-        List(selection: isWide ? $selection : .constant(nil)) {
-            if !store.pinnedTools.isEmpty && query.isEmpty {
-                pinnedSection
+        if isWide {
+            List(selection: $selection) { catalogRows }
+        } else {
+            List { catalogRows }
+        }
+    }
+
+    @ViewBuilder
+    private var catalogRows: some View {
+        if !store.pinnedTools.isEmpty && query.isEmpty {
+            pinnedSection
+        }
+        if query.isEmpty {
+            ForEach(ToolCatalog.sections) { section in
+                catalogSection(section)
             }
-            if query.isEmpty {
-                ForEach(ToolCatalog.sections) { section in
-                    catalogSection(section)
-                }
-            } else {
-                searchResults
-            }
+        } else {
+            searchResults
         }
     }
 
