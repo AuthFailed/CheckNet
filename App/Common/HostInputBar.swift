@@ -113,6 +113,9 @@ struct RunButton: View {
                             in: RoundedRectangle(cornerRadius: 15))
         }
         .disabled(disabled)
+        // Stable hook for UI tests: the visible label is translated into 13
+        // languages, so matching on it would only pass in Russian.
+        .accessibilityIdentifier("tool.runButton")
         // The bar spans the window, but the control inside it follows the same
         // width cap as the content above — a 1300 pt wide button on an iPad
         // reads as a layout bug, not as emphasis.

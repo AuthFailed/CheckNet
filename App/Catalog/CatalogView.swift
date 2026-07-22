@@ -26,18 +26,23 @@ struct CatalogView: View {
     @Environment(ToolStore.self) private var store
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     #endif
     @State private var path: [ToolRoute] = []
     @State private var selection: ToolRoute?
     @State private var query: String = ""
     @State private var showHistory = false
 
-    /// Two columns where there is room for them. A Mac window always qualifies;
-    /// on iOS it is the regular width class, which covers iPad landscape and a
-    /// large iPad in portrait but never an iPhone.
+    /// Two columns where there is genuinely room. A Mac window always qualifies.
+    /// On iOS "regular width" alone is not enough: a Pro Max in landscape reports
+    /// regular width with no vertical room, and a sidebar there costs width the
+    /// tool needs.
     private var isWide: Bool {
         #if os(iOS)
-        sizeClass == .regular
+        // Same reasoning as ToolScaffold: a Pro Max in landscape is regular
+        // width but has no vertical room, and a sidebar there costs width the
+        // tool needs. Compact height means one column.
+        sizeClass == .regular && verticalSizeClass != .compact
         #else
         true
         #endif
@@ -123,18 +128,30 @@ struct CatalogView: View {
         }
     }
 
+    /// Two lists rather than one with a `.constant(nil)` selection: a list that
+    /// carries *any* selection binding puts its rows into selection mode, where
+    /// a tap marks the row instead of following its `NavigationLink`. That left
+    /// the phone catalog highlighting a row and going nowhere.
+    @ViewBuilder
     private var catalogList: some View {
-        List(selection: isWide ? $selection : .constant(nil)) {
-            if !store.pinnedTools.isEmpty && query.isEmpty {
-                pinnedSection
+        if isWide {
+            List(selection: $selection) { catalogRows }
+        } else {
+            List { catalogRows }
+        }
+    }
+
+    @ViewBuilder
+    private var catalogRows: some View {
+        if !store.pinnedTools.isEmpty && query.isEmpty {
+            pinnedSection
+        }
+        if query.isEmpty {
+            ForEach(ToolCatalog.sections) { section in
+                catalogSection(section)
             }
-            if query.isEmpty {
-                ForEach(ToolCatalog.sections) { section in
-                    catalogSection(section)
-                }
-            } else {
-                searchResults
-            }
+        } else {
+            searchResults
         }
     }
 

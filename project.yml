@@ -106,6 +106,11 @@ targets:
         # macOS needs the sandbox + networking entitlements, which iOS neither
         # has nor accepts — hence a separate file per SDK.
         CODE_SIGN_ENTITLEMENTS[sdk=macosx*]: App/CheckNet-macOS.entitlements
+    # The UI tests are deliberately absent here: they are iOS-only, and a scheme
+    # that lists them cannot be tested against the macOS destination — xcodebuild
+    # still builds every test target in the scheme, and an iOS bundle built with
+    # the ad-hoc identity the Mac run passes is rejected outright by the iOS SDK.
+    # They get their own scheme below.
     scheme:
       testTargets:
         - CheckNetTests
@@ -126,6 +131,23 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
+
+  # UI tests exist for one reason: landscape size classes only change when a
+  # device really rotates, which no unit test can do.
+  CheckNetUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/CheckNetUITests
+    dependencies:
+      - target: CheckNet
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet.uitests
+        PRODUCT_NAME: CheckNetUITests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "6.0"
+        TEST_TARGET_NAME: CheckNet
 
   CheckNetWidgets:
     type: app-extension
@@ -150,3 +172,15 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         SKIP_INSTALL: YES
         CODE_SIGN_ENTITLEMENTS: Widgets/CheckNetWidgets.entitlements
+
+# A scheme of its own, so the app scheme stays testable on macOS while these
+# iOS-only tests keep a simulator destination.
+schemes:
+  CheckNetUITests:
+    build:
+      targets:
+        CheckNet: [test]
+        CheckNetUITests: [test]
+    test:
+      targets:
+        - CheckNetUITests

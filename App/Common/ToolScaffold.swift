@@ -45,8 +45,14 @@ struct ToolScaffold<Leading: View, Content: View, Bottom: View>: View {
 
     private var mode: Mode {
         #if os(iOS)
-        if hSize == .regular { return .twoColumn }
-        return vSize == .compact ? .rail : .stack
+        // Height is asked about first, and deliberately so. A Pro Max in
+        // landscape reports *regular* width but compact height, so asking about
+        // width first put a phone into the iPad layout: three columns on a
+        // 430 pt-tall screen, the last one squeezed until it wrapped one letter
+        // per line. Whenever height is compact the rail is the right answer,
+        // however wide the device claims to be.
+        if vSize == .compact { return .rail }
+        return hSize == .regular ? .twoColumn : .stack
         #else
         return .twoColumn
         #endif

@@ -151,6 +151,20 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             test
 
+      # Landscape size classes only change when a device really rotates, so this
+      # one needs a simulator rather than the macOS destination. It is resolved
+      # by udid rather than by name — see Scripts/simulator_udid.py for why.
+      - name: Run landscape UI tests
+        run: |
+          set -o pipefail
+          UDID=$(python3 Scripts/simulator_udid.py)
+          xcodebuild \
+            -project CheckNet.xcodeproj \
+            -scheme CheckNetUITests \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
   network-tests:
     name: Network tests (live hosts, informational)
     runs-on: macos-latest
