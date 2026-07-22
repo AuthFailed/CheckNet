@@ -143,13 +143,16 @@ struct BlockingCheckView: View {
 
             if let finding = model.finding {
                 verdictCard(finding)
-                if !finding.evidence.isEmpty { evidenceCard(finding) }
             } else if model.isRunning {
                 VStack(spacing: 10) {
                     ProgressView()
                     Text("Проверяем ваше соединение…").font(.caption).foregroundStyle(.secondary)
                 }
                 .padding(.top, 40)
+            }
+        } content: {
+            if let finding = model.finding, !finding.evidence.isEmpty {
+                evidenceCard(finding)
             }
         } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,

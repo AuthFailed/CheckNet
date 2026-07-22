@@ -57,7 +57,7 @@ struct MTRView: View {
                 }
                 .padding(.horizontal, 4)
             }
-
+        } content: {
             if !model.hops.isEmpty {
                 tableCard
             }

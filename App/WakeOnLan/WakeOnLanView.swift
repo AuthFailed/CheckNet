@@ -50,7 +50,7 @@ struct WakeOnLanView: View {
                     banner(icon: "exclamationmark.triangle.fill", color: .orange, text: msg)
                 }
             }
-
+        } content: {
             Text("Wake-on-LAN работает только в локальной сети и требует, чтобы устройство поддерживало пробуждение по сети.")
                 .font(.caption).foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

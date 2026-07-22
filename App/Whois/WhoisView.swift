@@ -31,11 +31,15 @@ struct WhoisView: View {
                          disabled: model.isRunning, savedHostTool: .whois) { Task { await model.run() } }
             if let error = model.errorMessage {
                 ErrorBanner(message: error)
-            } else if let result = model.result {
-                if !result.fields.isEmpty { fieldsCard(result) }
-                rawDisclosure(result)
-            } else if model.isRunning {
-                ProgressView().padding(.top, 40)
+            }
+        } content: {
+            if model.errorMessage == nil {
+                if let result = model.result {
+                    if !result.fields.isEmpty { fieldsCard(result) }
+                    rawDisclosure(result)
+                } else if model.isRunning {
+                    ProgressView().padding(.top, 40)
+                }
             }
         } bottom: {
             RunButton(title: "Запросить", running: model.isRunning,

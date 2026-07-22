@@ -50,9 +50,15 @@ struct DNSLookupView: View {
             if let error = model.errorMessage {
                 ErrorBanner(message: error)
             } else if let result = model.result {
-                resultView(result)
-            } else if model.isRunning {
-                ProgressView().padding(.top, 40)
+                statusCard(result)
+            }
+        } content: {
+            if model.errorMessage == nil {
+                if let result = model.result {
+                    recordModules(result)
+                } else if model.isRunning {
+                    ProgressView().padding(.top, 40)
+                }
             }
         } bottom: {
             RunButton(title: "Запросить", running: model.isRunning,
@@ -101,17 +107,17 @@ struct DNSLookupView: View {
         .card()
     }
 
-    private func resultView(_ result: DNSResult) -> some View {
-        VStack(spacing: 14) {
-            statusCard(result)
-            if !result.answers.isEmpty {
-                recordsCard("Ответы", result.answers)
-            } else {
-                emptyAnswers
-            }
-            if !result.authorities.isEmpty {
-                recordsCard("Authority", result.authorities)
-            }
+    /// Siblings, not a VStack: on a wide window the record lists are separate
+    /// grid modules.
+    @ViewBuilder
+    private func recordModules(_ result: DNSResult) -> some View {
+        if !result.answers.isEmpty {
+            recordsCard("Ответы", result.answers)
+        } else {
+            emptyAnswers
+        }
+        if !result.authorities.isEmpty {
+            recordsCard("Authority", result.authorities)
         }
     }
 
