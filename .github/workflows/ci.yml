@@ -152,26 +152,12 @@ jobs:
             test
 
       # Landscape size classes only change when a device really rotates, so this
-      # one needs a simulator rather than the macOS destination.
-      #
-      # The simulator is resolved by udid instead of by name: which iPhones the
-      # runner image ships changes over time, and a name that is missing does not
-      # fail loudly — xcodebuild falls back to the device SDK and dies on code
-      # signing, which reads like a signing problem rather than a missing device.
-      # A "Max" is preferred because it is the phone that reports a regular
-      # horizontal size class in landscape, which is the case under test.
+      # one needs a simulator rather than the macOS destination. It is resolved
+      # by udid rather than by name — see Scripts/simulator_udid.py for why.
       - name: Run landscape UI tests
         run: |
           set -o pipefail
-          UDID=$(xcrun simctl list devices available --json | python3 -c '
-import json, sys
-phones = [d for runtime in json.load(sys.stdin)["devices"].values()
-          for d in runtime if d["name"].startswith("iPhone")]
-if not phones:
-    sys.exit("no iPhone simulator on this runner")
-phones.sort(key=lambda d: "Max" not in d["name"])
-print(phones[0]["udid"])
-')
+          UDID=$(python3 Scripts/simulator_udid.py)
           xcodebuild \
             -project CheckNet.xcodeproj \
             -scheme CheckNet \
