@@ -66,6 +66,14 @@ struct MTRView: View {
         } content: {
             if !model.hops.isEmpty {
                 tableCard
+            } else if !model.isRunning, model.errorMessage == nil {
+                ToolIdleHint(
+                    icon: "chart.line.uptrend.xyaxis",
+                    title: "Готово к запуску MTR",
+                    message: "Трассировка и пинг одновременно: потери и задержка по каждому хопу, раунд за раундом.",
+                    example: "cloudflare.com",
+                    current: model.host
+                ) { model.host = "cloudflare.com" }
             }
         } bottom: {
             RunButton(title: "Запустить MTR", running: model.isRunning,

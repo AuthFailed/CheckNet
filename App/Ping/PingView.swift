@@ -183,21 +183,13 @@ struct PingView: View {
     // MARK: Idle
 
     private var idleHint: some View {
-        VStack(spacing: 10) {
-            Image(systemName: "dot.radiowaves.left.and.right")
-                .font(.system(size: 40))
-                .foregroundStyle(.tint)
-                .padding(.top, 40)
-            Text("Готово к проверке")
-                .font(.headline)
-            Text("Проверьте задержку, потери пакетов и джиттер до любого хоста.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 20)
+        ToolIdleHint(
+            icon: "dot.radiowaves.left.and.right",
+            title: "Готово к проверке",
+            message: "Проверьте задержку, потери пакетов и джиттер до любого хоста.",
+            example: "1.1.1.1",
+            current: model.host
+        ) { model.host = "1.1.1.1" }
     }
 
     // MARK: Live

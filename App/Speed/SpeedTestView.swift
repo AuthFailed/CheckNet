@@ -23,6 +23,12 @@ struct SpeedTestView: View {
             switch model.phase {
             case .running, .done:
                 if !model.samples.isEmpty { chartCard }
+            case .idle, .ready:
+                ToolIdleHint(
+                    icon: "speedometer",
+                    title: "Готово к замеру скорости",
+                    message: "Измерим скорость до выбранного сервера: загрузку, отдачу и задержку под нагрузкой."
+                )
             default:
                 EmptyView()
             }

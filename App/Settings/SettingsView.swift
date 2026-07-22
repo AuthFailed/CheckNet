@@ -155,7 +155,11 @@ struct SavedHostsEditor: View {
 
             Section("Сохранённые") {
                 if items.isEmpty {
-                    Text("Пока пусто").foregroundStyle(.secondary)
+                    ContentUnavailableView(
+                        "Пока пусто",
+                        systemImage: kind.icon,
+                        description: Text("Сохранённые адреса появляются в меню закладок на каждом экране с полем ввода.")
+                    )
                 } else {
                     ForEach(items) { host in
                         VStack(alignment: .leading, spacing: 2) {

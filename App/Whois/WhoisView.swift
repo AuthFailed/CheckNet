@@ -39,6 +39,14 @@ struct WhoisView: View {
                     rawDisclosure(result)
                 } else if model.isRunning {
                     ProgressView().padding(.top, 40)
+                } else {
+                    ToolIdleHint(
+                        icon: "doc.text.magnifyingglass",
+                        title: "Готово к запросу whois",
+                        message: "Узнаем регистратора домена, даты регистрации и окончания, серверы имён.",
+                        example: "apple.com",
+                        current: model.query
+                    ) { model.query = "apple.com" }
                 }
             }
         } bottom: {

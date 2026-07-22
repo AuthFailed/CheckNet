@@ -10734,6 +10734,468 @@
         }
       }
     },
+    "Готово к замеру скорости": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز لقياس السرعة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die Geschwindigkeitsmessung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to measure speed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para medir la velocidad"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à mesurer le débit"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "गति मापने के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a misurare la velocità"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "速度計測の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "속도 측정 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para medir a velocidade"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hız ölçümüne hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备测速"
+          }
+        }
+      }
+    },
+    "Готово к запросу": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز للاستعلام"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die Abfrage"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to query"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para consultar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à interroger"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "क्वेरी के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto per la query"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "照会の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조회 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para consultar"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sorguya hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备查询"
+          }
+        }
+      }
+    },
+    "Готово к запросу whois": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز لاستعلام whois"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die Whois-Abfrage"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to query whois"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para consultar whois"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à interroger whois"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "whois क्वेरी के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto per la query whois"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "whois 照会の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "whois 조회 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para consultar o whois"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "whois sorgusuna hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备查询 whois"
+          }
+        }
+      }
+    },
+    "Готово к запуску MTR": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز لتشغيل MTR"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für MTR"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to run MTR"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para ejecutar MTR"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à lancer MTR"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTR चलाने के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a eseguire MTR"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTR の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTR 실행 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para executar o MTR"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTR çalıştırmaya hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备运行 MTR"
+          }
+        }
+      }
+    },
+    "Готово к поиску MTU": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز للبحث عن MTU"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die MTU-Suche"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to find the MTU"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para buscar la MTU"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à chercher le MTU"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTU खोजने के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a cercare l'MTU"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTU 探索の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTU 탐색 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para descobrir a MTU"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MTU aramaya hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备探测 MTU"
+          }
+        }
+      }
+    },
+    "Готово к пробуждению": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز للإيقاظ"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit zum Aufwecken"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to wake a device"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para despertar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à réveiller"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "जगाने के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a risvegliare"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "起動の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "깨우기 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para acordar o dispositivo"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uyandırmaya hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备唤醒设备"
+          }
+        }
+      }
+    },
     "Готово к проверке": {
       "extractionState": "manual",
       "localizations": {
@@ -10807,6 +11269,468 @@
           "stringUnit": {
             "state": "translated",
             "value": "准备就绪，可开始检查"
+          }
+        }
+      }
+    },
+    "Готово к проверке портов": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز لفحص المنافذ"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die Portprüfung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to check ports"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para comprobar puertos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à vérifier les ports"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "पोर्ट जाँच के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a controllare le porte"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ポート確認の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "포트 확인 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para checar portas"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port kontrolüne hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备检查端口"
+          }
+        }
+      }
+    },
+    "Готово к проверке списков": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز لفحص القوائم"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die Listenprüfung"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to check the lists"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para revisar las listas"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à vérifier les listes"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सूचियाँ जाँचने के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto a controllare le liste"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リスト照会の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목록 조회 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para checar as listas"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listeleri kontrole hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备查询黑名单"
+          }
+        }
+      }
+    },
+    "Готово к разбору TLS": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز لتحليل TLS"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für die TLS-Analyse"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to inspect TLS"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para analizar TLS"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à analyser TLS"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TLS जाँच के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto ad analizzare TLS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TLS 解析の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TLS 분석 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para inspecionar o TLS"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TLS incelemeye hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备解析 TLS"
+          }
+        }
+      }
+    },
+    "Готово к сканированию": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز للفحص"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit zum Scannen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to scan"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para escanear"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à scanner"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "स्कैन के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto alla scansione"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スキャンの準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스캔 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para escanear"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taramaya hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备扫描"
+          }
+        }
+      }
+    },
+    "Готово к сравнению": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز للمقارنة"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit zum Vergleich"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to compare"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para comparar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt à comparer"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "तुलना के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto al confronto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "比較の準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "비교 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para comparar"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Karşılaştırmaya hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备对比"
+          }
+        }
+      }
+    },
+    "Готово к трассировке": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "جاهز للتتبّع"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereit für Trace"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready to trace"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo para trazar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prêt pour le tracé"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ट्रेस के लिए तैयार"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto al tracciamento"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "トレースの準備完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경로 추적 준비됨"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para o traceroute"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "İzlemeye hazır"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备好路由跟踪"
           }
         }
       }
@@ -17043,6 +17967,83 @@
         }
       }
     },
+    "Измерим скорость до выбранного сервера: загрузку, отдачу и задержку под нагрузкой.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنقيس السرعة إلى الخادم المختار: التنزيل والرفع وزمن الاستجابة تحت الحِمل."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Misst die Geschwindigkeit zum gewählten Server: Download, Upload und Latenz unter Last."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll measure speed to the chosen server: download, upload and latency under load."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mediremos la velocidad hacia el servidor elegido: bajada, subida y latencia bajo carga."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous mesurerons le débit vers le serveur choisi : descendant, montant et latence en charge."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चुने गए सर्वर तक गति मापेंगे: डाउनलोड, अपलोड और लोड में देरी।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Misureremo la velocità verso il server scelto: download, upload e latenza sotto carico."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選んだサーバーへの下り・上り速度と、負荷時の遅延を測定します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 서버까지의 다운로드·업로드 속도와 부하 시 지연을 측정합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos medir a velocidade até o servidor escolhido: download, upload e latência sob carga."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seçili sunucuya hızı ölçeriz: indirme, yükleme ve yük altındaki gecikme."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "测量到所选服务器的下载、上传速度以及负载下的延迟。"
+          }
+        }
+      }
+    },
     "Измеряет рост задержки под нагрузкой (bufferbloat). Требует нагрузочного сервера.": {
       "extractionState": "manual",
       "localizations": {
@@ -20886,6 +21887,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "发现特征标记：「%@」"
+          }
+        }
+      }
+    },
+    "Найдём наибольший пакет, который доходит до хоста без фрагментации.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنجد أكبر حزمة تصل إلى المضيف دون تجزئة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Findet das größte Paket, das den Host ohne Fragmentierung erreicht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll find the largest packet that reaches the host without fragmentation."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscaremos el paquete más grande que llega al host sin fragmentarse."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous trouverons le plus grand paquet qui atteint l'hôte sans fragmentation."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम सबसे बड़ा पैकेट खोजेंगे जो बिना विखंडन के होस्ट तक पहुंचता है।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Troveremo il pacchetto più grande che raggiunge l'host senza frammentazione."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フラグメント化されずにホストへ届く最大パケットを探します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "조각화 없이 호스트에 도달하는 가장 큰 패킷을 찾습니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos encontrar o maior pacote que chega ao host sem fragmentação."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parçalanmadan ana bilgisayara ulaşan en büyük paketi buluruz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找出无需分片即可到达主机的最大数据包。"
           }
         }
       }
@@ -29050,6 +30128,83 @@
         }
       }
     },
+    "Отправим magic-пакет на MAC-адрес. Работает только внутри локальной сети и только если устройство умеет просыпаться по сети.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنرسل حزمة سحرية إلى عنوان MAC. تعمل داخل الشبكة المحلية فقط، وإذا كان الجهاز يدعم الإيقاظ عبر الشبكة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sendet ein Magic Packet an die MAC-Adresse. Funktioniert nur im lokalen Netz und nur, wenn das Gerät Wake-on-LAN beherrscht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll send a magic packet to the MAC address. It only works inside the local network, and only if the device supports wake-on-network."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviaremos un paquete mágico a la dirección MAC. Solo funciona en la red local y si el dispositivo admite el despertar por red."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous enverrons un paquet magique à l'adresse MAC. Cela ne fonctionne que sur le réseau local et si l'appareil gère le réveil par le réseau."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम MAC पते पर मैजिक पैकेट भेजेंगे। यह केवल स्थानीय नेटवर्क में और तभी काम करता है जब डिवाइस नेटवर्क से जागना समर्थित करे।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invieremo un magic packet all'indirizzo MAC. Funziona solo nella rete locale e solo se il dispositivo supporta il risveglio via rete."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MAC アドレスへマジックパケットを送ります。ローカルネットワーク内で、機器がネットワーク起動に対応している場合のみ有効です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MAC 주소로 매직 패킷을 보냅니다. 로컬 네트워크 안에서, 기기가 네트워크 깨우기를 지원할 때만 동작합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviaremos um magic packet para o endereço MAC. Só funciona dentro da rede local e se o dispositivo suportar acordar pela rede."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MAC adresine bir magic packet göndeririz. Yalnızca yerel ağda ve cihaz ağdan uyanmayı destekliyorsa çalışır."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向该 MAC 地址发送魔术包。仅在局域网内有效，且设备需支持网络唤醒。"
+          }
+        }
+      }
+    },
     "Отправить": {
       "localizations": {
         "ar": {
@@ -32588,6 +33743,83 @@
         }
       }
     },
+    "Подставить %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "استخدام %@"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ verwenden"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utiliser %@"
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ का उपयोग करें"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ を使う"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 사용"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar %@"
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kullan: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "使用 %@"
+          }
+        }
+      }
+    },
     "Поиск": {
       "extractionState": "manual",
       "localizations": {
@@ -33044,6 +34276,160 @@
           "stringUnit": {
             "state": "translated",
             "value": "暂时为空"
+          }
+        }
+      }
+    },
+    "Покажем каждый маршрутизатор на пути до хоста и задержку на каждом шаге.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنعرض كل موجّه على المسار إلى المضيف وزمن الاستجابة عند كل خطوة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeigt jeden Router auf dem Weg zum Host und die Latenz bei jedem Schritt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll show every router on the way to the host and the latency at each step."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostraremos cada router en el camino al host y la latencia en cada salto."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous montrerons chaque routeur sur le chemin vers l'hôte et la latence à chaque étape."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम होस्ट तक के रास्ते का हर राउटर और हर चरण की देरी दिखाएंगे।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostreremo ogni router sul percorso verso l'host e la latenza a ogni passo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ホストまでの各ルーターと、その各段階の遅延を表示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "호스트까지 거치는 각 라우터와 단계별 지연 시간을 보여줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostraremos cada roteador no caminho até o host e a latência em cada etapa."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ana bilgisayara giden yoldaki her yönlendiriciyi ve her adımdaki gecikmeyi gösterir."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示通往主机路径上的每一跳路由及其延迟。"
+          }
+        }
+      }
+    },
+    "Покажем цепочку сертификатов, сроки действия, версию TLS и шифр.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنعرض سلسلة الشهادات ومدد الصلاحية وإصدار TLS والتشفير."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeigt die Zertifikatskette, Gültigkeitsdaten, TLS-Version und Cipher."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll show the certificate chain, validity dates, TLS version and cipher."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostraremos la cadena de certificados, la validez, la versión de TLS y el cifrado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous afficherons la chaîne de certificats, les dates de validité, la version TLS et le chiffrement."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम प्रमाणपत्र शृंखला, वैधता, TLS संस्करण और सिफर दिखाएंगे।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostreremo la catena di certificati, le date di validità, la versione TLS e il cifrario."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "証明書チェーン、有効期限、TLS バージョン、暗号スイートを表示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "인증서 체인, 유효 기간, TLS 버전, 암호 스위트를 보여줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostraremos a cadeia de certificados, a validade, a versão do TLS e a cifra."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sertifika zincirini, geçerlilik tarihlerini, TLS sürümünü ve şifreleme takımını gösteririz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "展示证书链、有效期、TLS 版本与加密套件。"
           }
         }
       }
@@ -35275,6 +36661,160 @@
           "stringUnit": {
             "state": "translated",
             "value": "运营商、服务、推送通知"
+          }
+        }
+      }
+    },
+    "Проверим IP по спискам DNSBL — тем самым, по которым почтовые серверы решают, принимать ли письмо.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنفحص عنوان IP في قوائم DNSBL التي تعتمد عليها خوادم البريد لقبول الرسائل."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prüft die IP gegen DNSBL-Listen – jene, nach denen Mailserver über die Annahme entscheiden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll check the IP against DNSBL lists — the ones mail servers use to decide whether to accept a message."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobaremos la IP en listas DNSBL, las que usan los servidores de correo para aceptar o no un mensaje."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous vérifierons l'IP dans les listes DNSBL, celles dont les serveurs de messagerie se servent pour accepter un message."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम IP को DNSBL सूचियों में जाँचेंगे — वही जिनसे मेल सर्वर तय करते हैं कि संदेश स्वीकारें या नहीं।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controlleremo l'IP nelle liste DNSBL, quelle con cui i server di posta decidono se accettare un messaggio."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "メールサーバーが受信可否を判断する DNSBL リストで IP を照会します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메일 서버가 수신 여부를 판단할 때 쓰는 DNSBL 목록에서 IP를 조회합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos verificar o IP em listas DNSBL — as que os servidores de e-mail usam para aceitar ou não uma mensagem."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "IP'yi, posta sunucularının bir iletiyi kabul edip etmeyeceğine karar verdiği DNSBL listelerinde ararız."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在 DNSBL 名单中查询该 IP——邮件服务器正是据此决定是否收信。"
+          }
+        }
+      }
+    },
+    "Проверим, какие порты хоста принимают соединения, и подпишем известные службы.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنفحص المنافذ التي تقبل الاتصالات على المضيف ونسمّي الخدمات المعروفة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prüft, welche Ports des Hosts Verbindungen annehmen, und benennt bekannte Dienste."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll check which of the host's ports accept connections and label the known services."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobaremos qué puertos del host aceptan conexiones y etiquetaremos los servicios conocidos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous vérifierons quels ports de l'hôte acceptent les connexions et nommerons les services connus."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम जाँचेंगे कि होस्ट के कौन-से पोर्ट कनेक्शन स्वीकारते हैं और ज्ञात सेवाएँ नाम से दिखाएंगे।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificheremo quali porte dell'host accettano connessioni ed etichetteremo i servizi noti."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ホストのどのポートが接続を受け付けるかを調べ、既知のサービス名を添えます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "호스트의 어떤 포트가 연결을 받는지 확인하고 알려진 서비스 이름을 붙입니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos verificar quais portas do host aceitam conexões e rotular os serviços conhecidos."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ana bilgisayarın hangi portlarının bağlantı kabul ettiğini kontrol eder ve bilinen servisleri etiketleriz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "检查主机哪些端口接受连接，并标注已知服务。"
           }
         }
       }
@@ -38122,6 +39662,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "性能"
+          }
+        }
+      }
+    },
+    "Пройдём по диапазону и покажем, какие адреса отвечают, с именем и задержкой.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنمسح النطاق ونعرض العناوين المستجيبة مع الاسم وزمن الاستجابة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geht den Bereich durch und zeigt, welche Adressen antworten – mit Name und Latenz."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll walk the range and show which addresses answer, with name and latency."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recorreremos el rango y mostraremos qué direcciones responden, con nombre y latencia."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous parcourrons la plage et montrerons quelles adresses répondent, avec nom et latence."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम रेंज में जाँच कर बताएंगे कि कौन-से पते उत्तर देते हैं, नाम और देरी के साथ।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Percorreremo l'intervallo e mostreremo quali indirizzi rispondono, con nome e latenza."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "範囲を走査し、応答したアドレスを名前と遅延つきで表示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "범위를 훑어 응답한 주소를 이름과 지연 시간과 함께 보여줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos percorrer a faixa e mostrar quais endereços respondem, com nome e latência."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aralığı tarar ve hangi adreslerin yanıt verdiğini adı ve gecikmesiyle gösteririz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "遍历该范围，列出有响应的地址及其名称与延迟。"
           }
         }
       }
@@ -46894,6 +48511,83 @@
         }
       }
     },
+    "Сохранённые адреса появляются в меню закладок на каждом экране с полем ввода.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تظهر العناوين المحفوظة في قائمة الإشارات المرجعية على كل شاشة فيها حقل إدخال."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gespeicherte Adressen erscheinen im Lesezeichenmenü auf jedem Bildschirm mit Eingabefeld."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved addresses show up in the bookmarks menu on every screen with an input field."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las direcciones guardadas aparecen en el menú de marcadores de cada pantalla con campo de entrada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les adresses enregistrées apparaissent dans le menu des signets sur chaque écran doté d'un champ de saisie."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "सहेजे गए पते हर उस स्क्रीन के बुकमार्क मेनू में दिखते हैं जिसमें इनपुट फ़ील्ड है।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gli indirizzi salvati compaiono nel menu dei segnalibri in ogni schermata con un campo di inserimento."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存したアドレスは、入力欄のある各画面のブックマークメニューに表示されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장한 주소는 입력란이 있는 모든 화면의 북마크 메뉴에 나타납니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os endereços salvos aparecem no menu de favoritos em cada tela com campo de entrada."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kaydedilen adresler, giriş alanı olan her ekrandaki yer imleri menüsünde görünür."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已保存的地址会出现在每个带输入框页面的书签菜单中。"
+          }
+        }
+      }
+    },
     "Сохранённые хосты": {
       "extractionState": "manual",
       "localizations": {
@@ -47044,6 +48738,160 @@
           "stringUnit": {
             "state": "translated",
             "value": "向多个 DNS 解析器查询同一域名并并排对比响应。帮助发现篡改或差异。"
+          }
+        }
+      }
+    },
+    "Спросим выбранный резолвер о записях домена и покажем ответ целиком.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنسأل المحلّل المختار عن سجلات النطاق ونعرض الإجابة كاملة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fragt den gewählten Resolver nach den Einträgen der Domain und zeigt die vollständige Antwort."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll ask the chosen resolver for the domain's records and show the whole answer."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntaremos al resolutor elegido por los registros del dominio y mostraremos la respuesta completa."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous demanderons au résolveur choisi les enregistrements du domaine et afficherons la réponse entière."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "चुने गए रिज़ॉल्वर से डोमेन के रिकॉर्ड पूछेंगे और पूरा उत्तर दिखाएंगे।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiederemo al resolver scelto i record del dominio e mostreremo l'intera risposta."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "選んだリゾルバーにドメインのレコードを問い合わせ、応答全体を表示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택한 리졸버에 도메인 레코드를 질의하고 응답 전체를 보여줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos perguntar ao resolvedor escolhido pelos registros do domínio e mostrar a resposta inteira."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seçili çözümleyiciye alan adının kayıtlarını sorar ve yanıtın tamamını gösteririz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "向所选解析器查询该域名的记录，并展示完整应答。"
+          }
+        }
+      }
+    },
+    "Спросим один домен у нескольких публичных резолверов сразу — расхождение в ответах видно построчно.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنسأل عدة محلّلات عامة عن النطاق نفسه في آنٍ واحد، ويظهر الاختلاف سطرًا بسطر."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fragt mehrere öffentliche Resolver gleichzeitig nach einer Domain – Abweichungen sind zeilenweise sichtbar."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll ask several public resolvers about one domain at once — a disagreement shows up line by line."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preguntaremos por un dominio a varios resolutores públicos a la vez: las discrepancias se ven línea por línea."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous interrogerons plusieurs résolveurs publics sur un même domaine : les divergences apparaissent ligne par ligne."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "एक ही डोमेन को कई सार्वजनिक रिज़ॉल्वर से एक साथ पूछेंगे — अंतर पंक्ति-दर-पंक्ति दिखता है।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chiederemo lo stesso dominio a più resolver pubblici insieme: le divergenze si vedono riga per riga."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同じドメインを複数の公開リゾルバーへ同時に問い合わせ、応答の食い違いを行ごとに示します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 도메인을 여러 공개 리졸버에 동시에 질의해 응답 차이를 줄 단위로 보여줍니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos perguntar sobre um domínio a vários resolvedores públicos ao mesmo tempo — as divergências aparecem linha a linha."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aynı alan adını birkaç genel çözümleyiciye aynı anda sorarız; yanıt farkları satır satır görünür."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同时向多个公共解析器查询同一域名——差异逐行呈现。"
           }
         }
       }
@@ -49970,6 +51818,83 @@
         }
       }
     },
+    "Трассировка и пинг одновременно: потери и задержка по каждому хопу, раунд за раундом.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "تتبّع واختبار ping معًا: الفقد وزمن الاستجابة لكل قفزة، جولة بعد جولة."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trace und Ping zugleich: Verlust und Latenz pro Hop, Runde für Runde."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trace and ping at once: loss and latency per hop, round after round."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traza y ping a la vez: pérdida y latencia por salto, ronda tras ronda."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trace et ping à la fois : perte et latence par saut, tour après tour."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ट्रेस और पिंग एक साथ: हर हॉप पर हानि और देरी, हर राउंड में।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trace e ping insieme: perdita e latenza per hop, giro dopo giro."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "トレースと ping を同時に実行し、ホップごとの損失と遅延をラウンドごとに集計します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "경로 추적과 핑을 동시에 실행해 홉별 손실과 지연을 라운드마다 누적합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traceroute e ping ao mesmo tempo: perda e latência por salto, rodada após rodada."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aynı anda izleme ve ping: her sekme için kayıp ve gecikme, tur tur."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "同时执行路由跟踪与 ping：逐轮统计每一跳的丢包与延迟。"
+          }
+        }
+      }
+    },
     "Троттлинг параллельных TLS": {
       "extractionState": "manual",
       "localizations": {
@@ -50813,6 +52738,83 @@
           "stringUnit": {
             "state": "translated",
             "value": "节点"
+          }
+        }
+      }
+    },
+    "Узнаем регистратора домена, даты регистрации и окончания, серверы имён.": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "سنعرف الجهة المسجِّلة وتواريخ التسجيل والانتهاء وخوادم الأسماء."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ermittelt Registrar, Registrierungs- und Ablaufdatum sowie die Nameserver."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We'll look up the registrar, the registration and expiry dates, and the name servers."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consultaremos el registrador, las fechas de registro y expiración, y los servidores de nombres."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous chercherons le bureau d'enregistrement, les dates de création et d'expiration et les serveurs de noms."
+          }
+        },
+        "hi": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "हम रजिस्ट्रार, पंजीकरण व समाप्ति तिथियाँ और नेम सर्वर पता करेंगे।"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cercheremo il registrar, le date di registrazione e scadenza e i name server."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "レジストラ、登録日と有効期限、ネームサーバーを調べます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "등록 대행사, 등록일과 만료일, 네임서버를 조회합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos consultar o registrador, as datas de registro e expiração e os servidores de nomes."
+          }
+        },
+        "tr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alan adının kayıt şirketini, kayıt ve bitiş tarihlerini, ad sunucularını buluruz."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查询注册商、注册与到期日期以及域名服务器。"
           }
         }
       }
