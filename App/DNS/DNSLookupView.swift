@@ -58,6 +58,14 @@ struct DNSLookupView: View {
                     recordModules(result)
                 } else if model.isRunning {
                     ProgressView().padding(.top, 40)
+                } else {
+                    ToolIdleHint(
+                        icon: "magnifyingglass",
+                        title: "Готово к запросу",
+                        message: "Спросим выбранный резолвер о записях домена и покажем ответ целиком.",
+                        example: "example.com",
+                        current: model.host
+                    ) { model.host = "example.com" }
                 }
             }
         } bottom: {

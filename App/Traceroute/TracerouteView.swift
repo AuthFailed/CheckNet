@@ -63,6 +63,14 @@ struct TracerouteView: View {
         } content: {
             if !model.hops.isEmpty {
                 hopsCard
+            } else if !model.isRunning, model.errorMessage == nil {
+                ToolIdleHint(
+                    icon: "point.topleft.down.to.point.bottomright.curvepath",
+                    title: "Готово к трассировке",
+                    message: "Покажем каждый маршрутизатор на пути до хоста и задержку на каждом шаге.",
+                    example: "cloudflare.com",
+                    current: model.host
+                ) { model.host = "cloudflare.com" }
             }
         } bottom: {
             RunButton(title: "Трассировать", running: model.isRunning,

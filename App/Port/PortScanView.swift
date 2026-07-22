@@ -99,6 +99,14 @@ struct PortScanView: View {
             } else if !model.isRunning && model.scanned > 0 {
                 Text("Открытых портов не найдено")
                     .foregroundStyle(.secondary).padding(.top, 24)
+            } else if !model.isRunning, model.errorMessage == nil {
+                ToolIdleHint(
+                    icon: "square.grid.3x3.middle.filled",
+                    title: "Готово к проверке портов",
+                    message: "Проверим, какие порты хоста принимают соединения, и подпишем известные службы.",
+                    example: "scanme.nmap.org",
+                    current: model.host
+                ) { model.host = "scanme.nmap.org" }
             }
         } bottom: {
             RunButton(title: "Сканировать", running: model.isRunning,

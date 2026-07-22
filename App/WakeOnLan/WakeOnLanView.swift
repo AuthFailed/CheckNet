@@ -51,10 +51,11 @@ struct WakeOnLanView: View {
                 }
             }
         } content: {
-            Text("Wake-on-LAN работает только в локальной сети и требует, чтобы устройство поддерживало пробуждение по сети.")
-                .font(.caption).foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 4)
+            ToolIdleHint(
+                icon: "power",
+                title: "Готово к пробуждению",
+                message: "Отправим magic-пакет на MAC-адрес. Работает только внутри локальной сети и только если устройство умеет просыпаться по сети."
+            )
         } bottom: {
             Button {
                 send()

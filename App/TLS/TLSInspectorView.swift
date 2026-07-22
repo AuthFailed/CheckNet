@@ -65,6 +65,14 @@ struct TLSInspectorView: View {
                     }
                 } else if model.isRunning {
                     ProgressView().padding(.top, 40)
+                } else {
+                    ToolIdleHint(
+                        icon: "lock.shield",
+                        title: "Готово к разбору TLS",
+                        message: "Покажем цепочку сертификатов, сроки действия, версию TLS и шифр.",
+                        example: "cloudflare.com",
+                        current: model.host
+                    ) { model.host = "cloudflare.com" }
                 }
             }
         } bottom: {

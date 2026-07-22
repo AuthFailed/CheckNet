@@ -79,6 +79,14 @@ struct IPScannerView: View {
                 hostsCard
             } else if !model.isRunning && model.scanned > 0 {
                 Text("Активных хостов не найдено").foregroundStyle(.secondary).padding(.top, 24)
+            } else if !model.isRunning, model.errorMessage == nil {
+                // No example here: the range is already filled in from the
+                // interface the device is actually on.
+                ToolIdleHint(
+                    icon: "barcode.viewfinder",
+                    title: "Готово к сканированию",
+                    message: "Пройдём по диапазону и покажем, какие адреса отвечают, с именем и задержкой."
+                )
             }
         } bottom: {
             RunButton(title: "Сканировать", running: model.isRunning,

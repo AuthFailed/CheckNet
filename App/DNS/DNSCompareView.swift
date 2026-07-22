@@ -42,6 +42,14 @@ struct DNSCompareView: View {
             }
             if model.isRunning && model.rows.isEmpty {
                 ProgressView().padding(.top, 40)
+            } else if model.rows.isEmpty {
+                ToolIdleHint(
+                    icon: "arrow.left.arrow.right",
+                    title: "Готово к сравнению",
+                    message: "Спросим один домен у нескольких публичных резолверов сразу — расхождение в ответах видно построчно.",
+                    example: "wikipedia.org",
+                    current: model.host
+                ) { model.host = "wikipedia.org" }
             }
         } bottom: {
             RunButton(title: "Сравнить", running: model.isRunning,

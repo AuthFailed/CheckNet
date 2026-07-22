@@ -51,6 +51,14 @@ struct BlacklistView: View {
         } content: {
             if let report = model.report {
                 listCard(report)
+            } else if !model.isRunning, model.errorMessage == nil {
+                ToolIdleHint(
+                    icon: "hand.raised.slash",
+                    title: "Готово к проверке списков",
+                    message: "Проверим IP по спискам DNSBL — тем самым, по которым почтовые серверы решают, принимать ли письмо.",
+                    example: "8.8.8.8",
+                    current: model.ip
+                ) { model.ip = "8.8.8.8" }
             }
         } bottom: {
             RunButton(title: "Проверить", running: model.isRunning,

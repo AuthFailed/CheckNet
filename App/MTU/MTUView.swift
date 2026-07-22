@@ -61,6 +61,14 @@ struct MTUView: View {
         } content: {
             if let result = model.result {
                 resultCard(result)
+            } else if !model.isRunning, model.errorMessage == nil {
+                ToolIdleHint(
+                    icon: "ruler",
+                    title: "Готово к поиску MTU",
+                    message: "Найдём наибольший пакет, который доходит до хоста без фрагментации.",
+                    example: "1.1.1.1",
+                    current: model.host
+                ) { model.host = "1.1.1.1" }
             }
         } bottom: {
             RunButton(title: "Определить MTU", running: model.isRunning,
