@@ -30,7 +30,7 @@ struct WhoisView: View {
             HostInputBar(text: $model.query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
                          disabled: model.isRunning, savedHostTool: .whois) { Task { await model.run() } }
             if let error = model.errorMessage {
-                ErrorBanner(message: error)
+                ErrorCard(message: error) { Task { await model.run() } }
             }
         } content: {
             if model.errorMessage == nil {

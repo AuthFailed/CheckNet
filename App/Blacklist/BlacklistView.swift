@@ -7,18 +7,26 @@ final class BlacklistModel {
     var ip = "8.8.8.8"
     private(set) var isRunning = false
     private(set) var report: BlacklistReport?
+    private(set) var errorMessage: String?
 
     func run() async {
         let target = ip.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty else { return }
-        isRunning = true; report = nil
+        isRunning = true; report = nil; errorMessage = nil
         report = await BlacklistChecker().check(ip: target)
         isRunning = false
     }
 
+    /// A name that cannot be resolved stops here. Falling through used to run
+    /// the blacklist check against the hostname itself, which every provider
+    /// answers "not listed" — a clean report for a check that never happened.
     func resolveAndRun(host: String) async {
-        if let ep = try? await HostResolver.resolveFirst(host: host, family: .ipv4) {
-            ip = ep.ipString
+        do {
+            ip = try await HostResolver.resolveFirst(host: host, family: .ipv4).ipString
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            report = nil
+            return
         }
         await run()
     }
@@ -33,7 +41,9 @@ struct BlacklistView: View {
         ToolScaffold {
             HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
                          disabled: model.isRunning, savedHostTool: .blacklist) { Task { await model.run() } }
-            if let report = model.report {
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { Task { await model.run() } }
+            } else if let report = model.report {
                 summaryCard(report)
             } else if model.isRunning {
                 ProgressView().padding(.top, 40)

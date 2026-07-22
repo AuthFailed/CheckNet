@@ -53,7 +53,7 @@ struct TLSInspectorView: View {
             }
 
             if let error = model.errorMessage {
-                ErrorBanner(message: error)
+                ErrorCard(message: error) { Task { await model.run() } }
             } else if let info = model.info {
                 handshakeCard(info)
             }

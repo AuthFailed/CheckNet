@@ -381,13 +381,7 @@ struct PingView: View {
     // MARK: Failure
 
     private func failureCard(_ message: String) -> some View {
-        VStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 34)).foregroundStyle(.orange).padding(.top, 30)
-            Text("Не удалось выполнить проверку").font(.headline)
-            Text(LocalizedStringKey(message)).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity).padding(.horizontal, 24)
+        ErrorCard(message: message) { model.start() }
     }
 
     // MARK: Bottom bar
