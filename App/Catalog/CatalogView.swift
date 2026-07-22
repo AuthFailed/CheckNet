@@ -56,6 +56,8 @@ struct CatalogView: View {
                 stackLayout
             }
         }
+        // Pinning shows up as a star sliding into a row that may be off screen.
+        .haptic(.light, trigger: store.pinnedTools.count)
         .onAppear {
             if let route = LaunchOptions.initialRoute {
                 // The deep link has to land in whichever column model is live,

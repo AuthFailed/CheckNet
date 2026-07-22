@@ -44,6 +44,7 @@ struct SettingsView: View {
                 Section {
                     #if !os(macOS)
                     Toggle("Live Activity в Dynamic Island", isOn: $settings.liveActivitiesEnabled)
+                    Toggle("Тактильная отдача", isOn: $settings.hapticsEnabled)
                     #endif
                     Toggle("Обратный DNS по умолчанию", isOn: $settings.reverseDNSByDefault)
                     Toggle("Предупреждать о сканирующих проверках", isOn: $settings.confirmSensitiveTests)

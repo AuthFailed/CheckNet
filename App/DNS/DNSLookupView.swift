@@ -68,6 +68,9 @@ struct DNSLookupView: View {
             }
         }
         .animation(.snappy, value: model.result)
+        // A check runs for seconds; people put the phone down while it does.
+        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
+        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("DNS")
         .toolTitleDisplayMode()
         .onAppear {

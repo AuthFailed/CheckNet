@@ -45,6 +45,9 @@ struct PingView: View {
             bottomBar
         }
         .animation(.snappy(duration: 0.28), value: model.phase)
+        // A check runs for seconds; people put the phone down while it does.
+        .haptic(.success, trigger: model.phase) { if case .finished = $0 { true } else { false } }
+        .haptic(.failure, trigger: model.phase) { if case .failed = $0 { true } else { false } }
         .navigationTitle("Ping")
         .toolTitleDisplayMode()
         .toolbar {

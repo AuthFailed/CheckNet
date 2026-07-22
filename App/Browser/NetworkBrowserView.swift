@@ -59,6 +59,9 @@ struct NetworkBrowserView: View {
             RunButton(title: "Сканировать сеть", running: model.isRunning) { model.toggle() }
         }
         .animation(.snappy, value: model.devices)
+        // A check runs for seconds; people put the phone down while it does.
+        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
+        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Обзор сети")
         .toolTitleDisplayMode()
     }

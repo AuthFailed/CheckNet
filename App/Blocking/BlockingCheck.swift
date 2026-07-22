@@ -162,6 +162,10 @@ struct BlockingCheckView: View {
             }
         }
         .animation(.snappy, value: model.finding?.verdict)
+        // A restriction is not an error but it is the answer people came for,
+        // so it gets the warning pattern rather than the success one.
+        .haptic(.warning, trigger: model.finding?.verdict) { $0 == .restricted }
+        .haptic(.success, trigger: model.finding?.verdict) { $0 == .clean }
         .navigationTitle(LocalizedStringKey(check.title))
         .toolTitleDisplayMode()
         .toolbar {
