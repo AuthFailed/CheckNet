@@ -9,6 +9,7 @@ final class IPScannerModel {
     private(set) var hosts: [DiscoveredHost] = []
     private(set) var scanned = 0
     private(set) var total = 0
+    private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
     init() { range = Self.defaultRange() }
@@ -19,7 +20,7 @@ final class IPScannerModel {
         let r = range.trimmingCharacters(in: .whitespaces)
         guard !r.isEmpty else { return }
         stop()
-        hosts = []; scanned = 0; total = 0; isRunning = true
+        hosts = []; scanned = 0; total = 0; errorMessage = nil; isRunning = true
         task = Task { [weak self] in
             guard let self else { return }
             for await event in IPRangeScanner().scan(range: r, timeout: 1.0, resolveNames: true) {
@@ -32,6 +33,8 @@ final class IPScannerModel {
                     hosts.sort { (IPv4Range.toUInt32($0.ip) ?? 0) < (IPv4Range.toUInt32($1.ip) ?? 0) }
                 case .finished:
                     break
+                case .failed(let reason):
+                    errorMessage = reason
                 }
             }
             isRunning = false
@@ -66,7 +69,9 @@ struct IPScannerView: View {
             HostInputBar(text: $model.range, placeholder: "CIDR или диапазон",
                          icon: "barcode.viewfinder", disabled: model.isRunning) { requestStart() }
 
-            if model.total > 0 {
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { requestStart() }
+            } else if model.total > 0 {
                 progressCard
             }
         } content: {

@@ -12,6 +12,7 @@ final class MTRNATTests: XCTestCase {
             case .started(let ip): XCTAssertEqual(ip, "1.1.1.1")
             case .update(let hops, let round): lastTable = hops; rounds = round
             case .finished: break
+            case .failed(let reason): XCTFail("MTR to 1.1.1.1 failed: \(reason)")
             }
         }
         XCTAssertGreaterThanOrEqual(rounds, 1)

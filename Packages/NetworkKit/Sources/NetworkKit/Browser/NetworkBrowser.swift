@@ -20,6 +20,9 @@ public enum BrowserEvent: Sendable {
     case device(DiscoveredDevice)
     case progress(scanned: Int, total: Int)
     case finished(count: Int)
+    /// Terminal: the sweep never ran. Carries the scanner's own reason when the
+    /// range it was given turned out to be unusable.
+    case failed(String)
 }
 
 /// Discovers devices on the local network: ping sweep → ARP (MAC) → OUI vendor
@@ -58,6 +61,10 @@ public final class NetworkBrowser: Sendable {
                         )))
                     case .finished:
                         break
+                    case .failed(let reason):
+                        continuation.yield(.failed(reason))
+                        continuation.finish()
+                        return
                     }
                 }
                 continuation.yield(.finished(count: count))

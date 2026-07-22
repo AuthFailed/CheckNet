@@ -46,6 +46,10 @@ public enum TracerouteEvent: Sendable {
     case started(resolvedIP: String, family: IPFamily)
     case hop(TracerouteHop)
     case finished(reached: Bool)
+    /// Terminal: the trace never started. Without it a stream that ends before
+    /// its first hop is indistinguishable from one that found nothing, and the
+    /// screen sits there looking idle.
+    case failed(String)
 }
 
 /// TTL-limited ICMP traceroute. Sends echo requests with increasing TTL and
@@ -90,6 +94,9 @@ private final class TraceRunner: @unchecked Sendable {
                 let endpoint = try await HostResolver.resolveFirst(host: host, family: config.family)
                 queue.async { [self] in run(endpoint: endpoint) }
             } catch {
+                if !isCancelled {
+                    continuation.yield(.failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription))
+                }
                 continuation.finish()
             }
         }
@@ -97,7 +104,13 @@ private final class TraceRunner: @unchecked Sendable {
 
     private func run(endpoint: ResolvedEndpoint) {
         let make = SocketFactory.makeICMP(endpoint: endpoint, config: PingConfig(count: 1))
-        guard case .success(let f) = make else { continuation.finish(); return }
+        guard case .success(let f) = make else {
+            if case .failure(let reason) = make, !isCancelled {
+                continuation.yield(.failed(NetworkError.socketCreationFailed(reason: reason).errorDescription ?? reason))
+            }
+            continuation.finish()
+            return
+        }
         lock.lock(); fd = f; lock.unlock()
 
         continuation.yield(.started(resolvedIP: endpoint.ipString, family: endpoint.family))

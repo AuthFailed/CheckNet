@@ -10,6 +10,7 @@ final class TracerouteModel {
     private(set) var resolvedIP = ""
     private(set) var hops: [TracerouteHop] = []
     private(set) var reached = false
+    private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
     func toggle() { isRunning ? stop() : start() }
@@ -18,7 +19,7 @@ final class TracerouteModel {
         let target = host.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty else { return }
         stop()
-        hops = []; reached = false; resolvedIP = ""; isRunning = true
+        hops = []; reached = false; resolvedIP = ""; errorMessage = nil; isRunning = true
         let cfg = TracerouteConfig(maxHops: 30, probesPerHop: 3, timeout: 1.5, resolveNames: resolveNames)
         task = Task { [weak self] in
             guard let self else { return }
@@ -28,6 +29,7 @@ final class TracerouteModel {
                 case .started(let ip, _): resolvedIP = ip
                 case .hop(let hop): hops.append(hop)
                 case .finished(let r): reached = r
+                case .failed(let reason): errorMessage = reason
                 }
             }
             isRunning = false
@@ -53,7 +55,9 @@ struct TracerouteView: View {
                 .card()
                 .disabled(model.isRunning)
 
-            if !model.resolvedIP.isEmpty {
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { model.start() }
+            } else if !model.resolvedIP.isEmpty {
                 statusRow
             }
         } content: {

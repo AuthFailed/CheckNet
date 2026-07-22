@@ -15,6 +15,7 @@ final class PortScanModel {
     private(set) var openPorts: [PortCheckResult] = []
     private(set) var scanned = 0
     private(set) var total = 0
+    private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
     private let scanner = PortScanner()
@@ -34,11 +35,22 @@ final class PortScanModel {
         stop()
         openPorts = []
         scanned = 0
+        errorMessage = nil
         let list = ports
         total = list.count
         isRunning = true
         task = Task { [weak self] in
             guard let self else { return }
+            // Resolved once, up front. Every port of a name that does not
+            // resolve comes back closed, and "0 открытых портов" reads as a
+            // locked-down host rather than as a host that was never reached.
+            do {
+                _ = try await HostResolver.resolveFirst(host: target, family: .ipv4)
+            } catch {
+                errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                isRunning = false
+                return
+            }
             for await result in scanner.scan(host: target, ports: list, timeout: 1.5) {
                 if Task.isCancelled { break }
                 scanned += 1
@@ -76,7 +88,9 @@ struct PortScanView: View {
                 model.start()
             }
             modeCard
-            if model.total > 0 {
+            if let error = model.errorMessage {
+                ErrorCard(message: error) { requestStart() }
+            } else if model.total > 0 {
                 progressCard
             }
         } content: {

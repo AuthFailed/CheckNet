@@ -48,6 +48,10 @@ public final class BonjourBrowser: Sendable {
         case found(BonjourService)
         case removed(BonjourService)
         case finished
+        /// A browser that cannot start — most often because the local-network
+        /// permission was refused, which on device looks exactly like a network
+        /// with nothing on it.
+        case failed(String)
     }
 
     /// Browses the given service types for `duration` seconds.
@@ -79,6 +83,14 @@ public final class BonjourBrowser: Sendable {
                         }
                     }
                 }
+                browser.stateUpdateHandler = { state in
+                    guard case .failed(let error) = state else { return }
+                    if holder.noteFailure(of: types.count) {
+                        continuation.yield(.failed(error.localizedDescription))
+                        holder.cancelAll()
+                        continuation.finish()
+                    }
+                }
                 browser.start(queue: queue)
                 holder.add(browser)
             }
@@ -106,6 +118,7 @@ private final class BrowserHolder: @unchecked Sendable {
     private let lock = NSLock()
     private var browsers: [NWBrowser] = []
     private var cancelled = false
+    private var failures = 0
 
     func add(_ b: NWBrowser) {
         lock.lock(); defer { lock.unlock() }
@@ -114,5 +127,14 @@ private final class BrowserHolder: @unchecked Sendable {
     func cancelAll() {
         lock.lock(); let list = browsers; browsers = []; cancelled = true; lock.unlock()
         for b in list { b.cancel() }
+    }
+
+    /// Records one browser's failure and answers whether *every* browser has now
+    /// failed. One dead service type is normal — a system may simply not support
+    /// it — so only a clean sweep is worth reporting as an error.
+    func noteFailure(of total: Int) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        failures += 1
+        return failures == total
     }
 }
