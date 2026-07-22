@@ -79,6 +79,7 @@ struct PortScanView: View {
             if model.total > 0 {
                 progressCard
             }
+        } content: {
             if !model.openPorts.isEmpty {
                 resultsCard
             } else if !model.isRunning && model.scanned > 0 {

@@ -67,7 +67,7 @@ struct BonjourView: View {
                 )
                 .padding(.top, 40)
             }
-
+        } content: {
             ForEach(model.grouped, id: \.type) { group in
                 groupCard(group)
             }

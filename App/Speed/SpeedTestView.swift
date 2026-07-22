@@ -14,9 +14,15 @@ struct SpeedTestView: View {
             switch model.phase {
             case .running, .done:
                 gaugeCard
-                if !model.samples.isEmpty { chartCard }
             case .failed(let msg):
                 ErrorBanner(message: msg)
+            default:
+                EmptyView()
+            }
+        } content: {
+            switch model.phase {
+            case .running, .done:
+                if !model.samples.isEmpty { chartCard }
             default:
                 EmptyView()
             }

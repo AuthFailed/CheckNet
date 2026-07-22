@@ -36,7 +36,7 @@ struct DNSCompareView: View {
             }
             .padding(.horizontal, 14).padding(.vertical, 8)
             .card()
-
+        } content: {
             ForEach(model.rows) { row in
                 resolverCard(row)
             }
@@ -118,6 +118,9 @@ struct DNSTamperView: View {
                          disabled: model.isRunning, savedHostTool: .dnsTamper) { Task { await model.run() } }
             if let report = model.report {
                 verdictCard(report)
+            }
+        } content: {
+            if let report = model.report {
                 findingsCard(report)
             } else if model.isRunning {
                 ProgressView().padding(.top, 40)

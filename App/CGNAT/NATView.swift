@@ -22,8 +22,6 @@ struct NATView: View {
         ToolScaffold {
             if let report = model.report {
                 typeCard(report)
-                addressCard(report)
-                if !report.findings.isEmpty { findingsCard(report) }
             } else if model.isRunning {
                 VStack(spacing: 10) {
                     ProgressView()
@@ -34,6 +32,11 @@ struct NATView: View {
                 ContentUnavailableView("Проверка NAT", systemImage: "arrow.triangle.branch",
                                        description: Text("Определим тип NAT, внешний адрес и наличие CGNAT."))
                 .padding(.top, 40)
+            }
+        } content: {
+            if let report = model.report {
+                addressCard(report)
+                if !report.findings.isEmpty { findingsCard(report) }
             }
         } bottom: {
             RunButton(title: "Проверить NAT", running: model.isRunning) {

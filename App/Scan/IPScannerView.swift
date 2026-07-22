@@ -69,6 +69,7 @@ struct IPScannerView: View {
             if model.total > 0 {
                 progressCard
             }
+        } content: {
             if !model.hosts.isEmpty {
                 hostsCard
             } else if !model.isRunning && model.scanned > 0 {
