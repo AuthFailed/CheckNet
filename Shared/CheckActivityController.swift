@@ -35,12 +35,16 @@ final class CheckActivityController: @unchecked Sendable {
         await current.update(.init(state: .init(view), staleDate: nil))
     }
 
-    func end(_ view: CheckActivityView) async {
+    /// `lingerSeconds` keeps the final state on the Lock Screen after the run
+    /// ends. Short for a live run whose screen the user is watching; long for a
+    /// one-shot result they want to glance at later.
+    func end(_ view: CheckActivityView, lingerSeconds: TimeInterval = 4) async {
         let current = lock.withLock { () -> Activity<CheckActivityAttributes>? in
             let a = activity; activity = nil; return a
         }
         guard let current else { return }
-        await current.end(.init(state: .init(view), staleDate: nil), dismissalPolicy: .after(.now + 4))
+        await current.end(.init(state: .init(view), staleDate: nil),
+                          dismissalPolicy: .after(.now + lingerSeconds))
     }
 
     /// Ends any lingering activities of a kind — e.g. a monitoring activity left
@@ -61,7 +65,7 @@ final class CheckActivityController: @unchecked Sendable {
     var isSupported: Bool { false }
     func start(kind: CheckActivityKind, title: String, subtitle: String, view: CheckActivityView) {}
     func update(_ view: CheckActivityView) async {}
-    func end(_ view: CheckActivityView) async {}
+    func end(_ view: CheckActivityView, lingerSeconds: TimeInterval = 4) async {}
     static func endStale(kind: CheckActivityKind) {}
 }
 #endif

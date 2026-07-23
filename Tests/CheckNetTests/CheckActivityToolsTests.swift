@@ -111,4 +111,30 @@ final class CheckActivityToolsTests: XCTestCase {
         XCTAssertEqual(v.caption, "готово — 5 активных")
         XCTAssertEqual(v.status, .ok)
     }
+
+    // MARK: Generic one-shot lookup (ToolRunModel seam)
+
+    func testLookupRunningShowsTarget() {
+        let v = LookupActivityContent.view(RunPhase<Int>.running, running: "example.com") { _ in ("x", "y") }
+        XCTAssertEqual(v.headline, "example.com")
+        XCTAssertEqual(v.caption, "выполняется")
+        XCTAssertTrue(v.isRunning)
+    }
+
+    func testLookupSuccessUsesDescribeAndStatus() {
+        let v = LookupActivityContent.view(RunPhase.success(42), running: "q",
+                                           status: { $0 > 0 ? .down : .ok }) { n in
+            ("значение \(n)", "готово")
+        }
+        XCTAssertEqual(v.headline, "значение 42")
+        XCTAssertEqual(v.status, .down)          // status closure honoured
+        XCTAssertFalse(v.isRunning)
+    }
+
+    func testLookupFailureIsUniform() {
+        let v = LookupActivityContent.view(RunPhase<Int>.failure("боом"), running: "q") { _ in ("x", "y") }
+        XCTAssertEqual(v.headline, "Ошибка")
+        XCTAssertEqual(v.caption, "боом")
+        XCTAssertEqual(v.status, .down)
+    }
 }

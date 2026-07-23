@@ -4,6 +4,9 @@ import Foundation
 /// button in the widget.
 enum CheckActivityKind: String, Codable, Sendable {
     case ping, monitor, speed, bufferbloat, mtr, traceroute, portScan, ipScan
+    /// One-shot lookups on `ToolRunModel` (host→IP, DNS, whois, TLS…). The
+    /// subtitle names the specific tool.
+    case lookup
 }
 
 /// One label/value chip shown in a check's Live Activity (expanded Dynamic
@@ -176,6 +179,28 @@ enum MTRActivityContent {
             ],
             isRunning: isRunning
         )
+    }
+}
+
+/// Generic Live Activity content for a one-shot lookup driven by `ToolRunModel`.
+/// The tool supplies a short "running" label and, on success, a headline +
+/// caption describing its result; failures render uniformly.
+enum LookupActivityContent {
+    static func view<V>(_ phase: RunPhase<V>, running: String,
+                        status: (V) -> PingSnapshot.Status = { _ in .ok },
+                        describe: (V) -> (headline: String, caption: String)) -> CheckActivityView {
+        switch phase {
+        case .idle, .running:
+            return CheckActivityView(status: .unknown, headline: running,
+                                     caption: "выполняется", isRunning: true)
+        case .success(let value):
+            let d = describe(value)
+            return CheckActivityView(status: status(value), headline: d.headline,
+                                     caption: d.caption, isRunning: false)
+        case .failure(let message):
+            return CheckActivityView(status: .down, headline: "Ошибка",
+                                     caption: String(message.prefix(60)), isRunning: false)
+        }
     }
 }
 

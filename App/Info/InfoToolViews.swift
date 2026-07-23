@@ -8,6 +8,7 @@ struct HostToIPView: View {
     var autostart = false
     @State private var host = "apple.com"
     @State private var run = ToolRunModel<Resolved>()
+    @Environment(AppSettings.self) private var settings
 
     /// The forward lookup plus the reverse PTR names gathered for each address.
     private struct Resolved: Sendable, Equatable {
@@ -18,6 +19,11 @@ struct HostToIPView: View {
     private func start() {
         let target = host.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, !run.isRunning else { return }
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: target, subtitle: "Host → IP",
+            content: { LookupActivityContent.view($0, running: target) { r in
+                (r.lookup.addresses.first?.ip ?? "нет адресов", "\(r.lookup.addresses.count) адресов") } }
+        ) : nil
         run.start {
             let res = try await HostLookup.resolve(host: target)
             var reverse: [String: String] = [:]
@@ -95,10 +101,16 @@ struct ReverseDNSView: View {
     // The result is the PTR name, itself optional: a successful run with no
     // record is `.success(nil)` — distinct from "not run yet" (.idle).
     @State private var run = ToolRunModel<String?>()
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         let target = ip.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, !run.isRunning else { return }
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: target, subtitle: "Обратный DNS",
+            content: { LookupActivityContent.view($0, running: target) { name in
+                (name ?? "нет записи", "PTR") } }
+        ) : nil
         run.start { try await ReverseDNS.lookup(ip: target) }
     }
 

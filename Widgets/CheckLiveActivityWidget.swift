@@ -93,6 +93,7 @@ struct CheckLiveActivityWidget: Widget {
         case .traceroute: return "point.3.connected.trianglepath.dotted"
         case .portScan: return "square.grid.3x3.middle.filled"
         case .ipScan: return "barcode.viewfinder"
+        case .lookup: return "magnifyingglass"
         }
     }
 

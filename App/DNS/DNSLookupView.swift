@@ -9,11 +9,17 @@ struct DNSLookupView: View {
     @State private var resolver: DNSResolverInfo = DNSResolverInfo.presets[0]
     @State private var dnssec = false
     @State private var run = ToolRunModel<DNSResult>()
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         let name = host.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty, !run.isRunning else { return }
         let type = recordType, address = resolver.address, dnssec = dnssec
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: name, subtitle: "DNS",
+            content: { LookupActivityContent.view($0, running: name) { r in
+                ("\(r.answers.count) записей", r.answers.first?.value ?? "нет ответа") } }
+        ) : nil
         run.start {
             try await DNSClient().query(
                 name: name, type: type, resolver: address,

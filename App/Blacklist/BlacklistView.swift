@@ -6,10 +6,18 @@ struct BlacklistView: View {
     var autostart = false
     @State private var ip = "8.8.8.8"
     @State private var run = ToolRunModel<BlacklistReport>()
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         let target = ip.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, !run.isRunning else { return }
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: target, subtitle: "Чёрные списки",
+            content: { LookupActivityContent.view($0, running: target,
+                status: { $0.listedCount > 0 ? .down : .ok }) { r in
+                (r.listedCount > 0 ? "В списках: \(r.listedCount)" : "Чисто",
+                 "проверено \(r.checkedCount)") } }
+        ) : nil
         run.start { await BlacklistChecker().check(ip: target) }
     }
 

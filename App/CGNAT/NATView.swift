@@ -4,9 +4,15 @@ import NetworkKit
 struct NATView: View {
     var autostart = false
     @State private var run = ToolRunModel<NATReport>()
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         guard !run.isRunning else { return }
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: "NAT", subtitle: "Тип подключения",
+            content: { LookupActivityContent.view($0, running: "проверка NAT") { r in
+                (r.natType.rawValue, r.publicIP ?? "адрес не определён") } }
+        ) : nil
         run.start { await NATDetector().detect() }
     }
 

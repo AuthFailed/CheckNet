@@ -7,11 +7,18 @@ struct TLSInspectorView: View {
     @State private var host = "cloudflare.com"
     @State private var port = 443
     @State private var run = ToolRunModel<TLSInfo>()
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         let target = host.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, !run.isRunning else { return }
         let port = port
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: target, subtitle: "TLS",
+            content: { LookupActivityContent.view($0, running: target,
+                status: { $0.trustEvaluationPassed ? .ok : .down }) { info in
+                (info.negotiatedProtocol, info.leaf?.issuer ?? "нет сертификата") } }
+        ) : nil
         run.start { try await TLSInspector().inspect(host: target, port: port) }
     }
 

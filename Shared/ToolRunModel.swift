@@ -19,6 +19,18 @@ final class ToolRunModel<Value> {
     var value: Value? { phase.value }
     var errorMessage: String? { phase.errorMessage }
 
+    /// Optional Live Activity for a one-shot run. Set it before `start()` and
+    /// every tool on `ToolRunModel` shows a live status for free: a "running"
+    /// state, then the result. `content` maps the current phase to what the
+    /// Dynamic Island shows.
+    struct ActivityDescriptor {
+        var kind: CheckActivityKind
+        var title: String
+        var subtitle: String
+        var content: (RunPhase<Value>) -> CheckActivityView
+    }
+    var activity: ActivityDescriptor?
+
     init() {}
 
     /// Fire-and-forget entry point for a SwiftUI button. A run already in flight
@@ -39,6 +51,13 @@ final class ToolRunModel<Value> {
     func perform(_ operation: @Sendable () async throws -> Value,
                  onSuccess: (@MainActor @Sendable (Value) -> Void)? = nil) async {
         phase = .running
+        // A fresh controller per run, so overlapping runs never end each other's
+        // activity. Nil descriptor (or macOS) makes every call a no-op.
+        let controller = activity.map { _ in CheckActivityController() }
+        if let activity, let controller {
+            controller.start(kind: activity.kind, title: activity.title,
+                             subtitle: activity.subtitle, view: activity.content(.running))
+        }
         do {
             let result = try await operation()
             phase = .success(result)
@@ -47,6 +66,10 @@ final class ToolRunModel<Value> {
             phase = .idle
         } catch {
             phase = .failure(error.localizedDescription)
+        }
+        if let activity, let controller {
+            // A one-shot result is worth keeping on the Lock Screen to glance at.
+            await controller.end(activity.content(phase), lingerSeconds: 90)
         }
     }
 

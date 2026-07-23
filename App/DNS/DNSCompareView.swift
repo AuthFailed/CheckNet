@@ -7,6 +7,7 @@ struct DNSCompareView: View {
     @State private var host = "wikipedia.org"
     @State private var recordType: DNSRecordType = .a
     @State private var run = ToolRunModel<[DNSResolverComparisonRow]>()
+    @Environment(AppSettings.self) private var settings
 
     private var rows: [DNSResolverComparisonRow] { run.value ?? [] }
 
@@ -14,6 +15,11 @@ struct DNSCompareView: View {
         let name = host.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty, !run.isRunning else { return }
         let type = recordType
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: name, subtitle: "Сравнение DNS",
+            content: { LookupActivityContent.view($0, running: name) { rows in
+                ("\(rows.count) резолверов", "сравнение ответов") } }
+        ) : nil
         run.start { await DNSClient().compareResolvers(name: name, type: type, resolvers: DNSResolverInfo.presets) }
     }
 
@@ -98,12 +104,19 @@ struct DNSTamperView: View {
     var autostart = false
     @State private var host = "example.com"
     @State private var run = ToolRunModel<DNSTamperReport>()
+    @Environment(AppSettings.self) private var settings
     /// The finding bullet grows with text size instead of sitting at 6 pt.
     @ScaledMetric(relativeTo: .callout) private var bulletSize: CGFloat = 7
 
     private func start() {
         let name = host.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty, !run.isRunning else { return }
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: name, subtitle: "Подмена DNS",
+            content: { LookupActivityContent.view($0, running: name,
+                status: { $0.suspicious ? .down : .ok }) { r in
+                (r.suspicious ? "Подозрительно" : "Чисто", "\(r.rows.count) резолверов") } }
+        ) : nil
         run.start { await DNSClient().detectTampering(name: name) }
     }
 

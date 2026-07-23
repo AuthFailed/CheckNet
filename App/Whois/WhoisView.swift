@@ -7,10 +7,16 @@ struct WhoisView: View {
     @State private var query = "apple.com"
     @State private var run = ToolRunModel<WhoisResult>()
     @State private var showRaw = false
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         let q = query.trimmingCharacters(in: .whitespaces)
         guard !q.isEmpty, !run.isRunning else { return }
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: q, subtitle: "Whois",
+            content: { LookupActivityContent.view($0, running: q) { r in
+                (r.query, "\(r.fields.count) полей") } }
+        ) : nil
         run.start { try await WhoisClient().lookup(q) }
     }
 
