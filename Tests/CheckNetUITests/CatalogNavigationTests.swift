@@ -10,6 +10,9 @@ final class CatalogNavigationTests: XCTestCase {
 
     func testTappingACatalogRowOpensTheTool() {
         let app = XCUIApplication()
+        // Skip the first-run onboarding, which would otherwise cover the catalog
+        // this test is about.
+        app.launchArguments = ["-skipOnboarding"]
         app.launch()
 
         let ping = app.cells.staticTexts["Ping"].firstMatch

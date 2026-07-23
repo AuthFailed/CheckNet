@@ -27,6 +27,7 @@ struct CatalogView: View {
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(AppFlow.self) private var flow
     #endif
     @State private var path: [ToolRoute] = []
     @State private var selection: ToolRoute?
@@ -145,6 +146,11 @@ struct CatalogView: View {
 
     @ViewBuilder
     private var catalogRows: some View {
+        #if os(iOS)
+        if flow.localNetworkDenied && query.isEmpty {
+            localNetworkDeniedBanner
+        }
+        #endif
         if !store.pinnedTools.isEmpty && query.isEmpty {
             pinnedSection
         }
@@ -156,6 +162,39 @@ struct CatalogView: View {
             searchResults
         }
     }
+
+    #if os(iOS)
+    /// Shown after the local-network prompt came back denied: scanning, the
+    /// device browser and Bonjour cannot work, and the way back is in Settings.
+    /// Status is carried by an icon and words, not colour, and "Скрыть" leaves
+    /// an equal way out.
+    @ViewBuilder
+    private var localNetworkDeniedBanner: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 10) {
+                Label {
+                    Text("Доступ к локальной сети отклонён")
+                        .font(.subheadline.weight(.semibold))
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                }
+                Text("Без него сканер сети, обзор устройств и Bonjour не работают. Включить можно в Настройках iOS.")
+                    .font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 10) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        Link("Открыть Настройки", destination: url)
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    Button("Скрыть") { flow.localNetworkDenied = false }
+                        .font(.subheadline)
+                }
+                .padding(.top, 2)
+            }
+            .padding(.vertical, 4)
+        }
+    }
+    #endif
 
     // MARK: Pinned
 
@@ -333,6 +372,7 @@ struct ToolDestinationView: View {
                                message: route.tool.info, note: route.tool.sensitivityNote)
                 }
             }
+            .modifier(LocalNetworkGate(tool: route.tool))
     }
 
     @ViewBuilder

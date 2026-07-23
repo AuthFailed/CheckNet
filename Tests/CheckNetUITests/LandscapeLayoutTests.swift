@@ -18,7 +18,7 @@ final class LandscapeLayoutTests: XCTestCase {
 
     private func launchPing() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-openTool", "ping", "-host", "1.1.1.1"]
+        app.launchArguments = ["-skipOnboarding", "-openTool", "ping", "-host", "1.1.1.1"]
         app.launch()
         return app
     }
