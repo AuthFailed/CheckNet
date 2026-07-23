@@ -17,8 +17,8 @@ struct RunBlockingCheckIntent: AppIntent {
     @Parameter(title: "Проверка")
     var check: BlockingCheckChoice
 
-    @Parameter(title: "Домен или хост", default: "")
-    var target: String
+    @Parameter(title: "Домен или хост")
+    var target: SavedHostEntity?
 
     static var parameterSummary: some ParameterSummary {
         Summary("Проверить \(\.$check) для \(\.$target)")
@@ -26,7 +26,7 @@ struct RunBlockingCheckIntent: AppIntent {
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<CheckOutcome> {
         let kind = check.kind
-        let trimmed = target.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = (target?.value ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         // Checks that take no target ignore it; the rest fall back to their default.
         let host = trimmed.isEmpty ? kind.defaultTarget : trimmed
 

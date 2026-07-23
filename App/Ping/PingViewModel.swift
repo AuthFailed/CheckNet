@@ -1,6 +1,7 @@
 import SwiftUI
 import Observation
 import NetworkKit
+import AppIntents
 
 enum ProbeType: String, CaseIterable, Identifiable {
     case icmp = "ICMP"
@@ -246,6 +247,18 @@ final class PingViewModel {
         ))
         // Samples are stored newest-first for the UI; send them chronologically.
         WebhookReporter.reportPing(stats, samples: replies.reversed())
+        donatePing()
+    }
+
+    /// Teaches Siri to predict "ping this host" after the user runs it by hand,
+    /// so it can surface as a suggestion on the Lock Screen and in Spotlight.
+    private func donatePing() {
+        let intent = PingHostIntent()
+        intent.host = SavedHostEntity(value: host)
+        intent.count = max(1, count)
+        Task.detached(priority: .utility) {
+            try? await IntentDonationManager.shared.donate(intent: intent)
+        }
     }
 
     private func resolveReverse(_ ip: String) async {

@@ -5,10 +5,9 @@ import Observation
 @Observable
 final class SavedHostsStore {
     private(set) var hosts: [SavedHost]
-    private let key = "checknet.savedHosts"
 
     init() {
-        hosts = UserDefaults.standard.json([SavedHost].self, forKey: key) ?? SavedHostsStore.seed
+        hosts = SavedHostsPersistence.load() ?? SavedHostsStore.seed
     }
 
     func hosts(for tool: Tool) -> [SavedHost] {
@@ -65,7 +64,7 @@ final class SavedHostsStore {
     }
 
     private func persist() {
-        UserDefaults.standard.setJSON(hosts, forKey: key)
+        SavedHostsPersistence.save(hosts)
     }
 
     static let seed: [SavedHost] = [

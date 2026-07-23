@@ -9,7 +9,7 @@ struct PingHostIntent: AppIntent {
     static let openAppWhenRun = false
 
     @Parameter(title: "Хост или IP", requestValueDialog: "Какой хост проверить?")
-    var host: String
+    var host: SavedHostEntity
 
     @Parameter(title: "Число пакетов", default: 5)
     var count: Int
@@ -21,6 +21,7 @@ struct PingHostIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<Double> {
+        let host = host.value
         let config = PingConfig(count: max(1, min(count, 50)), interval: 0.3, timeout: 2.0)
         let stats = try await ICMPPinger().measure(host: host, config: config)
 
@@ -56,13 +57,14 @@ struct CheckHostIsUpIntent: AppIntent {
     static let description = IntentDescription("Возвращает истину, если хост отвечает на ping.")
 
     @Parameter(title: "Хост или IP", requestValueDialog: "Какой хост проверить?")
-    var host: String
+    var host: SavedHostEntity
 
     static var parameterSummary: some ParameterSummary {
         Summary("\(\.$host) доступен?")
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<Bool> {
+        let host = host.value
         let stats = try await ICMPPinger().measure(host: host, config: .quick)
         let up = stats.received > 0
         return .result(value: up, dialog: IntentDialog(up ? "\(host) доступен." : "\(host) недоступен."))
