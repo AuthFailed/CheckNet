@@ -17,6 +17,7 @@ final class PortScanModel {
     private(set) var total = 0
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     private let scanner = PortScanner()
 
@@ -39,6 +40,8 @@ final class PortScanModel {
         let list = ports
         total = list.count
         isRunning = true
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .portScan, title: target, subtitle: "Порты", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             // Resolved once, up front. Every port of a name that does not
@@ -49,6 +52,7 @@ final class PortScanModel {
             } catch {
                 errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 isRunning = false
+                await activity?.end(activityView())
                 return
             }
             for await result in scanner.scan(host: target, ports: list, timeout: 1.5) {
@@ -58,14 +62,21 @@ final class PortScanModel {
                     openPorts.append(result)
                     openPorts.sort { $0.port < $1.port }
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
+            await activity?.end(activityView())
         }
     }
 
     func stop() {
         task?.cancel(); task = nil
         isRunning = false
+    }
+
+    private func activityView() -> CheckActivityView {
+        ScanActivityContent.view(foundLabel: "Открыто", found: openPorts.count,
+                                 scanned: scanned, total: total, isRunning: isRunning)
     }
 }
 
@@ -122,6 +133,7 @@ struct PortScanView: View {
         .toolTitleDisplayMode()
         .sensitiveConsent(.portScan, isPresented: $showConsent) { model.start() }
         .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
             if let presetHost { model.host = presetHost }
             if autostart { requestStart() }
         }

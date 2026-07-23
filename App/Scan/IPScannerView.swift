@@ -11,6 +11,7 @@ final class IPScannerModel {
     private(set) var total = 0
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     init() { range = Self.defaultRange() }
 
@@ -21,6 +22,8 @@ final class IPScannerModel {
         guard !r.isEmpty else { return }
         stop()
         hosts = []; scanned = 0; total = 0; errorMessage = nil; isRunning = true
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .ipScan, title: r, subtitle: "Диапазон", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in IPRangeScanner().scan(range: r, timeout: 1.0, resolveNames: true) {
@@ -36,12 +39,19 @@ final class IPScannerModel {
                 case .failed(let reason):
                     errorMessage = reason
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
+            await activity?.end(activityView())
         }
     }
 
     func stop() { task?.cancel(); task = nil; isRunning = false }
+
+    private func activityView() -> CheckActivityView {
+        ScanActivityContent.view(foundLabel: "Активных", found: hosts.count,
+                                 scanned: scanned, total: total, isRunning: isRunning)
+    }
 
     /// Derives a /24 range from the primary local IPv4 interface.
     static func defaultRange() -> String {
@@ -101,7 +111,10 @@ struct IPScannerView: View {
         .navigationTitle("Сканер диапазона")
         .toolTitleDisplayMode()
         .sensitiveConsent(.ipScanner, isPresented: $showConsent) { model.start() }
-        .onAppear { if autostart { requestStart() } }
+        .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
+            if autostart { requestStart() }
+        }
     }
 
     private var progressCard: some View {

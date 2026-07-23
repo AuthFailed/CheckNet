@@ -92,4 +92,23 @@ final class CheckActivityToolsTests: XCTestCase {
         XCTAssertEqual(v.caption, "цель достигнута")
         XCTAssertEqual(v.status, .ok)
     }
+
+    // MARK: Scanners
+
+    func testScanRunningShowsProgress() {
+        let v = ScanActivityContent.view(foundLabel: "Открыто", found: 2,
+                                         scanned: 40, total: 100, isRunning: true)
+        XCTAssertEqual(v.headline, "40/100")
+        XCTAssertEqual(v.caption, "сканирование")
+        XCTAssertEqual(v.status, .unknown)
+        XCTAssertEqual(v.stats.first { $0.label == "Открыто" }?.value, "2")
+    }
+
+    func testScanDoneSummarisesFindings() {
+        let v = ScanActivityContent.view(foundLabel: "Активных", found: 5,
+                                         scanned: 254, total: 254, isRunning: false)
+        XCTAssertEqual(v.headline, "254/254")
+        XCTAssertEqual(v.caption, "готово — 5 активных")
+        XCTAssertEqual(v.status, .ok)
+    }
 }

@@ -3,7 +3,7 @@ import Foundation
 /// Which check a Live Activity represents — drives the icon and the interactive
 /// button in the widget.
 enum CheckActivityKind: String, Codable, Sendable {
-    case ping, monitor, speed, bufferbloat, mtr, traceroute
+    case ping, monitor, speed, bufferbloat, mtr, traceroute, portScan, ipScan
 }
 
 /// One label/value chip shown in a check's Live Activity (expanded Dynamic
@@ -173,6 +173,26 @@ enum MTRActivityContent {
                 CheckStat(label: "Хопы", value: "\(hopCount)"),
                 CheckStat(label: "Потери", value: "\(Int(lastLoss.rounded()))%"),
                 CheckStat(label: "Раунд", value: "\(round)")
+            ],
+            isRunning: isRunning
+        )
+    }
+}
+
+/// Live Activity content for a progress scan (ports or an IP range): a running
+/// "X/Y" progress plus how many were found. `foundLabel` distinguishes open
+/// ports from live hosts.
+enum ScanActivityContent {
+    static func view(foundLabel: String, found: Int, scanned: Int, total: Int,
+                     isRunning: Bool) -> CheckActivityView {
+        CheckActivityView(
+            status: isRunning ? .unknown : .ok,
+            headline: total > 0 ? "\(scanned)/\(total)" : "\(scanned)",
+            caption: isRunning ? "сканирование" : "готово — \(found) \(foundLabel.lowercased())",
+            stats: [
+                CheckStat(label: foundLabel, value: "\(found)"),
+                CheckStat(label: "Проверено", value: "\(scanned)"),
+                CheckStat(label: "Всего", value: "\(total)")
             ],
             isRunning: isRunning
         )
