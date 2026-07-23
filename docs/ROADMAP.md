@@ -10,7 +10,7 @@
 
 ## Где мы сейчас
 
-Обновлено 2026-07-23. **M1, M2 и M4 закрыты; M3 — частично.** Ниже фактическое состояние;
+Обновлено 2026-07-23. **M1–M4 закрыты.** Ниже фактическое состояние;
 таблицы вех ниже отмечают каждую задачу отдельно колонкой «Статус».
 
 - **22 инструмента** реализованы (движок протестирован + экран), **5 — заглушки «скоро»**
@@ -29,8 +29,8 @@
   единый `ToolScaffold` с ограничением ширины, `MenuBarExtra` / команды / сцена Settings на Mac,
   landscape на iPhone (M2 #14–#19 закрыты).
 - **Haptics** есть (`App/Common/Haptics.swift` + тумблер в настройках); доступность улучшена —
-  статус передаётся формой и словом, а не только цветом, иконкам добавлены лейблы (#20, #21).
-  Остаётся Dynamic Type (#22) и часть UX-полировки M3.
+  статус передаётся формой и словом, а не только цветом, иконкам добавлены лейблы (#20, #21);
+  Dynamic Type, reduce-motion и `numericText` доведены (M3 закрыта).
 - Виджет главного экрана **удалён сознательно**: расширение существует только ради Live Activity,
   после установки приложение ничего не навязывает.
 
@@ -47,7 +47,7 @@ M1 Стабилизация ──┬─→ M2 Адаптивный UI ──→
                                └─→ M6 Новые инструменты
 ```
 
-**Статус вех:** M1 ✅ · M2 ✅ · M3 частично · M4 ✅ · M5 запланирована · M6 запланирована.
+**Статус вех:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 запланирована · M6 запланирована.
 
 - **M1 первым** — там блокеры релиза (privacy manifest), потеря данных (гонка в истории) и
   неработающий CI. Строить новое на нестабильном фундаменте дороже.
@@ -100,27 +100,27 @@ M1 Стабилизация ──┬─→ M2 Адаптивный UI ──→
 
 ---
 
-## M3 · UX-полировка — частично
+## M3 · UX-полировка ✅
 
 То, что отличает «работает» от «приятно пользоваться».
 
-**Статус: частично (5 из 12).** Закрыты #20, #21, #23, #24, #30. Открыты — Dynamic Type (#22, P1)
-и остаток UX-полировки (#25–#29, #31).
+**Статус: завершена ✅** (все задачи закрыты). Большая часть закрыта ранними PR; последним доделан
+Dynamic Type (#22) — единственный оставшийся хардкод размера шрифта.
 
 | # | Задача | Приоритет | Статус |
 |---|---|---|---|
 | [#20](https://github.com/AuthFailed/CheckNet/issues/20) | Haptics — сейчас 0 вызовов на весь проект | P1 | ✅ |
 | [#21](https://github.com/AuthFailed/CheckNet/issues/21) | Доступность: статус только цветом, иконки без лейблов | P1 | ✅ |
-| [#22](https://github.com/AuthFailed/CheckNet/issues/22) | Dynamic Type: 39 хардкодов `.font(.system(size:))` | P1 | ⬜ |
+| [#22](https://github.com/AuthFailed/CheckNet/issues/22) | Dynamic Type: 39 хардкодов `.font(.system(size:))` | P1 | ✅ |
 | [#23](https://github.com/AuthFailed/CheckNet/issues/23) | Единая обработка ошибок + «Повторить» | P1 | ✅ |
 | [#24](https://github.com/AuthFailed/CheckNet/issues/24) | Idle-состояния на 12 экранах | P2 | ✅ |
-| [#25](https://github.com/AuthFailed/CheckNet/issues/25) | Поиск: синонимы в каталоге, поиск в истории | P2 | ⬜ |
-| [#26](https://github.com/AuthFailed/CheckNet/issues/26) | Reduce motion и `numericText` | P2 | ⬜ |
-| [#27](https://github.com/AuthFailed/CheckNet/issues/27) | Pull-to-refresh на списках | P3 | ⬜ |
-| [#28](https://github.com/AuthFailed/CheckNet/issues/28) | Экраны без ⓘ и асимметрия в Блокировках | P2 | ⬜ |
-| [#29](https://github.com/AuthFailed/CheckNet/issues/29) | Заглушка не объясняет, почему инструмент недоступен | P2 | ⬜ |
+| [#25](https://github.com/AuthFailed/CheckNet/issues/25) | Поиск: синонимы в каталоге, поиск в истории | P2 | ✅ |
+| [#26](https://github.com/AuthFailed/CheckNet/issues/26) | Reduce motion и `numericText` | P2 | ✅ |
+| [#27](https://github.com/AuthFailed/CheckNet/issues/27) | Pull-to-refresh на списках | P3 | ✅ |
+| [#28](https://github.com/AuthFailed/CheckNet/issues/28) | Экраны без ⓘ и асимметрия в Блокировках | P2 | ✅ |
+| [#29](https://github.com/AuthFailed/CheckNet/issues/29) | Заглушка не объясняет, почему инструмент недоступен | P2 | ✅ |
 | [#30](https://github.com/AuthFailed/CheckNet/issues/30) | Онбординг и pre-permission для локальной сети | P2 | ✅ |
-| [#31](https://github.com/AuthFailed/CheckNet/issues/31) | `onTapGesture` вместо `NavigationLink` | P2 | ⬜ |
+| [#31](https://github.com/AuthFailed/CheckNet/issues/31) | `onTapGesture` вместо `NavigationLink` | P2 | ✅ |
 
 **Порядок:** #23 (единая фаза/ошибка) → #20 и #24 садятся на неё → #21/#22 → остальное.
 
