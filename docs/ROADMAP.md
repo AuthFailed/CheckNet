@@ -19,7 +19,7 @@
 - **Ядро** `Packages/NetworkKit` — **207 XCTest-тестов** против реальных хостов и парсеров
   (парсеры DNS/X.509/MMDB и геолокация покрыты детерминированно). В CI: детерминированные —
   блокирующим гейтом, сетевые — информационно (см. «Как тесты гоняются в CI»).
-- **App + Shared** — ~11 000 строк; появился таргет **`CheckNetTests` (96 тестов)** на логику
+- **App + Shared** — ~11 000 строк; появился таргет **`CheckNetTests` (104 теста)** на логику
   App/Shared (M4 #37). Чистые куски (`HostSharing`, `IPAddress`, `LaunchArguments`,
   `ScheduleRule`, `HistoryCSV`, фабрики `CheckRecord`, `ToolRunModel`) вынесены в `Shared/`.
 - **Локализация** — string catalog, 13 языков. Осталась вторая категория: строки движков,
@@ -197,7 +197,19 @@ Dynamic Island) появилась кнопка «Стоп» (`StopPingLiveActiv
 **Focus filter** — `MonitorFocusFilter: SetFocusFilterIntent` (кросс-платформенный) заглушает
 оповещения мониторинга в выбранном фокусе, персистя выбор в `FocusMonitorState`, который читает
 `HostNotifier.post` (и foreground, и фон). Оба флага чистые и покрыты тестами; реальное
-взаимодействие с Dynamic Island и переключение фокусов проверяются только на устройстве.
+переключение фокусов проверяется только на устройстве.
+
+**Live Activity обобщена (сверх #44).** Была только пинг-активность; теперь один
+`CheckActivityAttributes` (статус + заголовок + подпись + до трёх чипов, `kind` → иконка и
+кнопка) обслуживает любую длящуюся проверку. Контроллер и виджет переименованы в
+`CheckActivityController` / `CheckLiveActivityWidget`, форматирование вынесено в чистые
+`PingActivityContent` / `MonitorActivityContent` (юнит-тесты). **Мониторинг** теперь показывает
+живую активность (агрегат «N/M онлайн», худший статус — цвет, чипы Онлайн/Не отвечают/Хостов),
+обновляется из foreground-цикла и из `BackgroundMonitor` (перечислением активностей). Заодно
+`MonitoringManager` поднят на уровень приложения (`@Environment`) — раньше мониторинг умирал при
+уходе с экрана; теперь идёт всю сессию, а осиротевшие активности гасятся на старте. Проверено на
+симуляторе: активность появляется в Dynamic Island (компакт «0/1» + развёрнутый вид с чипами) и
+исчезает по «Стоп».
 
 **#39 + #40 сделаны:** **фон** — `BackgroundMonitor` (`BGAppRefreshTask`, id
 `com.chrsnv.checknet.monitor.refresh` в `BGTaskSchedulerPermittedIdentifiers`, `UIBackgroundModes:

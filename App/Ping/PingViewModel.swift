@@ -50,7 +50,7 @@ final class PingViewModel {
     /// (the "Стоп" button) ends the run.
     private var stopBaseline = 0
     private var startDate: Date?
-    private let liveActivity = PingLiveActivityController()
+    private let liveActivity = CheckActivityController()
     /// When true, the run drives a Live Activity / Dynamic Island.
     var useLiveActivity = true
 
@@ -129,7 +129,11 @@ final class PingViewModel {
             switch event {
             case .started(let ip, _):
                 resolvedIP = ip
-                if useLiveActivity { liveActivity.start(host: host, ip: ip) }
+                if useLiveActivity {
+                    liveActivity.start(kind: .ping, title: host, subtitle: ip,
+                                       view: PingActivityContent.view(latency: nil, loss: 0, received: 0,
+                                                                      transmitted: 0, status: .unknown, isRunning: true))
+                }
                 if reverseDNS { Task { await self.resolveReverse(ip) } }
             case .reply(let reply):
                 ingest(reply)
@@ -144,7 +148,8 @@ final class PingViewModel {
             case .failed(let reason):
                 phase = .failed(reason)
                 if useLiveActivity {
-                    await liveActivity.end(latency: nil, loss: 100, received: 0, transmitted: 0, status: .down)
+                    await liveActivity.end(PingActivityContent.view(latency: nil, loss: 100, received: 0,
+                                                                    transmitted: 0, status: .down, isRunning: false))
                 }
                 return
             case .finished(let s):
@@ -226,9 +231,9 @@ final class PingViewModel {
 
     private func updateLiveActivity() async {
         guard useLiveActivity else { return }
-        await liveActivity.update(latency: lastRTT, loss: stats.lossPercent,
-                                  received: stats.received, transmitted: stats.transmitted,
-                                  status: currentStatus())
+        await liveActivity.update(PingActivityContent.view(
+            latency: lastRTT, loss: stats.lossPercent, received: stats.received,
+            transmitted: stats.transmitted, status: currentStatus(), isRunning: true))
     }
 
     private func finishRun() async {
@@ -236,8 +241,9 @@ final class PingViewModel {
         if phase == .running { phase = .finished }
         let status = PingSnapshot.status(loss: stats.lossPercent, latency: stats.avg)
         if useLiveActivity {
-            await liveActivity.end(latency: stats.avg, loss: stats.lossPercent,
-                                   received: stats.received, transmitted: stats.transmitted, status: status)
+            await liveActivity.end(PingActivityContent.view(
+                latency: stats.avg, loss: stats.lossPercent, received: stats.received,
+                transmitted: stats.transmitted, status: status, isRunning: false))
         }
         recordResult(status: status)
     }

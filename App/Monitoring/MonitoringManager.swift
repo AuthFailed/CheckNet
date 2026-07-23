@@ -15,9 +15,16 @@ final class MonitoringManager {
     var notificationsAuthorized = false
 
     private var loopTask: Task<Void, Never>?
+    private let liveActivity = CheckActivityController()
+
+    /// Governs the monitoring Live Activity; wired from the app's setting.
+    var useLiveActivity = true
 
     init() {
         entries = MonitorStore.load()
+        // Clear a monitoring activity orphaned by a previous session — monitoring
+        // is always off on a cold start.
+        CheckActivityController.endStale(kind: .monitor)
     }
 
     // MARK: Host list
@@ -49,10 +56,16 @@ final class MonitoringManager {
         #if os(iOS)
         BackgroundMonitor.schedule()
         #endif
+        if useLiveActivity {
+            liveActivity.start(kind: .monitor, title: "Мониторинг сети",
+                               subtitle: MonitorActivityContent.subtitle(for: entries),
+                               view: MonitorActivityContent.view(for: entries))
+        }
         loopTask = Task { [weak self] in
             guard let self else { return }
             while !Task.isCancelled {
                 await checkAll()
+                await updateLiveActivity()
                 try? await Task.sleep(for: .seconds(max(10, intervalSeconds)))
             }
         }
@@ -65,6 +78,14 @@ final class MonitoringManager {
         #if os(iOS)
         BackgroundMonitor.cancel()
         #endif
+        Task { [liveActivity, entries] in
+            await liveActivity.end(MonitorActivityContent.view(for: entries, isRunning: false))
+        }
+    }
+
+    private func updateLiveActivity() async {
+        guard useLiveActivity else { return }
+        await liveActivity.update(MonitorActivityContent.view(for: entries))
     }
 
     func checkAll() async {

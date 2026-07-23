@@ -1,6 +1,7 @@
 #if os(iOS)
 import Foundation
 import BackgroundTasks
+import ActivityKit
 import NetworkKit
 
 /// Runs the uptime checks while the app is suspended, via `BGTaskScheduler`.
@@ -86,6 +87,18 @@ enum BackgroundMonitor {
             }
         }
         MonitorStore.save(entries)
+        await refreshLiveActivity(entries)
+    }
+
+    /// Keeps a running monitoring Live Activity fresh from the background pass.
+    /// The in-app controller's handle isn't reachable here, so update by
+    /// enumerating the system's active activities.
+    private static func refreshLiveActivity(_ entries: [MonitoredEntry]) async {
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        let view = MonitorActivityContent.view(for: entries)
+        for activity in Activity<CheckActivityAttributes>.activities where activity.attributes.kind == .monitor {
+            await activity.update(.init(state: .init(view), staleDate: nil))
+        }
     }
 }
 #endif

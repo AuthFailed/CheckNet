@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct MonitoringView: View {
-    @State private var manager = MonitoringManager()
+    @Environment(MonitoringManager.self) private var manager
     @State private var newHost = ""
 
     var body: some View {
@@ -110,7 +110,8 @@ struct MonitoringView: View {
     }
 
     private var intervalCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        @Bindable var manager = manager
+        return VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text("Интервал проверки")
                 Spacer()

@@ -63,18 +63,40 @@ struct CheckRecord: Codable, Hashable, Sendable, Identifiable {
 }
 
 #if canImport(ActivityKit) && !os(macOS)
-/// ActivityKit attributes for a live ping session (Dynamic Island + Lock Screen).
-struct PingActivityAttributes: ActivityAttributes {
+/// ActivityKit attributes for any live check (Dynamic Island + Lock Screen).
+///
+/// One attributes type serves every tool that has a long-running, glanceable
+/// state — ping, monitoring, and future ones — instead of a bespoke Live
+/// Activity per tool. The `ContentState` carries pre-formatted, tool-agnostic
+/// fields; each producer maps its own data into a `CheckActivityView`, which
+/// this mirrors.
+struct CheckActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
-        var latencyMillis: Double?
-        var lossPercent: Double
-        var received: Int
-        var transmitted: Int
         var status: PingSnapshot.Status
+        var headline: String
+        var caption: String
+        var stats: [CheckStat]
         var isRunning: Bool
+
+        init(status: PingSnapshot.Status, headline: String, caption: String,
+             stats: [CheckStat], isRunning: Bool) {
+            self.status = status
+            self.headline = headline
+            self.caption = caption
+            self.stats = stats
+            self.isRunning = isRunning
+        }
+
+        init(_ view: CheckActivityView) {
+            self.init(status: view.status, headline: view.headline, caption: view.caption,
+                      stats: view.stats, isRunning: view.isRunning)
+        }
     }
 
-    var host: String
-    var ip: String
+    var kind: CheckActivityKind
+    /// Host, or a tool name like "Мониторинг сети".
+    var title: String
+    /// IP, or a host count.
+    var subtitle: String
 }
 #endif

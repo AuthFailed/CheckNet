@@ -13,6 +13,9 @@ struct CheckNetApp: App {
     @State private var scheduler: TaskScheduler
     @State private var flow = AppFlow()
     @State private var navigator = ToolNavigator()
+    // App-level so monitoring (and its Live Activity) keeps running when the
+    // user leaves the monitoring screen, instead of dying with a view.
+    @State private var monitoring = MonitoringManager()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -49,6 +52,7 @@ struct CheckNetApp: App {
             .environment(scheduler)
             .environment(flow)
             .environment(navigator)
+            .environment(monitoring)
     }
 
     /// Index the catalogue into Spotlight and route a tapped result to its tool,
@@ -58,6 +62,7 @@ struct CheckNetApp: App {
             .task { SpotlightIndexer.index() }
             .task { cloudSync.start() }
             .task { configureNotifications() }
+            .onChange(of: settings.liveActivitiesEnabled) { _, on in monitoring.useLiveActivity = on }
             .onContinueUserActivity(CSSearchableItemActionType) { activity in
                 if let tool = SpotlightIndexer.tool(from: activity) { navigator.open(tool) }
             }
@@ -108,6 +113,7 @@ struct CheckNetApp: App {
     /// Wires the notification delegate and routes its actions. A tapped alert
     /// opens the host in Ping; "Проверить снова" re-runs the check pass.
     private func configureNotifications() {
+        monitoring.useLiveActivity = settings.liveActivitiesEnabled
         HostNotifier.shared.configure()
         HostNotifier.shared.onAction = { actionID, host in
             switch actionID {

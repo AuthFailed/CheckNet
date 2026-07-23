@@ -7,7 +7,7 @@ import SwiftUI
 @main
 struct CheckNetWidgetBundle: WidgetBundle {
     var body: some Widget {
-        PingLiveActivityWidget()
+        CheckLiveActivityWidget()
         PingControl()
         BlockingControl()
     }
