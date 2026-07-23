@@ -9,6 +9,7 @@ struct CheckNetApp: App {
     @State private var networkProfiles = NetworkProfileStore()
     @State private var scheduledTasks: ScheduledTaskStore
     @State private var scheduler: TaskScheduler
+    @State private var flow = AppFlow()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -16,9 +17,10 @@ struct CheckNetApp: App {
         _scheduledTasks = State(initialValue: store)
         _scheduler = State(initialValue: TaskScheduler(store: store))
 
-        // Surface the iOS Local Network prompt up front so tests aren't silently
-        // blocked on first launch (no-op on macOS / simulator).
-        LocalNetworkPermission.shared.request()
+        // The Local Network prompt is deliberately *not* requested here any
+        // more. Asking on launch, before any context, is the anti-pattern that
+        // gets it denied for good; it now happens the first time a tool that
+        // needs it is opened, behind a screen that explains why (PrePermissionSheet).
     }
 
     /// Every scene needs the same object graph; keeping it in one place stops the
@@ -32,6 +34,7 @@ struct CheckNetApp: App {
             .environment(networkProfiles)
             .environment(scheduledTasks)
             .environment(scheduler)
+            .environment(flow)
     }
 
     var body: some Scene {

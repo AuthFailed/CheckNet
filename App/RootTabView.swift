@@ -5,6 +5,7 @@ import SwiftUI
 struct RootTabView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(SavedHostsStore.self) private var savedHosts
+    @Environment(AppFlow.self) private var flow
     @State private var selection: Int = {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count { return Int(args[i + 1]) ?? 0 }
@@ -46,5 +47,38 @@ struct RootTabView: View {
         .sheet(item: $pendingImport) { payload in
             ImportHostsSheet(hosts: payload.hosts)
         }
+        // Onboarding and What's New live in a modifier because fullScreenCover
+        // is iOS-only; on the Mac there is a separate root anyway (MacRootView).
+        .modifier(FirstRunPresentations(flow: flow))
     }
+}
+
+/// First-launch onboarding and post-update What's New. iOS-only: the Mac has
+/// its own root, and `fullScreenCover` does not exist there.
+private struct FirstRunPresentations: ViewModifier {
+    let flow: AppFlow
+
+    #if os(iOS)
+    func body(content: Content) -> some View {
+        content
+            // First launch takes the whole screen — nothing behind it is worth
+            // seeing yet.
+            .fullScreenCover(isPresented: Binding(
+                get: { !flow.onboardingDone },
+                set: { if !$0 { flow.completeOnboarding() } }
+            )) {
+                OnboardingView { flow.completeOnboarding() }
+            }
+            // After an update only — never on a first run, which
+            // completeOnboarding() guards by stamping the current version.
+            .sheet(isPresented: Binding(
+                get: { flow.shouldShowWhatsNew || ProcessInfo.processInfo.arguments.contains("-showWhatsNew") },
+                set: { if !$0 { flow.markWhatsNewSeen() } }
+            )) {
+                WhatsNewView { flow.markWhatsNewSeen() }
+            }
+    }
+    #else
+    func body(content: Content) -> some View { content }
+    #endif
 }
