@@ -204,7 +204,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .wifiSignal:
             return "Уровень сигнала Wi-Fi и потери. Ограничено политиками iOS."
         case .worldPing:
-            return "Проверяет доступность хоста из разных точек мира. Требует внешнего сервиса."
+            return "Проверяет доступность хоста с узлов по всему миру — ping, HTTP, TCP, DNS или UDP, с выбором стран. Видно, откуда ресурс доступен, а откуда нет. Проверка выполняется через внешний сервис."
         case .cgnatDetect:
             return "Определяет тип NAT и ваш внешний IP через STUN. Помогает понять, находитесь ли вы за CGNAT (общим адресом провайдера)."
         case .monitoring:
@@ -237,9 +237,9 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .ping, .traceroute, .mtr, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
              .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan,
              .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser,
-             .speedTest, .bufferbloat, .ipLocation:
+             .speedTest, .bufferbloat, .ipLocation, .worldPing:
             return true
-        case .wifiAnalysis, .wifiSignal, .worldPing:
+        case .wifiAnalysis, .wifiSignal:
             return false
         }
     }
@@ -274,8 +274,6 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     /// Present only for tools that are not implemented.
     var unavailable: Unavailable? {
         switch self {
-        case .worldPing:
-            return .platformLimit("Пинг из разных точек мира выполняется на внешних серверах — нужен сторонний сервис.")
         case .wifiAnalysis:
             return .platformLimit("iOS не отдаёт приложениям данные о Wi-Fi-каналах и соседних сетях — это доступно только в версии для Mac (CoreWLAN).")
         case .wifiSignal:

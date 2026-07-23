@@ -420,6 +420,8 @@ struct ToolDestinationView: View {
             InterfacesView()
         case .ipLocation:
             IPLocationView(presetHost: route.presetHost, autostart: route.autostart)
+        case .worldPing:
+            WorldPingView(presetHost: route.presetHost, autostart: route.autostart)
         default:
             PlaceholderToolView(tool: route.tool)
         }
