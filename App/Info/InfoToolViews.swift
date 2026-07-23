@@ -3,69 +3,62 @@ import NetworkKit
 
 // MARK: - Host → IP
 
-@MainActor
-@Observable
-final class HostToIPModel {
-    var host = "apple.com"
-    private(set) var isRunning = false
-    private(set) var result: HostLookupResult?
-    private(set) var reverse: [String: String] = [:]
-    private(set) var errorMessage: String?
-
-    func run() async {
-        let target = host.trimmingCharacters(in: .whitespaces)
-        guard !target.isEmpty else { return }
-        isRunning = true; errorMessage = nil; result = nil; reverse = [:]
-        do {
-            let res = try await HostLookup.resolve(host: target)
-            result = res
-            for addr in res.addresses {
-                if let name = try? await ReverseDNS.lookup(ip: addr.ip) {
-                    reverse[addr.ip] = name
-                }
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isRunning = false
-    }
-}
-
 struct HostToIPView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = HostToIPModel()
+    @State private var host = "apple.com"
+    @State private var run = ToolRunModel<Resolved>()
 
-    var body: some View {
-        ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.right.circle",
-                         disabled: model.isRunning, savedHostTool: .hostToIP) { Task { await model.run() } }
-            if let error = model.errorMessage {
-                ErrorCard(message: error) { Task { await model.run() } }
-            } else if model.result == nil, model.isRunning {
-                ProgressView().padding(.top, 40)
+    /// The forward lookup plus the reverse PTR names gathered for each address.
+    private struct Resolved: Sendable, Equatable {
+        let lookup: HostLookupResult
+        let reverse: [String: String]
+    }
+
+    private func start() {
+        let target = host.trimmingCharacters(in: .whitespaces)
+        guard !target.isEmpty, !run.isRunning else { return }
+        run.start {
+            let res = try await HostLookup.resolve(host: target)
+            var reverse: [String: String] = [:]
+            for addr in res.addresses {
+                if let name = try? await ReverseDNS.lookup(ip: addr.ip) { reverse[addr.ip] = name }
             }
-        } content: {
-            if model.errorMessage == nil, let result = model.result {
-                addressCard(result)
-            }
-        } bottom: {
-            RunButton(title: "Разрешить", running: model.isRunning,
-                      disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }; Task { await model.run() }
-            }
-        }
-        .animation(.snappy, value: model.result)
-        .navigationTitle("Host → IP")
-        .toolTitleDisplayMode()
-        .onAppear {
-            if let presetHost { model.host = presetHost }
-            if autostart { Task { await model.run() } }
+            return Resolved(lookup: res, reverse: reverse)
         }
     }
 
-    private func addressCard(_ result: HostLookupResult) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+    var body: some View {
+        ToolScaffold {
+            HostInputBar(text: $host, placeholder: "Домен", icon: "arrow.right.circle",
+                         disabled: run.isRunning, savedHostTool: .hostToIP) { start() }
+            if let error = run.errorMessage {
+                ErrorCard(message: error) { start() }
+            } else if run.value == nil, run.isRunning {
+                ProgressView().padding(.top, 40)
+            }
+        } content: {
+            if run.errorMessage == nil, let resolved = run.value {
+                addressCard(resolved)
+            }
+        } bottom: {
+            RunButton(title: "Разрешить", running: run.isRunning,
+                      disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
+            }
+        }
+        .animation(.snappy, value: run.value)
+        .navigationTitle("Host → IP")
+        .toolTitleDisplayMode()
+        .onAppear {
+            if let presetHost { host = presetHost }
+            if autostart { start() }
+        }
+    }
+
+    private func addressCard(_ resolved: Resolved) -> some View {
+        let result = resolved.lookup
+        return VStack(alignment: .leading, spacing: 6) {
             SectionCaption(text: "\(result.addresses.count) адресов")
             VStack(spacing: 0) {
                 ForEach(Array(result.addresses.enumerated()), id: \.element.id) { idx, addr in
@@ -78,7 +71,7 @@ struct HostToIPView: View {
                                         in: RoundedRectangle(cornerRadius: 5))
                         VStack(alignment: .leading, spacing: 2) {
                             Text(addr.ip).font(.system(.callout, design: .monospaced)).textSelection(.enabled)
-                            if let name = model.reverse[addr.ip] {
+                            if let name = resolved.reverse[addr.ip] {
                                 Text(name).font(.caption2).foregroundStyle(.secondary)
                             }
                         }
@@ -95,64 +88,50 @@ struct HostToIPView: View {
 
 // MARK: - Reverse DNS
 
-@MainActor
-@Observable
-final class ReverseDNSModel {
-    var ip = "8.8.8.8"
-    private(set) var isRunning = false
-    private(set) var name: String?
-    private(set) var didRun = false
-    private(set) var errorMessage: String?
-
-    func run() async {
-        let target = ip.trimmingCharacters(in: .whitespaces)
-        guard !target.isEmpty else { return }
-        isRunning = true; errorMessage = nil; name = nil; didRun = false
-        do {
-            name = try await ReverseDNS.lookup(ip: target)
-            didRun = true
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isRunning = false
-    }
-}
-
 struct ReverseDNSView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = ReverseDNSModel()
+    @State private var ip = "8.8.8.8"
+    // The result is the PTR name, itself optional: a successful run with no
+    // record is `.success(nil)` — distinct from "not run yet" (.idle).
+    @State private var run = ToolRunModel<String?>()
+
+    private func start() {
+        let target = ip.trimmingCharacters(in: .whitespaces)
+        guard !target.isEmpty, !run.isRunning else { return }
+        run.start { try await ReverseDNS.lookup(ip: target) }
+    }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "arrow.uturn.backward",
-                         disabled: model.isRunning, savedHostTool: .reverseDns) { Task { await model.run() } }
-            if let error = model.errorMessage {
-                ErrorCard(message: error) { Task { await model.run() } }
-            } else if !model.didRun, model.isRunning {
+            HostInputBar(text: $ip, placeholder: "IP-адрес", icon: "arrow.uturn.backward",
+                         disabled: run.isRunning, savedHostTool: .reverseDns) { start() }
+            if let error = run.errorMessage {
+                ErrorCard(message: error) { start() }
+            } else if run.isRunning {
                 ProgressView().padding(.top, 40)
             }
         } content: {
-            if model.errorMessage == nil, model.didRun {
+            if run.errorMessage == nil, case .success(let name) = run.phase {
                 VStack(spacing: 0) {
-                    InfoRow(label: "IP", value: model.ip, mono: true)
+                    InfoRow(label: "IP", value: ip, mono: true)
                     Divider().padding(.leading, 14)
-                    InfoRow(label: "PTR", value: model.name ?? "нет записи", mono: true,
-                            valueColor: model.name == nil ? .secondary : .primary)
+                    InfoRow(label: "PTR", value: name ?? "нет записи", mono: true,
+                            valueColor: name == nil ? .secondary : .primary)
                 }
                 .card()
             }
         } bottom: {
-            RunButton(title: "Найти PTR", running: model.isRunning,
-                      disabled: model.ip.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }; Task { await model.run() }
+            RunButton(title: "Найти PTR", running: run.isRunning,
+                      disabled: ip.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
             }
         }
         .navigationTitle("Обратный DNS")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.ip = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { ip = presetHost }
+            if autostart { start() }
         }
     }
 }

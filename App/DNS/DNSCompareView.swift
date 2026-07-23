@@ -1,68 +1,62 @@
 import SwiftUI
 import NetworkKit
 
-@MainActor
-@Observable
-final class DNSCompareModel {
-    var host = "wikipedia.org"
-    var recordType: DNSRecordType = .a
-    private(set) var isRunning = false
-    private(set) var rows: [DNSResolverComparisonRow] = []
-
-    func run() async {
-        let name = host.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
-        isRunning = true; rows = []
-        rows = await DNSClient().compareResolvers(name: name, type: recordType, resolvers: DNSResolverInfo.presets)
-        isRunning = false
-    }
-}
-
 struct DNSCompareView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = DNSCompareModel()
+    @State private var host = "wikipedia.org"
+    @State private var recordType: DNSRecordType = .a
+    @State private var run = ToolRunModel<[DNSResolverComparisonRow]>()
+
+    private var rows: [DNSResolverComparisonRow] { run.value ?? [] }
+
+    private func start() {
+        let name = host.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !run.isRunning else { return }
+        let type = recordType
+        run.start { await DNSClient().compareResolvers(name: name, type: type, resolvers: DNSResolverInfo.presets) }
+    }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Домен", icon: "arrow.left.arrow.right",
-                         disabled: model.isRunning, savedHostTool: .dnsCompare) { Task { await model.run() } }
+            HostInputBar(text: $host, placeholder: "Домен", icon: "arrow.left.arrow.right",
+                         disabled: run.isRunning, savedHostTool: .dnsCompare) { start() }
             HStack {
                 Text("Тип записи").foregroundStyle(.secondary)
                 Spacer()
-                Picker("Тип записи", selection: $model.recordType) {
+                Picker("Тип записи", selection: $recordType) {
                     ForEach([DNSRecordType.a, .aaaa, .mx, .txt, .ns], id: \.self) { Text($0.label).tag($0) }
                 }.labelsHidden()
             }
             .padding(.horizontal, 14).padding(.vertical, 8)
             .card()
         } content: {
-            ForEach(model.rows) { row in
+            ForEach(rows) { row in
                 resolverCard(row)
             }
-            if model.isRunning && model.rows.isEmpty {
+            if run.isRunning && rows.isEmpty {
                 ProgressView().padding(.top, 40)
-            } else if model.rows.isEmpty {
+            } else if rows.isEmpty {
                 ToolIdleHint(
                     icon: "arrow.left.arrow.right",
                     title: "Готово к сравнению",
                     message: "Спросим один домен у нескольких публичных резолверов сразу — расхождение в ответах видно построчно.",
                     example: "wikipedia.org",
-                    current: model.host
-                ) { model.host = "wikipedia.org" }
+                    current: host
+                ) { host = "wikipedia.org" }
             }
         } bottom: {
-            RunButton(title: "Сравнить", running: model.isRunning,
-                      disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }; Task { await model.run() }
+            RunButton(title: "Сравнить", running: run.isRunning,
+                      disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
             }
         }
-        .animation(.snappy, value: model.rows.count)
+        .animation(.snappy, value: rows.count)
         .navigationTitle("Сравнение резолверов")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.host = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { host = presetHost }
+            if autostart { start() }
         }
     }
 
@@ -99,54 +93,45 @@ struct DNSCompareView: View {
 
 // MARK: - Tamper detection
 
-@MainActor
-@Observable
-final class DNSTamperModel {
-    var host = "example.com"
-    private(set) var isRunning = false
-    private(set) var report: DNSTamperReport?
-
-    func run() async {
-        let name = host.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
-        isRunning = true; report = nil
-        report = await DNSClient().detectTampering(name: name)
-        isRunning = false
-    }
-}
-
 struct DNSTamperView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = DNSTamperModel()
+    @State private var host = "example.com"
+    @State private var run = ToolRunModel<DNSTamperReport>()
     /// The finding bullet grows with text size instead of sitting at 6 pt.
     @ScaledMetric(relativeTo: .callout) private var bulletSize: CGFloat = 7
 
+    private func start() {
+        let name = host.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !run.isRunning else { return }
+        run.start { await DNSClient().detectTampering(name: name) }
+    }
+
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Домен", icon: "exclamationmark.shield",
-                         disabled: model.isRunning, savedHostTool: .dnsTamper) { Task { await model.run() } }
-            if let report = model.report {
+            HostInputBar(text: $host, placeholder: "Домен", icon: "exclamationmark.shield",
+                         disabled: run.isRunning, savedHostTool: .dnsTamper) { start() }
+            if let report = run.value {
                 verdictCard(report)
             }
         } content: {
-            if let report = model.report {
+            if let report = run.value {
                 findingsCard(report)
-            } else if model.isRunning {
+            } else if run.isRunning {
                 ProgressView().padding(.top, 40)
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning,
-                      disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }; Task { await model.run() }
+            RunButton(title: "Проверить", running: run.isRunning,
+                      disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
             }
         }
-        .animation(.snappy, value: model.report?.suspicious)
+        .animation(.snappy, value: run.value?.suspicious)
         .navigationTitle("Детект DNS-подмены")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.host = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { host = presetHost }
+            if autostart { start() }
         }
     }
 

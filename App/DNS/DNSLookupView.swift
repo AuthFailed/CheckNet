@@ -1,62 +1,46 @@
 import SwiftUI
 import NetworkKit
 
-@MainActor
-@Observable
-final class DNSLookupModel {
-    var host = "example.com"
-    var recordType: DNSRecordType = .a
-    var resolver: DNSResolverInfo = DNSResolverInfo.presets[0]
-    var dnssec = false
-
-    private(set) var isRunning = false
-    private(set) var result: DNSResult?
-    private(set) var errorMessage: String?
-
-    private let client = DNSClient()
-
-    func run() async {
-        let name = host.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty else { return }
-        isRunning = true
-        errorMessage = nil
-        result = nil
-        do {
-            result = try await client.query(
-                name: name, type: recordType, resolver: resolver.address,
-                options: .init(timeout: 4, dnssec: dnssec)
-            )
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isRunning = false
-    }
-}
-
 struct DNSLookupView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = DNSLookupModel()
+    @State private var host = "example.com"
+    @State private var recordType: DNSRecordType = .a
+    @State private var resolver: DNSResolverInfo = DNSResolverInfo.presets[0]
+    @State private var dnssec = false
+    @State private var run = ToolRunModel<DNSResult>()
+
+    private func start() {
+        let name = host.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !run.isRunning else { return }
+        let type = recordType, address = resolver.address, dnssec = dnssec
+        run.start {
+            try await DNSClient().query(
+                name: name, type: type, resolver: address,
+                options: .init(timeout: 4, dnssec: dnssec)
+            )
+        }
+    }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Домен", icon: "magnifyingglass",
-                         disabled: model.isRunning, savedHostTool: .dns) {
-                Task { await model.run() }
+            HostInputBar(text: $host, placeholder: "Домен", icon: "magnifyingglass",
+                         disabled: run.isRunning, savedHostTool: .dns) {
+                start()
             }
 
             controlsCard
 
-            if let error = model.errorMessage {
-                ErrorCard(message: error) { Task { await model.run() } }
-            } else if let result = model.result {
+            if let error = run.errorMessage {
+                ErrorCard(message: error) { start() }
+            } else if let result = run.value {
                 statusCard(result)
             }
         } content: {
-            if model.errorMessage == nil {
-                if let result = model.result {
+            if run.errorMessage == nil {
+                if let result = run.value {
                     recordModules(result)
-                } else if model.isRunning {
+                } else if run.isRunning {
                     ProgressView().padding(.top, 40)
                 } else {
                     ToolIdleHint(
@@ -64,26 +48,25 @@ struct DNSLookupView: View {
                         title: "Готово к запросу",
                         message: "Спросим выбранный резолвер о записях домена и покажем ответ целиком.",
                         example: "example.com",
-                        current: model.host
-                    ) { model.host = "example.com" }
+                        current: host
+                    ) { host = "example.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Запросить", running: model.isRunning,
-                      disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }
-                Task { await model.run() }
+            RunButton(title: "Запросить", running: run.isRunning,
+                      disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
             }
         }
-        .animation(.snappy, value: model.result)
+        .animation(.snappy, value: run.value)
         // A check runs for seconds; people put the phone down while it does.
-        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
-        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
+        .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
+        .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
         .navigationTitle("DNS")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.host = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { host = presetHost }
+            if autostart { start() }
         }
     }
 
@@ -92,7 +75,7 @@ struct DNSLookupView: View {
             HStack {
                 Text("Тип записи").foregroundStyle(.secondary)
                 Spacer()
-                Picker("Тип записи", selection: $model.recordType) {
+                Picker("Тип записи", selection: $recordType) {
                     ForEach(DNSRecordType.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
                 .labelsHidden()
@@ -102,7 +85,7 @@ struct DNSLookupView: View {
             HStack {
                 Text("Резолвер").foregroundStyle(.secondary)
                 Spacer()
-                Picker("", selection: $model.resolver) {
+                Picker("", selection: $resolver) {
                     ForEach(DNSResolverInfo.presets) { r in
                         Text("\(r.name) · \(r.address)").tag(r)
                     }
@@ -112,7 +95,7 @@ struct DNSLookupView: View {
             }
             .padding(.horizontal, 14).padding(.vertical, 8)
             Divider().padding(.leading, 14)
-            Toggle("DNSSEC (DO)", isOn: $model.dnssec)
+            Toggle("DNSSEC (DO)", isOn: $dnssec)
                 .padding(.horizontal, 14).padding(.vertical, 6)
         }
         .card()
