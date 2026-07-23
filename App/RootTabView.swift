@@ -6,12 +6,23 @@ struct RootTabView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(SavedHostsStore.self) private var savedHosts
     @Environment(AppFlow.self) private var flow
+    @Environment(ToolNavigator.self) private var navigator
     @State private var selection: Int = {
         let args = ProcessInfo.processInfo.arguments
         if let i = args.firstIndex(of: "-tab"), i + 1 < args.count { return Int(args[i + 1]) ?? 0 }
         return 0
     }()
     @State private var pendingImport: ImportPayload?
+
+    /// Maps a control deep-link tab name onto the `TabView` selection.
+    static func tabIndex(for name: String) -> Int? {
+        switch name {
+        case "tests": return 0
+        case "blocking": return 1
+        case "settings": return 2
+        default: return nil
+        }
+    }
 
     var body: some View {
         TabView(selection: $selection) {
@@ -41,6 +52,20 @@ struct RootTabView: View {
         .preferredColorScheme(settings.theme.colorScheme)
         .environment(\.locale, settings.language.localeIdentifier.map(Locale.init) ?? .current)
         .onOpenURL { url in
+            // A control tap: jump to a tool or a tab.
+            if let target = ControlDeepLink.target(from: url) {
+                switch target {
+                case let .tool(raw, host, run):
+                    if let tool = Tool(rawValue: raw) {
+                        selection = 0                       // controls live under Тесты
+                        navigator.open(tool, autostart: run, host: host)
+                    }
+                case let .tab(name):
+                    selection = Self.tabIndex(for: name) ?? selection
+                }
+                return
+            }
+            // Otherwise a scanned/shared host list.
             guard let hosts = HostSharing.hosts(from: url), !hosts.isEmpty else { return }
             pendingImport = ImportPayload(hosts: hosts)
         }

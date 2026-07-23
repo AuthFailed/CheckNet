@@ -1,11 +1,14 @@
 import WidgetKit
 import SwiftUI
 
-/// The extension ships only the Live Activity: nothing is published to the
-/// widget gallery, so no widget shows up after installing the app.
+/// The extension ships the Live Activity plus user-added controls (Control
+/// Center / Lock Screen). Still nothing in the Home Screen widget gallery — no
+/// widget appears until the user deliberately adds a control.
 @main
 struct CheckNetWidgetBundle: WidgetBundle {
     var body: some Widget {
         PingLiveActivityWidget()
+        PingControl()
+        BlockingControl()
     }
 }

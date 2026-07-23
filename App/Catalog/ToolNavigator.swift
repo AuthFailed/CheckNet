@@ -8,7 +8,7 @@ import SwiftUI
 final class ToolNavigator {
     var pending: ToolRoute?
 
-    func open(_ tool: Tool, autostart: Bool = false) {
-        pending = ToolRoute(tool: tool, autostart: autostart)
+    func open(_ tool: Tool, autostart: Bool = false, host: String? = nil) {
+        pending = ToolRoute(tool: tool, autostart: autostart, presetHost: host)
     }
 }
