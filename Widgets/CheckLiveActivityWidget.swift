@@ -87,6 +87,10 @@ struct CheckLiveActivityWidget: Widget {
         switch context.attributes.kind {
         case .ping: return "dot.radiowaves.left.and.right"
         case .monitor: return "bell.badge"
+        case .speed: return "speedometer"
+        case .bufferbloat: return "waveform.path.ecg"
+        case .mtr: return "chart.line.uptrend.xyaxis"
+        case .traceroute: return "point.3.connected.trianglepath.dotted"
         }
     }
 

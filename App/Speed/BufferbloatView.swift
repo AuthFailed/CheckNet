@@ -11,6 +11,7 @@ final class BufferbloatModel {
     private(set) var samples: [BufferbloatSample] = []
     private(set) var result: BufferbloatResult?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     var isRunning: Bool { if case .running = phase { true } else { false } }
 
@@ -27,6 +28,9 @@ final class BufferbloatModel {
         samples = []
         result = nil
         phase = .running(.idle)
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .bufferbloat, title: "Bufferbloat", subtitle: "Задержка под нагрузкой",
+                        view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in BufferbloatTest().run() {
@@ -37,8 +41,10 @@ final class BufferbloatModel {
                 case .finished(let r): result = r; phase = .done
                 case .failed(let reason): phase = .failed(reason)
                 }
+                await activity?.update(activityView())
             }
             if isRunning { phase = .idle }   // cancelled before it finished
+            await activity?.end(activityView())
         }
     }
 
@@ -46,11 +52,31 @@ final class BufferbloatModel {
         task?.cancel()
         task = nil
     }
+
+    private static func phaseLabel(_ phase: BufferbloatPhase) -> String {
+        switch phase {
+        case .idle: return "Простой"
+        case .download: return "Загрузка"
+        case .upload: return "Отдача"
+        }
+    }
+
+    private func activityView() -> CheckActivityView {
+        BufferbloatActivityContent.view(
+            phaseLabel: activePhase.map(Self.phaseLabel) ?? "",
+            latestRTT: samples.last?.rttMillis,
+            gradeLetter: result?.grade.letter,
+            addedLatency: result?.addedLatency,
+            idleRTT: result?.idleRTT,
+            loadedRTT: result.map { max($0.downloadRTT, $0.uploadRTT) },
+            isRunning: isRunning)
+    }
 }
 
 struct BufferbloatView: View {
     var autostart = false
     @State private var model = BufferbloatModel()
+    @Environment(AppSettings.self) private var settings
     @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 150
     @ScaledMetric(relativeTo: .largeTitle) private var gradeSize: CGFloat = 64
 
@@ -89,7 +115,10 @@ struct BufferbloatView: View {
         .navigationTitle("Bufferbloat")
         .toolTitleDisplayMode()
         .onDisappear { model.stop() }
-        .onAppear { if autostart, model.phase == .idle { model.start() } }
+        .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
+            if autostart, model.phase == .idle { model.start() }
+        }
     }
 
     // MARK: Running

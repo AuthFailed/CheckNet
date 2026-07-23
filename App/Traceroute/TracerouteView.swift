@@ -12,6 +12,7 @@ final class TracerouteModel {
     private(set) var reached = false
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     func toggle() { isRunning ? stop() : start() }
 
@@ -20,6 +21,8 @@ final class TracerouteModel {
         guard !target.isEmpty else { return }
         stop()
         hops = []; reached = false; resolvedIP = ""; errorMessage = nil; isRunning = true
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .traceroute, title: target, subtitle: "Трассировка", view: activityView())
         let cfg = TracerouteConfig(maxHops: 30, probesPerHop: 3, timeout: 1.5, resolveNames: resolveNames)
         task = Task { [weak self] in
             guard let self else { return }
@@ -31,18 +34,25 @@ final class TracerouteModel {
                 case .finished(let r): reached = r
                 case .failed(let reason): errorMessage = reason
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
+            await activity?.end(activityView())
         }
     }
 
     func stop() { task?.cancel(); task = nil; isRunning = false }
+
+    private func activityView() -> CheckActivityView {
+        TracerouteActivityContent.view(host: host, hopCount: hops.count, reached: reached, isRunning: isRunning)
+    }
 }
 
 struct TracerouteView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = TracerouteModel()
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         ToolScaffold {
@@ -85,6 +95,7 @@ struct TracerouteView: View {
         .navigationTitle("Трассировка")
         .toolTitleDisplayMode()
         .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }
         }

@@ -11,6 +11,7 @@ final class MTRModel {
     private(set) var round = 0
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     func toggle() { isRunning ? stop() : start() }
 
@@ -19,6 +20,10 @@ final class MTRModel {
         guard !target.isEmpty else { return }
         stop()
         hops = []; round = 0; resolvedIP = ""; errorMessage = nil; isRunning = true
+        // A fresh controller per run, captured by the task, so restarting can't
+        // let an old run's teardown end the new activity.
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .mtr, title: target, subtitle: "MTR", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in MTRSession().run(host: target, config: .init(interval: 1.0, resolveNames: true)) {
@@ -29,18 +34,32 @@ final class MTRModel {
                 case .finished: break
                 case .failed(let reason): errorMessage = reason
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
+            await activity?.end(activityView())
         }
     }
 
     func stop() { task?.cancel(); task = nil; isRunning = false }
+
+    private func activityView() -> CheckActivityView {
+        // Prefer the reached destination, else the last hop that actually
+        // answered — a trailing timeout hop shouldn't read as "100% loss".
+        let dest = hops.last { $0.reachedDestination }
+            ?? hops.last { $0.received > 0 }
+            ?? hops.last
+        return MTRActivityContent.view(
+            host: host, round: round, hopCount: hops.count,
+            lastLoss: dest?.lossPercent ?? 100, lastAvg: dest?.average, isRunning: isRunning)
+    }
 }
 
 struct MTRView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = MTRModel()
+    @Environment(AppSettings.self) private var settings
     /// At accessibility text sizes a seven-column table cannot work on a phone:
     /// every heading wraps to three lines and the host column shreds into
     /// fragments. Past that threshold each hop becomes a stacked card instead.
@@ -86,6 +105,7 @@ struct MTRView: View {
         .navigationTitle("MTR")
         .toolTitleDisplayMode()
         .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }
         }

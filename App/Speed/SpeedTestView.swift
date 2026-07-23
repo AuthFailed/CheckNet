@@ -4,6 +4,7 @@ import NetworkKit
 
 struct SpeedTestView: View {
     @State private var model = SpeedTestModel()
+    @Environment(AppSettings.self) private var settings
     @ScaledMetric(relativeTo: .body) private var statRule: CGFloat = 44
     @ScaledMetric(relativeTo: .body) private var chartHeight: CGFloat = 120
     @State private var showServerPicker = false
@@ -40,6 +41,7 @@ struct SpeedTestView: View {
         .haptic(.failure, trigger: model.phase) { if case .failed = $0 { true } else { false } }
         .navigationTitle("Тест скорости")
         .toolTitleDisplayMode()
+        .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
         .task { await model.loadServers() }
         .sheet(isPresented: $showServerPicker) {
             // A long, searchable server list grouped by geography — half height

@@ -22,6 +22,7 @@ final class SpeedTestModel {
     private(set) var liveDirection: SpeedDirection = .download
 
     private var runTask: Task<Void, Never>?
+    var useLiveActivity = true
 
     /// Device region (ISO country) used to surface nearby servers first.
     static let deviceRegion: String = Locale.current.region?.identifier ?? ""
@@ -137,24 +138,38 @@ final class SpeedTestModel {
         stop()
         samples = []; downloadMbps = nil; uploadMbps = nil; liveMbps = 0
         phase = .running
+        // A fresh controller per run, captured by the task, so restarting can't
+        // let an old run's teardown end the new activity.
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .speed, title: server.site.isEmpty ? server.host : server.site,
+                        subtitle: "Скорость", view: speedActivityView(isRunning: true))
         runTask = Task { [weak self] in
             guard let self else { return }
             let config = IperfClient.Config(duration: 12, streams: 6, download: true, upload: true)
             var gotResult = false
             for await event in IperfClient().run(server: server, config: config) {
-                if Task.isCancelled { return }
+                if Task.isCancelled { break }
                 if handle(event) { gotResult = true }
+                await activity?.update(speedActivityView(isRunning: true))
             }
             // Fall back to Cloudflare HTTP if iperf3 produced nothing.
             if !gotResult && fallbackToCloudflare && !Task.isCancelled {
                 currentPhaseLabel = "iperf3 недоступен — переключаюсь на HTTP-тест…"
                 for await event in CloudflareSpeedTest().run(duration: 12) {
-                    if Task.isCancelled { return }
+                    if Task.isCancelled { break }
                     _ = handle(event)
+                    await activity?.update(speedActivityView(isRunning: true))
                 }
             }
             if phase == .running { phase = .done }
+            await activity?.end(speedActivityView(isRunning: false))
         }
+    }
+
+    private func speedActivityView(isRunning: Bool) -> CheckActivityView {
+        SpeedActivityContent.view(
+            liveMbps: liveMbps, directionLabel: liveDirection == .download ? "Загрузка" : "Отдача",
+            download: downloadMbps, upload: uploadMbps, phaseLabel: currentPhaseLabel, isRunning: isRunning)
     }
 
     @discardableResult
@@ -181,5 +196,6 @@ final class SpeedTestModel {
     func stop() {
         runTask?.cancel(); runTask = nil
         if phase == .running { phase = .ready }
+        // The run task ends its own activity when the loop breaks on cancellation.
     }
 }

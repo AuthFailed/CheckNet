@@ -2,7 +2,9 @@ import Foundation
 
 /// Which check a Live Activity represents — drives the icon and the interactive
 /// button in the widget.
-enum CheckActivityKind: String, Codable, Sendable { case ping, monitor }
+enum CheckActivityKind: String, Codable, Sendable {
+    case ping, monitor, speed, bufferbloat, mtr, traceroute
+}
 
 /// One label/value chip shown in a check's Live Activity (expanded Dynamic
 /// Island and Lock Screen).
@@ -86,6 +88,107 @@ enum MonitorActivityContent {
                 CheckStat(label: "Онлайн", value: "\(online)"),
                 CheckStat(label: "Не отвечают", value: "\(down)"),
                 CheckStat(label: "Хостов", value: "\(entries.count)")
+            ],
+            isRunning: isRunning
+        )
+    }
+}
+
+/// Live Activity content for a speed test. The producer passes the direction as
+/// a ready label so this stays free of NetworkKit types.
+enum SpeedActivityContent {
+    private static func mbps(_ value: Double?) -> String { value.map { "\(Int($0.rounded()))" } ?? "—" }
+
+    static func view(liveMbps: Double, directionLabel: String, download: Double?, upload: Double?,
+                     phaseLabel: String, isRunning: Bool) -> CheckActivityView {
+        let headline = isRunning
+            ? "\(Int(liveMbps.rounded())) Мбит/с"
+            : (download.map { "\(Int($0.rounded())) Мбит/с" } ?? "—")
+        let caption = isRunning ? (phaseLabel.isEmpty ? directionLabel : phaseLabel) : "готово"
+        return CheckActivityView(
+            status: isRunning ? .unknown : .ok,
+            headline: headline,
+            caption: caption,
+            stats: [
+                CheckStat(label: "Загрузка", value: mbps(download)),
+                CheckStat(label: "Отдача", value: mbps(upload)),
+                CheckStat(label: "Сейчас", value: "\(Int(liveMbps.rounded()))")
+            ],
+            isRunning: isRunning
+        )
+    }
+}
+
+/// Live Activity content for the bufferbloat test.
+enum BufferbloatActivityContent {
+    /// Maps the A–F grade to a status colour: A/B good, C shaky, D/F bad.
+    static func status(gradeLetter: String?) -> PingSnapshot.Status {
+        switch gradeLetter?.uppercased() {
+        case "A", "B": return .ok
+        case "C": return .degraded
+        case "D", "F": return .down
+        default: return .unknown
+        }
+    }
+
+    static func view(phaseLabel: String, latestRTT: Double?, gradeLetter: String?,
+                     addedLatency: Double?, idleRTT: Double?, loadedRTT: Double?,
+                     isRunning: Bool) -> CheckActivityView {
+        let headline: String
+        let caption: String
+        if isRunning {
+            headline = latestRTT.map { "\(Int($0.rounded())) мс" } ?? "…"
+            caption = phaseLabel
+        } else if let grade = gradeLetter {
+            headline = grade
+            caption = addedLatency.map { "+\(Int($0.rounded())) мс под нагрузкой" } ?? "готово"
+        } else {
+            headline = "—"
+            caption = "готово"
+        }
+        let stats = isRunning
+            ? [CheckStat(label: "Фаза", value: phaseLabel.isEmpty ? "…" : phaseLabel),
+               CheckStat(label: "RTT", value: latestRTT.map { "\(Int($0.rounded())) мс" } ?? "—")]
+            : [CheckStat(label: "Простой", value: idleRTT.map { "\(Int($0.rounded())) мс" } ?? "—"),
+               CheckStat(label: "Нагрузка", value: loadedRTT.map { "\(Int($0.rounded())) мс" } ?? "—"),
+               CheckStat(label: "Оценка", value: gradeLetter ?? "—")]
+        return CheckActivityView(
+            status: isRunning ? .unknown : status(gradeLetter: gradeLetter),
+            headline: headline, caption: caption, stats: stats, isRunning: isRunning)
+    }
+}
+
+/// Live Activity content for MTR — the destination hop drives status and latency.
+enum MTRActivityContent {
+    static func view(host: String, round: Int, hopCount: Int, lastLoss: Double,
+                     lastAvg: Double?, isRunning: Bool) -> CheckActivityView {
+        let status: PingSnapshot.Status = (isRunning && hopCount == 0)
+            ? .unknown
+            : PingSnapshot.status(loss: lastLoss, latency: lastAvg)
+        return CheckActivityView(
+            status: status,
+            headline: lastAvg.map { "\(Int($0.rounded())) мс" } ?? "\(hopCount) хопов",
+            caption: isRunning ? "раунд \(round)" : "готово",
+            stats: [
+                CheckStat(label: "Хопы", value: "\(hopCount)"),
+                CheckStat(label: "Потери", value: "\(Int(lastLoss.rounded()))%"),
+                CheckStat(label: "Раунд", value: "\(round)")
+            ],
+            isRunning: isRunning
+        )
+    }
+}
+
+/// Live Activity content for traceroute — hops accumulate until the target is reached.
+enum TracerouteActivityContent {
+    static func view(host: String, hopCount: Int, reached: Bool, isRunning: Bool) -> CheckActivityView {
+        CheckActivityView(
+            status: isRunning ? .unknown : (reached ? .ok : .degraded),
+            headline: "\(hopCount) хопов",
+            caption: isRunning ? "идёт трассировка" : (reached ? "цель достигнута" : "цель не достигнута"),
+            stats: [
+                CheckStat(label: "Хопы", value: "\(hopCount)"),
+                CheckStat(label: "Цель", value: reached ? "достигнута" : (isRunning ? "…" : "нет"))
             ],
             isRunning: isRunning
         )
