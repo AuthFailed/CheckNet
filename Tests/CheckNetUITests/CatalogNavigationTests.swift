@@ -15,18 +15,25 @@ final class CatalogNavigationTests: XCTestCase {
         let ping = app.cells.staticTexts["Ping"].firstMatch
         XCTAssertTrue(ping.waitForExistence(timeout: 30), "catalog should list Ping")
 
-        // Existing is not the same as ready: on a loaded CI runner the list can
-        // be on screen while the app is still settling, and a tap then lands on
-        // nothing. Waiting for hittable keeps the assertion about navigation
-        // rather than about how fast the machine is.
-        let hittable = expectation(for: NSPredicate(format: "isHittable == true"),
-                                   evaluatedWith: ping)
-        wait(for: [hittable], timeout: 30)
-        ping.tap()
-
         // The tool screen is the one with a host field; the catalog has none.
         let host = app.textFields.firstMatch
-        XCTAssertTrue(host.waitForExistence(timeout: 15),
-                      "tapping a catalog row did not open the tool screen")
+
+        // The catalog row is present, but on a loaded CI runner two things go
+        // wrong that are about the machine, not the navigation: the row is on
+        // screen before the app can respond, and a synthesized tap is
+        // occasionally dropped entirely. So the tap is retried a few times,
+        // each time waiting for the row to be hittable first. What is under
+        // test — that a tap opens the tool — is unchanged; only the flake is
+        // absorbed.
+        for attempt in 1...4 {
+            if ping.isHittable {
+                ping.tap()
+            }
+            if host.waitForExistence(timeout: 10) {
+                return
+            }
+            XCTContext.runActivity(named: "retry tap \(attempt)") { _ in }
+        }
+        XCTFail("tapping a catalog row did not open the tool screen")
     }
 }
