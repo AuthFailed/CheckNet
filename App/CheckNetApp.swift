@@ -25,6 +25,11 @@ struct CheckNetApp: App {
         _savedHosts = State(initialValue: hosts)
         _cloudSync = State(initialValue: CloudHostSync(store: hosts))
 
+        // Must be registered before the app finishes launching.
+        #if os(iOS)
+        BackgroundMonitor.register()
+        #endif
+
         // The Local Network prompt is deliberately *not* requested here any
         // more. Asking on launch, before any context, is the anti-pattern that
         // gets it denied for good; it now happens the first time a tool that
@@ -52,6 +57,7 @@ struct CheckNetApp: App {
         content
             .task { SpotlightIndexer.index() }
             .task { cloudSync.start() }
+            .task { configureNotifications() }
             .onContinueUserActivity(CSSearchableItemActionType) { activity in
                 if let tool = SpotlightIndexer.tool(from: activity) { navigator.open(tool) }
             }
@@ -87,8 +93,33 @@ struct CheckNetApp: App {
     /// doesn't waste a suspended tick, resume when it returns.
     private func handle(_ phase: ScenePhase) {
         switch phase {
-        case .active: scheduler.start()
-        default: scheduler.stop()
+        case .active:
+            scheduler.start()
+        case .background:
+            scheduler.stop()
+            #if os(iOS)
+            BackgroundMonitor.schedule()
+            #endif
+        default:
+            scheduler.stop()
+        }
+    }
+
+    /// Wires the notification delegate and routes its actions. A tapped alert
+    /// opens the host in Ping; "Проверить снова" re-runs the check pass.
+    private func configureNotifications() {
+        HostNotifier.shared.configure()
+        HostNotifier.shared.onAction = { actionID, host in
+            switch actionID {
+            case MonitorNotification.actionOpen:
+                navigator.open(host.isEmpty ? .monitoring : .ping, host: host.isEmpty ? nil : host)
+            case MonitorNotification.actionRecheck:
+                #if os(iOS)
+                Task { await BackgroundMonitor.runPass() }
+                #endif
+            default:
+                break
+            }
         }
     }
 

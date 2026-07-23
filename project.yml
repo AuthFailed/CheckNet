@@ -67,6 +67,11 @@ targets:
         # Handoff: the system only resumes activities of a declared type.
         NSUserActivityTypes:
           - com.chrsnv.checknet.tool
+        # Background uptime monitoring (BGTaskScheduler app-refresh).
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.chrsnv.checknet.monitor.refresh
+        UIBackgroundModes:
+          - fetch
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
