@@ -15,6 +15,8 @@ struct OnboardingView: View {
 
     @State private var page = 0
     @Environment(\.dynamicTypeSize) private var typeSize
+    @ScaledMetric(relativeTo: .largeTitle) private var glyph: CGFloat = 50
+    @ScaledMetric(relativeTo: .largeTitle) private var badge: CGFloat = 104
 
     private struct Page: Identifiable {
         let id = UUID()
@@ -94,9 +96,9 @@ struct OnboardingView: View {
         ScrollView {
             VStack(spacing: 0) {
                 Image(systemName: page.icon)
-                    .font(.system(size: 50))
+                    .font(.system(size: glyph))
                     .foregroundStyle(.tint)
-                    .frame(width: 104, height: 104)
+                    .frame(width: badge, height: badge)
                     .background(Color.accentColor.opacity(0.14),
                                 in: RoundedRectangle(cornerRadius: 24, style: .continuous))
                     .padding(.bottom, 34)
