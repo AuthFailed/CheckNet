@@ -1,5 +1,10 @@
 # Translations
 
+> **Licensing.** The code is under the [MIT license](../LICENSE). Translations
+> contributed here (via Weblate, a pull request or an issue) are licensed
+> **[CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)** — by submitting
+> one you agree to that.
+
 CheckNet is authored in **Russian** and translated into 12 more languages:
 English, 简体中文, Español, Français, Deutsch, 日本語, Português (BR), 한국어,
 Italiano, Türkçe, العربية, हिन्दी.
@@ -53,11 +58,15 @@ compiler cannot extract those, so they stay Russian until added by hand.
 
 ## Maintainer: setting up Weblate
 
-1. Give the repository an OSI-approved license (required for free libre hosting).
-2. Sign up at <https://hosted.weblate.org> and request free hosting for the
-   public project.
-3. Add a component pointing at `App/Resources/Localizable.xcstrings`
+1. Sign up at <https://hosted.weblate.org> and request free hosting for the
+   public project (the repo is MIT-licensed, which qualifies for libre hosting).
+2. Add a component pointing at `App/Resources/Localizable.xcstrings`
    (format: *Apple String Catalog*), source language **ru**.
+3. In project settings:
+   - **Translation license:** `CC-BY-4.0`,
+     URL `https://creativecommons.org/licenses/by/4.0/`.
+   - **Translation instructions:** link this file and repeat the placeholder
+     rule above.
 4. Connect the GitHub repository and enable “push on commit” so approved
    suggestions arrive as pull requests.
 5. Put the project URL in the “web editor” link above.
