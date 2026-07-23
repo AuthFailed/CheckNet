@@ -422,6 +422,12 @@ struct ToolDestinationView: View {
             IPLocationView(presetHost: route.presetHost, autostart: route.autostart)
         case .worldPing:
             WorldPingView(presetHost: route.presetHost, autostart: route.autostart)
+        #if os(macOS)
+        case .wifiSignal:
+            WiFiSignalView()
+        case .wifiAnalysis:
+            WiFiAnalysisView()
+        #endif
         default:
             PlaceholderToolView(tool: route.tool)
         }
