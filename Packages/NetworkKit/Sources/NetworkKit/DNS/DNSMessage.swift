@@ -117,14 +117,20 @@ enum DNSMessage {
     }
 
     /// Reads a (possibly compressed) domain name starting at `p`, advancing `p` past it.
+    ///
+    /// Names arrive from untrusted resolvers, so every deviation from RFC 1035 is a
+    /// hard error rather than a best-effort guess. A compression pointer must lead
+    /// strictly backwards — a forward, self-referential, or cyclic pointer is the
+    /// classic decompression-loop DoS — the encoded name may not exceed 255 bytes,
+    /// and a label's two high bits must be clear. Together these bound the work on
+    /// hostile input and guarantee termination.
     private static func readName(_ data: [UInt8], _ p: inout Int) throws -> String {
         var labels: [String] = []
         var jumped = false
         var cursor = p
-        var safety = 0
+        var nameLength = 0
+        var pointerHops = 0
         while cursor < data.count {
-            safety += 1
-            if safety > 128 { break }
             let len = data[cursor]
             if len == 0 {
                 cursor += 1
@@ -132,17 +138,38 @@ enum DNSMessage {
                 break
             }
             if (len & 0xC0) == 0xC0 {
-                // Compression pointer.
-                guard cursor + 1 < data.count else { break }
+                // Compression pointer: two bytes, low 14 bits are the target offset.
+                guard cursor + 1 < data.count else {
+                    throw NetworkError.protocolError("обрезанный указатель сжатия DNS")
+                }
                 let pointer = (Int(len & 0x3F) << 8) | Int(data[cursor + 1])
                 if !jumped { p = cursor + 2 }
+                // A valid pointer always references an earlier position; anything
+                // else (forward, self, or a cycle) would loop forever.
+                guard pointer < cursor else {
+                    throw NetworkError.protocolError("указатель сжатия DNS не ведёт назад")
+                }
+                pointerHops += 1
+                guard pointerHops <= data.count else {
+                    throw NetworkError.protocolError("слишком много указателей сжатия DNS")
+                }
                 jumped = true
                 cursor = pointer
                 continue
             }
+            // The two high bits of a label length are reserved and must be zero.
+            guard (len & 0xC0) == 0 else {
+                throw NetworkError.protocolError("недопустимая длина метки DNS")
+            }
             let start = cursor + 1
             let end = start + Int(len)
-            guard end <= data.count else { break }
+            guard end <= data.count else {
+                throw NetworkError.protocolError("метка DNS выходит за пределы пакета")
+            }
+            nameLength += Int(len) + 1
+            guard nameLength <= 255 else {
+                throw NetworkError.protocolError("имя DNS длиннее 255 байт")
+            }
             labels.append(String(decoding: data[start..<end], as: UTF8.self))
             cursor = end
         }
