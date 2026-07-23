@@ -23,18 +23,26 @@ final class ToolRunModel<Value> {
 
     /// Fire-and-forget entry point for a SwiftUI button. A run already in flight
     /// is cancelled first, so double taps can't leave two operations racing.
-    func start(_ operation: @escaping @Sendable () async throws -> Value) {
+    ///
+    /// `onSuccess` runs on the main actor exactly once per successful completion
+    /// — the place to record history or send a webhook. It fires per run, not per
+    /// distinct value, so two runs with an identical result still report twice
+    /// (which a view `.onChange(of:)` on the value would miss).
+    func start(_ operation: @escaping @Sendable () async throws -> Value,
+               onSuccess: (@MainActor @Sendable (Value) -> Void)? = nil) {
         cancel()
-        task = Task { await self.perform(operation) }
+        task = Task { await self.perform(operation, onSuccess: onSuccess) }
     }
 
     /// The awaitable core: runs `operation` and records its outcome. Exposed so
     /// callers (and tests) can await completion.
-    func perform(_ operation: @Sendable () async throws -> Value) async {
+    func perform(_ operation: @Sendable () async throws -> Value,
+                 onSuccess: (@MainActor @Sendable (Value) -> Void)? = nil) async {
         phase = .running
         do {
             let result = try await operation()
             phase = .success(result)
+            onSuccess?(result)
         } catch is CancellationError {
             phase = .idle
         } catch {

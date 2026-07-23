@@ -1,80 +1,56 @@
 import SwiftUI
 import NetworkKit
 
-@MainActor
-@Observable
-final class BlacklistModel {
-    var ip = "8.8.8.8"
-    private(set) var isRunning = false
-    private(set) var report: BlacklistReport?
-    private(set) var errorMessage: String?
-
-    func run() async {
-        let target = ip.trimmingCharacters(in: .whitespaces)
-        guard !target.isEmpty else { return }
-        isRunning = true; report = nil; errorMessage = nil
-        report = await BlacklistChecker().check(ip: target)
-        isRunning = false
-    }
-
-    /// A name that cannot be resolved stops here. Falling through used to run
-    /// the blacklist check against the hostname itself, which every provider
-    /// answers "not listed" — a clean report for a check that never happened.
-    func resolveAndRun(host: String) async {
-        do {
-            ip = try await HostResolver.resolveFirst(host: host, family: .ipv4).ipString
-        } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-            report = nil
-            return
-        }
-        await run()
-    }
-}
-
 struct BlacklistView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = BlacklistModel()
+    @State private var ip = "8.8.8.8"
+    @State private var run = ToolRunModel<BlacklistReport>()
+
+    private func start() {
+        let target = ip.trimmingCharacters(in: .whitespaces)
+        guard !target.isEmpty, !run.isRunning else { return }
+        run.start { await BlacklistChecker().check(ip: target) }
+    }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
-                         disabled: model.isRunning, savedHostTool: .blacklist) { Task { await model.run() } }
-            if let error = model.errorMessage {
-                ErrorCard(message: error) { Task { await model.run() } }
-            } else if let report = model.report {
+            HostInputBar(text: $ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
+                         disabled: run.isRunning, savedHostTool: .blacklist) { start() }
+            if let error = run.errorMessage {
+                ErrorCard(message: error) { start() }
+            } else if let report = run.value {
                 summaryCard(report)
-            } else if model.isRunning {
+            } else if run.isRunning {
                 ProgressView().padding(.top, 40)
             }
         } content: {
-            if let report = model.report {
+            if let report = run.value {
                 listCard(report)
-            } else if !model.isRunning, model.errorMessage == nil {
+            } else if !run.isRunning, run.errorMessage == nil {
                 ToolIdleHint(
                     icon: "hand.raised.slash",
                     title: "Готово к проверке списков",
                     message: "Проверим IP по спискам DNSBL — тем самым, по которым почтовые серверы решают, принимать ли письмо.",
                     example: "8.8.8.8",
-                    current: model.ip
-                ) { model.ip = "8.8.8.8" }
+                    current: ip
+                ) { ip = "8.8.8.8" }
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning,
-                      disabled: model.ip.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }; Task { await model.run() }
+            RunButton(title: "Проверить", running: run.isRunning,
+                      disabled: ip.trimmingCharacters(in: .whitespaces).isEmpty) {
+                if run.isRunning { return }; start()
             }
         }
-        .animation(.snappy, value: model.report?.listedCount)
+        .animation(.snappy, value: run.value?.listedCount)
         // A check runs for seconds; people put the phone down while it does.
-        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
-        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
+        .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
+        .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
         .navigationTitle("Блэклисты")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.ip = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { ip = presetHost }
+            if autostart { start() }
         }
     }
 

@@ -59,6 +59,28 @@ final class ToolRunModelTests: XCTestCase {
         XCTAssertEqual(model.value, 7)
     }
 
+    func testOnSuccessFiresOncePerRun() async {
+        let model = ToolRunModel<Int>()
+        var received: [Int] = []
+        await model.perform { 1 } onSuccess: { received.append($0) }
+        await model.perform { 1 } onSuccess: { received.append($0) }   // same value, runs again
+        XCTAssertEqual(received, [1, 1])   // fires per run, not per distinct value
+    }
+
+    func testOnSuccessSkippedOnFailure() async {
+        let model = ToolRunModel<Int>()
+        var fired = false
+        await model.perform { throw Boom() } onSuccess: { _ in fired = true }
+        XCTAssertFalse(fired)
+    }
+
+    func testOnSuccessSkippedOnCancellation() async {
+        let model = ToolRunModel<Int>()
+        var fired = false
+        await model.perform { throw CancellationError() } onSuccess: { _ in fired = true }
+        XCTAssertFalse(fired)
+    }
+
     func testStartThenAwaitCompletes() async {
         let model = ToolRunModel<String>()
         model.start { "готово" }
