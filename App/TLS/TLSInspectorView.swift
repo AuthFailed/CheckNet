@@ -134,6 +134,10 @@ struct TLSInspectorView: View {
             InfoRow(label: "Субъект", value: cert.subject)
             Divider().padding(.leading, 14)
             InfoRow(label: "Издатель", value: cert.issuer)
+            if isLeaf, !cert.subjectAltNames.isEmpty {
+                Divider().padding(.leading, 14)
+                InfoRow(label: "Домены (SAN)", value: cert.subjectAltNames.joined(separator: ", "))
+            }
             Divider().padding(.leading, 14)
             InfoRow(label: "Действует до", value: dateString(cert.notAfter), valueColor: cert.isExpired ? .red : .primary)
             Divider().padding(.leading, 14)

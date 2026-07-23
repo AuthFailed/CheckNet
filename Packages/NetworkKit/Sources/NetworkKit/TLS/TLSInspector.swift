@@ -12,6 +12,7 @@ public struct TLSCertificate: Sendable, Hashable, Codable, Identifiable {
     public let serialNumber: String
     public let sha256Fingerprint: String
     public let isCA: Bool
+    public let subjectAltNames: [String]
 
     public var isExpired: Bool {
         guard let notAfter else { return false }
@@ -168,7 +169,8 @@ public final class TLSInspector: Sendable {
                 notAfter: fields?.notAfter,
                 serialNumber: serial,
                 sha256Fingerprint: fingerprint,
-                isCA: fields?.isCA ?? false
+                isCA: fields?.isCA ?? false,
+                subjectAltNames: fields?.subjectAltNames ?? []
             )
         }
     }
