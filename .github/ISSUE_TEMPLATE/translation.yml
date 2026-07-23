@@ -1,0 +1,52 @@
+name: "🌍 Translation fix"
+description: "Report a wrong, awkward or missing translation (any language)."
+title: "[i18n] <language>: <short description>"
+labels: ["area:l10n"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for improving the translations! For many small fixes at once,
+        the web editor is easier — see `docs/TRANSLATIONS.md`. Use this form for
+        a single string.
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: "e.g. English (en), Deutsch (de), 日本語 (ja)…"
+      placeholder: "de"
+    validations:
+      required: true
+  - type: input
+    id: current
+    attributes:
+      label: Current text (as shown in the app)
+      description: "Leave empty if the string is missing / still shows in Russian."
+    validations:
+      required: false
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested translation
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Russian source (the key), if you know it
+      description: "The original Russian string this translates."
+    validations:
+      required: false
+  - type: input
+    id: where
+    attributes:
+      label: Where does it appear?
+      description: "Screen / tool / button, so we can find it."
+      placeholder: "Ping screen, status line"
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ Keep any `%@`, `%lld`, `%1$@` placeholders exactly as in the source —
+        only their **position** may change, never their number or type.
