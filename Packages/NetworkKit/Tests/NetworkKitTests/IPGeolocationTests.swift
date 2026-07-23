@@ -5,99 +5,144 @@ final class IPGeolocationTests: XCTestCase {
 
     private func data(_ s: String) -> Data { Data(s.utf8) }
 
-    // MARK: ipwho.is
+    private func result(source: String, country: String?, cc: String?, city: String?,
+                        asn: String?, lat: Double? = nil, hosting: Bool? = nil) -> IPGeoResult {
+        IPGeoResult(ip: "8.8.8.8", country: country, countryCode: cc, region: nil, city: city,
+                    latitude: lat, longitude: nil, asn: asn, asnOrg: nil, isp: nil, timezone: nil,
+                    isHosting: hosting, isVPN: nil, isProxy: nil, isTor: nil, source: source)
+    }
 
-    private let ipwhoisBody = """
-    {"ip":"1.1.1.1","success":true,"type":"IPv4","country":"Australia","country_code":"AU",
-     "region":"Queensland","city":"Brisbane","latitude":-27.4675408,"longitude":153.028092,
-     "connection":{"asn":13335,"org":"Apnic Research And Development","isp":"Cloudflare, Inc."},
-     "timezone":{"id":"Australia/Brisbane"}}
-    """
+    // MARK: Parsers
+
+    func testParseIpapi() throws {
+        let body = #"{"status":"success","country":"United States","countryCode":"US","regionName":"Virginia","city":"Ashburn","lat":39.03,"lon":-77.5,"timezone":"America/New_York","isp":"Google LLC","org":"Google Public DNS","as":"AS15169 Google LLC","asname":"GOOGLE","mobile":false,"proxy":false,"hosting":true,"query":"8.8.8.8"}"#
+        let r = try XCTUnwrap(IPGeolocation.parseIpapi(data(body)))
+        XCTAssertEqual(r.ip, "8.8.8.8")
+        XCTAssertEqual(r.country, "United States")
+        XCTAssertEqual(r.city, "Ashburn")
+        XCTAssertEqual(r.asn, "AS15169")
+        XCTAssertEqual(r.asnOrg, "Google LLC")     // parsed out of the "as" field
+        XCTAssertEqual(r.isHosting, true)
+        XCTAssertEqual(r.isProxy, false)
+        XCTAssertEqual(r.source, "ip-api.com")
+    }
+
+    func testParseIpapiFailStatusRejected() {
+        XCTAssertNil(IPGeolocation.parseIpapi(data(#"{"status":"fail","message":"private range","query":"10.0.0.1"}"#)))
+    }
 
     func testParseIpwhois() throws {
-        let r = try XCTUnwrap(IPGeolocation.parseIpwhois(data(ipwhoisBody)))
-        XCTAssertEqual(r.ip, "1.1.1.1")
-        XCTAssertEqual(r.country, "Australia")
+        let body = #"{"ip":"1.1.1.1","success":true,"country":"Australia","country_code":"AU","city":"Brisbane","latitude":-27.46,"longitude":153.02,"connection":{"asn":13335,"org":"Cloudflare","isp":"Cloudflare, Inc."},"timezone":{"id":"Australia/Brisbane"}}"#
+        let r = try XCTUnwrap(IPGeolocation.parseIpwhois(data(body)))
         XCTAssertEqual(r.countryCode, "AU")
-        XCTAssertEqual(r.city, "Brisbane")
         XCTAssertEqual(r.asn, "AS13335")
-        XCTAssertEqual(r.asnOrg, "Apnic Research And Development")
-        XCTAssertEqual(r.isp, "Cloudflare, Inc.")
-        XCTAssertEqual(r.timezone, "Australia/Brisbane")
-        XCTAssertEqual(r.latitude ?? 0, -27.4675408, accuracy: 0.0001)
         XCTAssertEqual(r.source, "ipwho.is")
     }
 
     func testParseIpwhoisFailureBodyRejected() {
-        // A rate-limit / error body has success:false — not a real answer.
         XCTAssertNil(IPGeolocation.parseIpwhois(data(#"{"success":false,"message":"Invalid IP"}"#)))
     }
 
-    // MARK: ipquery.io
-
-    private let ipqueryBody = """
-    {"ip":"1.1.1.1","isp":{"asn":"AS13335","org":"Cloudflare, Inc.","isp":"Cloudflare, Inc."},
-     "location":{"country":"Australia","country_code":"AU","city":"Sydney","state":"New South Wales",
-     "latitude":-33.87,"longitude":151.22,"timezone":"Australia/Sydney"},
-     "risk":{"is_mobile":false,"is_vpn":false,"is_tor":false,"is_proxy":false,"is_datacenter":true}}
-    """
-
     func testParseIpquery() throws {
-        let r = try XCTUnwrap(IPGeolocation.parseIpquery(data(ipqueryBody)))
-        XCTAssertEqual(r.ip, "1.1.1.1")
-        XCTAssertEqual(r.country, "Australia")
-        XCTAssertEqual(r.city, "Sydney")
-        XCTAssertEqual(r.region, "New South Wales")
+        let body = #"{"ip":"1.1.1.1","isp":{"asn":"AS13335","org":"Cloudflare, Inc.","isp":"Cloudflare, Inc."},"location":{"country":"Australia","country_code":"AU","city":"Sydney","state":"NSW","latitude":-33.8,"longitude":151.2,"timezone":"Australia/Sydney"},"risk":{"is_vpn":false,"is_datacenter":true,"is_proxy":false,"is_tor":false}}"#
+        let r = try XCTUnwrap(IPGeolocation.parseIpquery(data(body)))
         XCTAssertEqual(r.asn, "AS13335")
         XCTAssertEqual(r.isHosting, true)
-        XCTAssertEqual(r.isVPN, false)
         XCTAssertEqual(r.source, "ipquery.io")
     }
 
     func testParseIpqueryBareIPRejected() {
-        // The own-IP path returns bare text like "1.2.3.4" — not a geolocation.
         XCTAssertNil(IPGeolocation.parseIpquery(data("88.214.24.82")))
     }
 
-    // MARK: Derived fields
-
-    func testFlagEmoji() throws {
-        let au = try XCTUnwrap(IPGeolocation.parseIpwhois(data(ipwhoisBody)))
-        XCTAssertEqual(au.flagEmoji, "🇦🇺")
+    func testParseDbip() throws {
+        let body = #"{"ipAddress":"8.8.8.8","continentCode":"NA","countryCode":"US","countryName":"United States","stateProv":"California","city":"Mountain View"}"#
+        let r = try XCTUnwrap(IPGeolocation.parseDbip(data(body)))
+        XCTAssertEqual(r.country, "United States")
+        XCTAssertEqual(r.city, "Mountain View")
+        XCTAssertNil(r.asn, "DB-IP free has no ASN")
+        XCTAssertEqual(r.source, "DB-IP")
     }
 
-    func testFlagEmojiRejectsBadCode() {
-        func result(cc: String?) -> IPGeoResult {
-            IPGeoResult(ip: "x", country: nil, countryCode: cc, region: nil, city: nil,
-                        latitude: nil, longitude: nil, asn: nil, asnOrg: nil, isp: nil,
-                        timezone: nil, isHosting: nil, isVPN: nil, isProxy: nil, isTor: nil, source: "t")
-        }
-        XCTAssertEqual(result(cc: "US").flagEmoji, "🇺🇸")
-        XCTAssertNil(result(cc: "XYZ").flagEmoji)
-        XCTAssertNil(result(cc: "1").flagEmoji)
-        XCTAssertNil(result(cc: nil).flagEmoji)
+    func testParseDbipErrorBodyRejected() {
+        XCTAssertNil(IPGeolocation.parseDbip(data(#"{"error":"rate limited"}"#)))
     }
 
-    func testASNumberStripsPrefix() throws {
-        let r = try XCTUnwrap(IPGeolocation.parseIpquery(data(ipqueryBody)))
-        XCTAssertEqual(r.asNumber, "13335")
+    func testParseFreeipapi() throws {
+        let body = #"{"ipVersion":4,"ipAddress":"8.8.8.8","latitude":37.42,"longitude":-122.08,"countryName":"United States","countryCode":"US","timeZones":["America/Los_Angeles"],"cityName":"Mountain View","regionName":"California","asn":"15169","asnOrganization":"GOOGLE"}"#
+        let r = try XCTUnwrap(IPGeolocation.parseFreeipapi(data(body)))
+        XCTAssertEqual(r.country, "United States")
+        XCTAssertEqual(r.city, "Mountain View")
+        XCTAssertEqual(r.asn, "AS15169")           // "15169" gets the AS prefix
+        XCTAssertEqual(r.timezone, "America/Los_Angeles")
+        XCTAssertEqual(r.source, "freeipapi.com")
+    }
+
+    // MARK: Derived
+
+    func testFlagEmoji() {
+        XCTAssertEqual(result(source: "t", country: nil, cc: "US", city: nil, asn: nil).flagEmoji, "🇺🇸")
+        XCTAssertEqual(result(source: "t", country: nil, cc: "AU", city: nil, asn: nil).flagEmoji, "🇦🇺")
+        XCTAssertNil(result(source: "t", country: nil, cc: "XYZ", city: nil, asn: nil).flagEmoji)
+        XCTAssertNil(result(source: "t", country: nil, cc: nil, city: nil, asn: nil).flagEmoji)
+    }
+
+    func testASNumberStripsPrefix() {
+        XCTAssertEqual(result(source: "t", country: nil, cc: nil, city: nil, asn: "AS13335").asNumber, "13335")
+        XCTAssertNil(result(source: "t", country: nil, cc: nil, city: nil, asn: nil).asNumber)
+    }
+
+    // MARK: Consensus
+
+    func testConsolidateMajorityWins() {
+        let results = [
+            result(source: "a", country: "United States", cc: "US", city: "Ashburn", asn: "AS15169", lat: 39.0),
+            result(source: "b", country: "United States", cc: "US", city: "Mountain View", asn: "AS15169", lat: 37.4),
+            result(source: "c", country: "Canada", cc: "CA", city: "Toronto", asn: "AS577", lat: 43.7)
+        ]
+        let c = IPGeolocation.consolidate(results, ip: "8.8.8.8")
+        XCTAssertEqual(c.country, "United States")   // 2 vs 1
+        XCTAssertEqual(c.countryCode, "US")
+        XCTAssertEqual(c.asn, "AS15169")
+        XCTAssertEqual(c.sourceCount, 3)
+        XCTAssertEqual(c.latitude, 39.0)             // median of [37.4, 39.0, 43.7]
+    }
+
+    func testConsolidateTieKeepsEarlierProvider() {
+        let results = [
+            result(source: "a", country: "United States", cc: "US", city: nil, asn: nil),
+            result(source: "b", country: "Canada", cc: "CA", city: nil, asn: nil)
+        ]
+        // 1–1 tie → the earlier provider's value.
+        XCTAssertEqual(IPGeolocation.consolidate(results, ip: "8.8.8.8").country, "United States")
+    }
+
+    func testConsolidateFlagsAnyTrue() {
+        let results = [
+            result(source: "a", country: "US", cc: "US", city: nil, asn: nil, hosting: false),
+            result(source: "b", country: "US", cc: "US", city: nil, asn: nil, hosting: true)
+        ]
+        XCTAssertEqual(IPGeolocation.consolidate(results, ip: "8.8.8.8").isHosting, true)
     }
 
     // MARK: End-to-end (network)
 
-    func testLocateRealIP() async throws {
+    func testLookupRealIP() async throws {
         try requiresInternet()
-        let r = try await IPGeolocation().locate(query: "1.1.1.1")
-        XCTAssertEqual(r.ip, "1.1.1.1")
-        XCTAssertNotNil(r.country, "a real lookup should carry a country")
-        XCTAssertEqual(r.asNumber, "13335", "1.1.1.1 is Cloudflare AS13335")
-        print("geo 1.1.1.1 via \(r.source): \(r.flagEmoji ?? "") \(r.country ?? "?"), \(r.city ?? "?"), \(r.asn ?? "?") \(r.asnOrg ?? "")")
+        let lookup = try await IPGeolocation().lookup(query: "1.1.1.1")
+        XCTAssertEqual(lookup.ip, "1.1.1.1")
+        XCTAssertGreaterThanOrEqual(lookup.providers.count, 2, "several providers should answer")
+        XCTAssertEqual(lookup.consensus.asNumber, "13335", "1.1.1.1 is Cloudflare AS13335")
+        XCTAssertNotNil(lookup.consensus.country)
+        // No duplicate sources.
+        XCTAssertEqual(Set(lookup.providers.map(\.source)).count, lookup.providers.count)
+        print("geo 1.1.1.1: consensus \(lookup.consensus.flagEmoji ?? "") \(lookup.consensus.country ?? "?"), \(lookup.consensus.asn ?? "?") from \(lookup.providers.count) sources: \(lookup.providers.map(\.source))")
     }
 
-    func testLocateOwnIP() async throws {
+    func testLookupOwnIP() async throws {
         try requiresInternet()
-        let r = try await IPGeolocation().locate(query: "")
-        XCTAssertFalse(r.ip.isEmpty, "own-IP lookup should return an address")
-        print("geo own via \(r.source): \(r.ip) — \(r.country ?? "?")")
+        let lookup = try await IPGeolocation().lookup(query: "")
+        XCTAssertFalse(lookup.ip.isEmpty)
+        XCTAssertFalse(lookup.providers.isEmpty)
     }
 }

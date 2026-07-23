@@ -1,38 +1,90 @@
 import Foundation
 
-/// Where an IP address sits: country, city, the network (ASN/org) that announces
-/// it, and — where the provider reports it — whether it's a hosting/VPN/proxy
-/// address. Queries free, key-less HTTPS providers with a fallback chain, so one
-/// being rate-limited or down doesn't sink the lookup.
+/// Where an IP address sits — country, city, the network (ASN/org), and whether
+/// it looks like hosting/VPN/proxy. Queries several free, key-less providers
+/// *at once* and reconciles them: the consensus is what most sources agree on,
+/// and every source's own answer is kept so the caller can show the breakdown
+/// and spot disagreements.
 ///
-/// This sends the queried IP to a third party, which is why the tool explains
+/// This sends the queried IP to third parties, which is why the tool explains
 /// itself through its ⓘ before it runs. Nothing else about the user is sent.
 public struct IPGeolocation: Sendable {
     public init() {}
 
-    /// Look up `query` — an IP literal, a hostname (resolved first), or empty for
-    /// the caller's own public address.
-    public func locate(query: String) async throws -> IPGeoResult {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        let ip = try await Self.resolveTarget(trimmed)
-        for provider in Self.providers {
-            guard let url = provider.url(ip) else { continue }
-            if let data = try? await Self.fetch(url), let result = provider.parse(data) {
-                return result
+    /// Look up `query` across every provider — an IP literal, a hostname
+    /// (resolved first), or empty for the caller's own public address.
+    public func lookup(query: String) async throws -> IPGeoLookup {
+        let ip = try await Self.resolveTarget(query)
+        let collected = await withTaskGroup(of: IPGeoResult?.self) { group -> [IPGeoResult] in
+            for provider in Self.providers {
+                group.addTask { await provider.fetch(ip) }
             }
+            var out: [IPGeoResult] = []
+            for await result in group { if let result { out.append(result) } }
+            return out
         }
-        throw NetworkError.protocolError("Сервисы геолокации не ответили. Попробуйте позже.")
+        guard !collected.isEmpty else {
+            throw NetworkError.protocolError("Сервисы геолокации не ответили. Попробуйте позже.")
+        }
+        // Stable provider order regardless of which finished first.
+        let ordered = Self.providers.compactMap { p in collected.first { $0.source == p.name } }
+        return IPGeoLookup(ip: ip, providers: ordered, consensus: Self.consolidate(ordered, ip: ip))
+    }
+
+    // MARK: Consensus (pure)
+
+    static func consolidate(_ results: [IPGeoResult], ip: String) -> IPGeoConsensus {
+        // Most common non-nil value; ties broken toward the earlier provider.
+        func majority<T: Hashable>(_ select: (IPGeoResult) -> T?) -> T? {
+            var counts: [T: Int] = [:]
+            var order: [T] = []
+            for r in results {
+                guard let value = select(r) else { continue }
+                if counts[value] == nil { order.append(value) }
+                counts[value, default: 0] += 1
+            }
+            var best: T?
+            var bestCount = 0
+            for value in order where counts[value]! > bestCount {
+                best = value; bestCount = counts[value]!
+            }
+            return best
+        }
+        func median(_ select: (IPGeoResult) -> Double?) -> Double? {
+            let values = results.compactMap(select).sorted()
+            guard !values.isEmpty else { return nil }
+            return values[values.count / 2]
+        }
+        func anyTrue(_ select: (IPGeoResult) -> Bool?) -> Bool? {
+            let values = results.compactMap(select)
+            return values.isEmpty ? nil : values.contains(true)
+        }
+        return IPGeoConsensus(
+            ip: ip,
+            country: majority { $0.country },
+            countryCode: majority { $0.countryCode },
+            region: majority { $0.region },
+            city: majority { $0.city },
+            latitude: median { $0.latitude },
+            longitude: median { $0.longitude },
+            asn: majority { $0.asn },
+            asnOrg: majority { $0.asnOrg },
+            timezone: majority { $0.timezone },
+            isHosting: anyTrue { $0.isHosting },
+            isVPN: anyTrue { $0.isVPN },
+            isProxy: anyTrue { $0.isProxy },
+            isTor: anyTrue { $0.isTor },
+            sourceCount: results.count
+        )
     }
 
     // MARK: Target resolution
 
     private static func resolveTarget(_ query: String) async throws -> String {
         if query.isEmpty { return try await ownIP() }
-        // resolveFirst returns an IP literal unchanged and resolves a hostname.
         return try await HostResolver.resolveFirst(host: query).ipString
     }
 
-    /// The caller's own public IP — ipquery.io returns it as bare text.
     static func ownIP() async throws -> String {
         guard let url = URL(string: "https://api.ipquery.io/") else {
             throw NetworkError.protocolError("bad url")
@@ -56,16 +108,48 @@ public struct IPGeolocation: Sendable {
     // MARK: Providers
 
     private struct Provider: Sendable {
+        let name: String
         let url: @Sendable (String) -> URL?
         let parse: @Sendable (Data) -> IPGeoResult?
+
+        func fetch(_ ip: String) async -> IPGeoResult? {
+            guard let url = url(ip), let data = try? await IPGeolocation.fetch(url) else { return nil }
+            return parse(data)
+        }
     }
 
     private static let providers: [Provider] = [
-        Provider(url: { URL(string: "https://ipwho.is/\($0)") }, parse: parseIpwhois),
-        Provider(url: { URL(string: "https://api.ipquery.io/\($0)") }, parse: parseIpquery)
+        // ip-api.com's free tier is HTTP-only; the app allows it via a scoped ATS
+        // exception (only a public IP is ever sent).
+        Provider(name: "ip-api.com",
+                 url: { URL(string: "http://ip-api.com/json/\($0)?fields=status,country,countryCode,regionName,city,lat,lon,timezone,isp,org,as,asname,hosting,proxy,mobile,query") },
+                 parse: parseIpapi),
+        Provider(name: "ipwho.is", url: { URL(string: "https://ipwho.is/\($0)") }, parse: parseIpwhois),
+        Provider(name: "ipquery.io", url: { URL(string: "https://api.ipquery.io/\($0)") }, parse: parseIpquery),
+        Provider(name: "DB-IP", url: { URL(string: "https://api.db-ip.com/v2/free/\($0)") }, parse: parseDbip),
+        Provider(name: "freeipapi.com", url: { URL(string: "https://freeipapi.com/api/json/\($0)") }, parse: parseFreeipapi)
     ]
 
     // MARK: Parsers (pure, testable)
+
+    static func parseIpapi(_ data: Data) -> IPGeoResult? {
+        guard let r = try? JSONDecoder().decode(IpapiResponse.self, from: data),
+              r.status == "success", let ip = r.query else { return nil }
+        // "as" is "AS15169 Google LLC": the number, then the org.
+        var asn: String?
+        var asnOrg: String? = r.org
+        if let field = r.as, !field.isEmpty {
+            let parts = field.split(separator: " ", maxSplits: 1)
+            asn = parts.first.map(String.init)
+            if parts.count > 1 { asnOrg = String(parts[1]) }
+        }
+        return IPGeoResult(
+            ip: ip, country: r.country, countryCode: r.countryCode, region: r.regionName, city: r.city,
+            latitude: r.lat, longitude: r.lon, asn: asn, asnOrg: asnOrg ?? r.asname, isp: r.isp,
+            timezone: r.timezone, isHosting: r.hosting, isVPN: nil, isProxy: r.proxy, isTor: nil,
+            source: "ip-api.com"
+        )
+    }
 
     static func parseIpwhois(_ data: Data) -> IPGeoResult? {
         guard let r = try? JSONDecoder().decode(IpwhoisResponse.self, from: data), r.success == true,
@@ -74,30 +158,71 @@ public struct IPGeolocation: Sendable {
             ip: ip, country: r.country, countryCode: r.country_code, region: r.region, city: r.city,
             latitude: r.latitude, longitude: r.longitude,
             asn: r.connection?.asn.map { "AS\($0)" }, asnOrg: r.connection?.org, isp: r.connection?.isp,
-            timezone: r.timezone?.id,
-            isHosting: nil, isVPN: nil, isProxy: nil, isTor: nil,
+            timezone: r.timezone?.id, isHosting: nil, isVPN: nil, isProxy: nil, isTor: nil,
             source: "ipwho.is"
         )
     }
 
     static func parseIpquery(_ data: Data) -> IPGeoResult? {
         guard let r = try? JSONDecoder().decode(IpqueryResponse.self, from: data), let ip = r.ip,
-              // The bare-IP own-lookup path isn't JSON; a decoded object without a
-              // location is a rate-limit/error body, not a real answer.
               r.location != nil || r.isp != nil else { return nil }
         return IPGeoResult(
             ip: ip, country: r.location?.country, countryCode: r.location?.country_code,
             region: r.location?.state, city: r.location?.city,
             latitude: r.location?.latitude, longitude: r.location?.longitude,
-            asn: r.isp?.asn, asnOrg: r.isp?.org, isp: r.isp?.isp,
-            timezone: r.location?.timezone,
+            asn: r.isp?.asn, asnOrg: r.isp?.org, isp: r.isp?.isp, timezone: r.location?.timezone,
             isHosting: r.risk?.is_datacenter, isVPN: r.risk?.is_vpn,
-            isProxy: r.risk?.is_proxy, isTor: r.risk?.is_tor,
-            source: "ipquery.io"
+            isProxy: r.risk?.is_proxy, isTor: r.risk?.is_tor, source: "ipquery.io"
         )
     }
 
-    // Provider response shapes.
+    static func parseDbip(_ data: Data) -> IPGeoResult? {
+        guard let r = try? JSONDecoder().decode(DbipResponse.self, from: data),
+              let ip = r.ipAddress, r.countryName != nil else { return nil }
+        return IPGeoResult(
+            ip: ip, country: r.countryName, countryCode: r.countryCode, region: r.stateProv, city: r.city,
+            latitude: nil, longitude: nil, asn: nil, asnOrg: nil, isp: nil, timezone: nil,
+            isHosting: nil, isVPN: nil, isProxy: nil, isTor: nil, source: "DB-IP"
+        )
+    }
+
+    static func parseFreeipapi(_ data: Data) -> IPGeoResult? {
+        guard let r = try? JSONDecoder().decode(FreeipapiResponse.self, from: data),
+              let ip = r.ipAddress, r.countryName != nil else { return nil }
+        let asn: String? = r.asn.flatMap { value in
+            let trimmed = value.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty, trimmed != "0" else { return nil }
+            return trimmed.uppercased().hasPrefix("AS") ? trimmed.uppercased() : "AS\(trimmed)"
+        }
+        return IPGeoResult(
+            ip: ip, country: r.countryName, countryCode: r.countryCode, region: r.regionName,
+            city: r.cityName, latitude: r.latitude, longitude: r.longitude,
+            asn: asn, asnOrg: r.asnOrganization, isp: nil, timezone: r.timeZones?.first,
+            isHosting: nil, isVPN: nil, isProxy: nil, isTor: nil, source: "freeipapi.com"
+        )
+    }
+
+    // MARK: Response shapes
+
+    private struct IpapiResponse: Decodable {
+        let status: String?
+        let query: String?
+        let country: String?
+        let countryCode: String?
+        let regionName: String?
+        let city: String?
+        let lat: Double?
+        let lon: Double?
+        let timezone: String?
+        let isp: String?
+        let org: String?
+        let `as`: String?
+        let asname: String?
+        let hosting: Bool?
+        let proxy: Bool?
+        let mobile: Bool?
+    }
+
     private struct IpwhoisResponse: Decodable {
         let ip: String?
         let success: Bool?
@@ -135,11 +260,33 @@ public struct IPGeolocation: Sendable {
             let is_datacenter: Bool?
         }
     }
+
+    private struct DbipResponse: Decodable {
+        let ipAddress: String?
+        let countryName: String?
+        let countryCode: String?
+        let city: String?
+        let stateProv: String?
+    }
+
+    private struct FreeipapiResponse: Decodable {
+        let ipAddress: String?
+        let countryName: String?
+        let countryCode: String?
+        let cityName: String?
+        let regionName: String?
+        let latitude: Double?
+        let longitude: Double?
+        let asn: String?
+        let asnOrganization: String?
+        let timeZones: [String]?
+    }
 }
 
-// MARK: - Result
+// MARK: - Per-provider result
 
-public struct IPGeoResult: Sendable, Codable, Hashable {
+public struct IPGeoResult: Sendable, Codable, Hashable, Identifiable {
+    public var id: String { source }
     public let ip: String
     public let country: String?
     public let countryCode: String?
@@ -181,16 +328,45 @@ public struct IPGeoResult: Sendable, Codable, Hashable {
         self.source = source
     }
 
-    /// The AS number without the "AS" prefix, for building bgp.tools / he.net links.
-    public var asNumber: String? {
-        guard let asn else { return nil }
-        let digits = asn.uppercased().replacingOccurrences(of: "AS", with: "")
-        return digits.isEmpty ? nil : digits
-    }
+    public var flagEmoji: String? { IPGeo.flag(countryCode) }
+    public var asNumber: String? { IPGeo.asNumber(asn) }
+}
 
-    /// Flag emoji from the ISO country code, derived locally so it's independent
-    /// of whatever the provider does or doesn't send.
-    public var flagEmoji: String? {
+// MARK: - Consensus + lookup
+
+public struct IPGeoConsensus: Sendable, Codable, Hashable {
+    public let ip: String
+    public let country: String?
+    public let countryCode: String?
+    public let region: String?
+    public let city: String?
+    public let latitude: Double?
+    public let longitude: Double?
+    public let asn: String?
+    public let asnOrg: String?
+    public let timezone: String?
+    public let isHosting: Bool?
+    public let isVPN: Bool?
+    public let isProxy: Bool?
+    public let isTor: Bool?
+    /// How many providers answered.
+    public let sourceCount: Int
+
+    public var flagEmoji: String? { IPGeo.flag(countryCode) }
+    public var asNumber: String? { IPGeo.asNumber(asn) }
+}
+
+public struct IPGeoLookup: Sendable, Hashable {
+    public let ip: String
+    /// Every provider that answered, in a stable order.
+    public let providers: [IPGeoResult]
+    public let consensus: IPGeoConsensus
+}
+
+/// Small shared derivations, so the per-provider result and the consensus format
+/// flags and AS numbers the same way.
+enum IPGeo {
+    static func flag(_ countryCode: String?) -> String? {
         guard let cc = countryCode?.uppercased(), cc.count == 2, cc.allSatisfy(\.isLetter) else { return nil }
         var result = ""
         for scalar in cc.unicodeScalars {
@@ -198,5 +374,11 @@ public struct IPGeoResult: Sendable, Codable, Hashable {
             result.unicodeScalars.append(flagScalar)
         }
         return result
+    }
+
+    static func asNumber(_ asn: String?) -> String? {
+        guard let asn else { return nil }
+        let digits = asn.uppercased().replacingOccurrences(of: "AS", with: "")
+        return digits.isEmpty ? nil : digits
     }
 }

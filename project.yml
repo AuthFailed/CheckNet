@@ -51,6 +51,13 @@ targets:
           - ar
           - hi
         ITSAppUsesNonExemptEncryption: false
+        # ip-api.com's key-less geolocation tier is HTTP-only. Scope a cleartext
+        # exception to just that host — only a public IP is ever sent to it.
+        NSAppTransportSecurity:
+          NSExceptionDomains:
+            ip-api.com:
+              NSExceptionAllowsInsecureHTTPLoads: true
+              NSIncludesSubdomains: true
         CFBundleURLTypes:
           - CFBundleURLName: com.chrsnv.checknet.deeplink
             CFBundleTypeRole: Editor
