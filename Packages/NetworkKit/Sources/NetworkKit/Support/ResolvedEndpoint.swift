@@ -91,7 +91,14 @@ public enum HostResolver {
         family: IPFamily?
     ) throws -> [ResolvedEndpoint] {
         var hints = addrinfo()
-        hints.ai_flags = AI_ADDRCONFIG
+        // Deliberately NOT AI_ADDRCONFIG. That flag drops a whole address family
+        // unless a matching address is configured on a *local* interface — and
+        // under a VPN (a `utun` tunnel) or NAT64/DNS64 the system often reports
+        // no configured IPv4/IPv6, so getaddrinfo returns nothing and a hostname
+        // "fails to resolve" even though the browser (which uses the system
+        // resolver) resolves it fine. IP literals are unaffected, which is why
+        // IP-address tests kept working while domain tests broke on VPN.
+        hints.ai_flags = 0
         switch family {
         case .ipv4: hints.ai_family = AF_INET
         case .ipv6: hints.ai_family = AF_INET6
