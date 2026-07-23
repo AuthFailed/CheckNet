@@ -8,12 +8,7 @@ final class SavedHostsStore {
     private let key = "checknet.savedHosts"
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([SavedHost].self, from: data) {
-            hosts = decoded
-        } else {
-            hosts = SavedHostsStore.seed
-        }
+        hosts = UserDefaults.standard.json([SavedHost].self, forKey: key) ?? SavedHostsStore.seed
     }
 
     func hosts(for tool: Tool) -> [SavedHost] {
@@ -70,9 +65,7 @@ final class SavedHostsStore {
     }
 
     private func persist() {
-        if let data = try? JSONEncoder().encode(hosts) {
-            UserDefaults.standard.set(data, forKey: key)
-        }
+        UserDefaults.standard.setJSON(hosts, forKey: key)
     }
 
     static let seed: [SavedHost] = [

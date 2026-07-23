@@ -82,7 +82,7 @@ final class MonitoringManager {
         let host = entries[index].host
         let previous = entries[index].status
 
-        let stats = try? await ICMPPinger().measure(host: host, config: PingConfig(count: 3, interval: 0.3, timeout: 2))
+        let stats = try? await ICMPPinger().measure(host: host, config: .quick)
         let received = stats?.received ?? 0
         let loss = stats?.lossPercent ?? 100
         let latency = stats?.avg
@@ -135,15 +135,12 @@ final class MonitoringManager {
     // MARK: Persistence
 
     private func persist() {
-        if let data = try? JSONEncoder().encode(entries) {
-            AppGroup.defaults.set(data, forKey: stateKey)
-        }
+        AppGroup.defaults.setJSON(entries, forKey: stateKey)
         SharedStore.setMonitoredHosts(entries.map(\.host))
     }
 
     private func load() {
-        if let data = AppGroup.defaults.data(forKey: stateKey),
-           let decoded = try? JSONDecoder().decode([MonitoredEntry].self, from: data) {
+        if let decoded = AppGroup.defaults.json([MonitoredEntry].self, forKey: stateKey) {
             entries = decoded
         }
     }

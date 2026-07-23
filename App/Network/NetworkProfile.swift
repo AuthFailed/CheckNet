@@ -28,12 +28,7 @@ final class NetworkProfileStore {
     private let defaults = UserDefaults.standard
 
     init() {
-        if let data = defaults.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([NetworkProfile].self, from: data) {
-            profiles = decoded
-        } else {
-            profiles = []
-        }
+        profiles = defaults.json([NetworkProfile].self, forKey: key) ?? []
     }
 
     /// The profile matching an SSID, if one is enabled for it. Matching is
@@ -59,8 +54,6 @@ final class NetworkProfileStore {
     }
 
     private func persist() {
-        if let data = try? JSONEncoder().encode(profiles) {
-            defaults.set(data, forKey: key)
-        }
+        defaults.setJSON(profiles, forKey: key)
     }
 }

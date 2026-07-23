@@ -34,11 +34,9 @@ struct PingHostIntent: AppIntent {
             timestamp: Date()
         )
         SharedStore.saveSnapshot(snapshot)
-        SharedStore.appendHistory(CheckRecord(
-            tool: "ping", host: host, timestamp: Date(),
-            latencyMillis: stats.avg, lossPercent: stats.lossPercent,
-            succeeded: stats.received > 0,
-            detail: "\(stats.received)/\(stats.transmitted), \(Int(stats.lossPercent))% потерь"
+        SharedStore.appendHistory(.ping(
+            host: host, avg: stats.avg, lossPercent: stats.lossPercent,
+            received: stats.received, transmitted: stats.transmitted
         ))
 
         let avg = stats.avg ?? 0
@@ -65,7 +63,7 @@ struct CheckHostIsUpIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<Bool> {
-        let stats = try await ICMPPinger().measure(host: host, config: PingConfig(count: 3, interval: 0.3, timeout: 2))
+        let stats = try await ICMPPinger().measure(host: host, config: .quick)
         let up = stats.received > 0
         return .result(value: up, dialog: IntentDialog(up ? "\(host) доступен." : "\(host) недоступен."))
     }

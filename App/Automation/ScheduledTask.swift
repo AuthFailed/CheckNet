@@ -58,12 +58,7 @@ final class ScheduledTaskStore {
     private let key = "checknet.scheduledTasks"
 
     init() {
-        if let data = defaults.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([ScheduledTask].self, from: data) {
-            tasks = decoded
-        } else {
-            tasks = []
-        }
+        tasks = defaults.json([ScheduledTask].self, forKey: key) ?? []
     }
 
     func add(_ task: ScheduledTask) {
@@ -94,9 +89,7 @@ final class ScheduledTaskStore {
     }
 
     private func persist() {
-        if let data = try? JSONEncoder().encode(tasks) {
-            defaults.set(data, forKey: key)
-        }
+        defaults.setJSON(tasks, forKey: key)
     }
 }
 
@@ -152,25 +145,19 @@ final class TaskScheduler {
     }
 
     private func runPing(host: String) async -> String {
-        let config = PingConfig(count: 5, interval: 0.3, timeout: 2)
         do {
-            let stats = try await ICMPPinger().measure(host: host, config: config)
-            SharedStore.appendHistory(CheckRecord(
-                tool: "ping", host: host, timestamp: Date(),
-                latencyMillis: stats.avg, lossPercent: stats.lossPercent,
-                succeeded: stats.received > 0,
-                detail: "\(stats.received)/\(stats.transmitted), \(Int(stats.lossPercent))% потерь",
-                source: .scheduled
+            let stats = try await ICMPPinger().measure(host: host, config: .standard)
+            SharedStore.appendHistory(.ping(
+                host: host, avg: stats.avg, lossPercent: stats.lossPercent,
+                received: stats.received, transmitted: stats.transmitted, source: .scheduled
             ))
             WebhookReporter.reportPing(stats, samples: [])
             return stats.received > 0
                 ? "\(Int(stats.avg ?? 0)) мс, потери \(Int(stats.lossPercent))%"
                 : "хост недоступен"
         } catch {
-            SharedStore.appendHistory(CheckRecord(
-                tool: "ping", host: host, timestamp: Date(),
-                latencyMillis: nil, lossPercent: nil, succeeded: false,
-                detail: "ошибка: \(error.localizedDescription)", source: .scheduled
+            SharedStore.appendHistory(.pingFailure(
+                host: host, reason: error.localizedDescription, source: .scheduled
             ))
             return "ошибка"
         }
@@ -180,11 +167,9 @@ final class TaskScheduler {
         guard let kind = CensorshipCheckKind(rawValue: checkID) else { return "неизвестная проверка" }
         let host = target.isEmpty ? kind.defaultTarget : target
         let finding = await kind.run(target: host)
-        SharedStore.appendHistory(CheckRecord(
-            tool: "blocking.\(checkID)", host: host, timestamp: Date(),
-            latencyMillis: nil, lossPercent: nil,
-            succeeded: finding.verdict != .restricted,
-            detail: finding.headline, source: .scheduled
+        SharedStore.appendHistory(.blocking(
+            checkID: checkID, host: host, headline: finding.headline,
+            restricted: finding.verdict == .restricted, source: .scheduled
         ))
         WebhookReporter.reportBlocking(check: checkID, target: host, finding: finding, eventPrefix: "schedule")
         return finding.headline

@@ -36,6 +36,16 @@ public struct PingConfig: Sendable, Hashable, Codable {
     }
 
     public static let `default` = PingConfig()
+
+    /// Named presets, so call sites stop scattering magic counts.
+    /// A short latency preview (used before a speed test).
+    public static let preview = PingConfig(count: 2, interval: 0.2, timeout: 1.5)
+    /// A fast up/down check for intents and monitoring.
+    public static let quick = PingConfig(count: 3, interval: 0.3, timeout: 2)
+    /// The default for scheduled runs — enough samples for a stable average.
+    public static let standard = PingConfig(count: 5, interval: 0.3, timeout: 2)
+    /// A longer run for a considered measurement.
+    public static let thorough = PingConfig(count: 10, interval: 0.3, timeout: 2)
 }
 
 /// A single successful echo reply.

@@ -33,11 +33,9 @@ struct RunBlockingCheckIntent: AppIntent {
         let finding = await kind.run(target: host)
         let outcome = CheckOutcome(finding: finding, target: host)
 
-        SharedStore.appendHistory(CheckRecord(
-            tool: "blocking.\(check.rawValue)", host: host, timestamp: Date(),
-            latencyMillis: nil, lossPercent: nil,
-            succeeded: finding.verdict != .restricted,
-            detail: finding.headline
+        SharedStore.appendHistory(.blocking(
+            checkID: check.rawValue, host: host, headline: finding.headline,
+            restricted: finding.verdict == .restricted
         ))
 
         return .result(value: outcome, dialog: IntentDialog("\(finding.headline). \(finding.detail)"))
