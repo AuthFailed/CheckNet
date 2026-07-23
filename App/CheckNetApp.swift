@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreSpotlight
 
 @main
 struct CheckNetApp: App {
@@ -10,6 +11,7 @@ struct CheckNetApp: App {
     @State private var scheduledTasks: ScheduledTaskStore
     @State private var scheduler: TaskScheduler
     @State private var flow = AppFlow()
+    @State private var navigator = ToolNavigator()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -35,6 +37,16 @@ struct CheckNetApp: App {
             .environment(scheduledTasks)
             .environment(scheduler)
             .environment(flow)
+            .environment(navigator)
+    }
+
+    /// Index the catalogue into Spotlight and route a tapped result to its tool.
+    private func spotlight<Content: View>(_ content: Content) -> some View {
+        content
+            .task { SpotlightIndexer.index() }
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                if let tool = SpotlightIndexer.tool(from: activity) { navigator.open(tool) }
+            }
     }
 
     var body: some Scene {
@@ -49,11 +61,11 @@ struct CheckNetApp: App {
         #if os(macOS)
         // The Mac has its own root: one sidebar, one detail column, rather than
         // an adaptive tab bar with a split view nested inside each tab.
-        withEnvironment(MacRootView())
-            .onAppear { WebhookReporter.settings = webhooks }
+        spotlight(withEnvironment(MacRootView())
+            .onAppear { WebhookReporter.settings = webhooks })
         #else
-        withEnvironment(RootTabView())
-            .onAppear { WebhookReporter.settings = webhooks }
+        spotlight(withEnvironment(RootTabView())
+            .onAppear { WebhookReporter.settings = webhooks })
         #endif
     }
 

@@ -20,6 +20,7 @@ enum LaunchOptions {
 
 struct CatalogView: View {
     @Environment(ToolStore.self) private var store
+    @Environment(ToolNavigator.self) private var navigator
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -67,6 +68,18 @@ struct CatalogView: View {
             }
             if ProcessInfo.processInfo.arguments.contains("-openHistory") {
                 showHistory = true
+            }
+            // Cold start from a Spotlight tap: the activity may land before this
+            // view's onChange is watching.
+            if let route = navigator.pending {
+                open(route)
+                navigator.pending = nil
+            }
+        }
+        .onChange(of: navigator.pending) { _, route in
+            if let route {
+                open(route)
+                navigator.pending = nil
             }
         }
     }
