@@ -84,12 +84,7 @@ final class WebhookSettings {
         trigger = WebhookTrigger(rawValue: defaults.string(forKey: Keys.trigger) ?? "") ?? .allChecks
         format = WebhookFormat(rawValue: defaults.string(forKey: Keys.format) ?? "") ?? .jsonNested
         liveMode = defaults.bool(forKey: Keys.liveMode)
-        if let data = defaults.data(forKey: Keys.selection),
-           let decoded = try? JSONDecoder().decode([String: Set<String>].self, from: data) {
-            fieldSelection = decoded
-        } else {
-            fieldSelection = [:]
-        }
+        fieldSelection = defaults.json([String: Set<String>].self, forKey: Keys.selection) ?? [:]
     }
 
     // MARK: - Field selection
@@ -116,9 +111,7 @@ final class WebhookSettings {
     }
 
     private func persistSelection() {
-        if let data = try? JSONEncoder().encode(fieldSelection) {
-            defaults.set(data, forKey: Keys.selection)
-        }
+        defaults.setJSON(fieldSelection, forKey: Keys.selection)
     }
 
     // MARK: - Secret

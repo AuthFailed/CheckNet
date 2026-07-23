@@ -108,7 +108,7 @@ final class SpeedTestModel {
                 guard let host = iterator.next() else { return }
                 active += 1
                 group.addTask {
-                    let stats = try? await ICMPPinger().measure(host: host, config: PingConfig(count: 2, interval: 0.2, timeout: 1.5))
+                    let stats = try? await ICMPPinger().measure(host: host, config: .preview)
                     if let stats, stats.received > 0, let avg = stats.avg { return (host, avg) }
                     return (host, nil)
                 }

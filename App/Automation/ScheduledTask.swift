@@ -36,14 +36,12 @@ struct ScheduledTask: Identifiable, Codable, Hashable {
     var lastRun: Date?
     var lastSummary: String?
 
-    static let minimumIntervalMinutes = 5
+    static let minimumIntervalMinutes = ScheduleRule.minimumIntervalMinutes
 
     /// Whether the task is due to run at `now`, given its interval and last run.
     func isDue(at now: Date) -> Bool {
-        guard isEnabled else { return false }
-        guard let last = lastRun else { return true }
-        let interval = TimeInterval(max(Self.minimumIntervalMinutes, intervalMinutes) * 60)
-        return now.timeIntervalSince(last) >= interval
+        ScheduleRule.isDue(isEnabled: isEnabled, lastRun: lastRun,
+                           intervalMinutes: intervalMinutes, now: now)
     }
 
     var title: String { "\(kind.toolLabel) · \(kind.target)" }
@@ -60,12 +58,7 @@ final class ScheduledTaskStore {
     private let key = "checknet.scheduledTasks"
 
     init() {
-        if let data = defaults.data(forKey: key),
-           let decoded = try? JSONDecoder().decode([ScheduledTask].self, from: data) {
-            tasks = decoded
-        } else {
-            tasks = []
-        }
+        tasks = defaults.json([ScheduledTask].self, forKey: key) ?? []
     }
 
     func add(_ task: ScheduledTask) {
@@ -96,9 +89,7 @@ final class ScheduledTaskStore {
     }
 
     private func persist() {
-        if let data = try? JSONEncoder().encode(tasks) {
-            defaults.set(data, forKey: key)
-        }
+        defaults.setJSON(tasks, forKey: key)
     }
 }
 
@@ -154,39 +145,31 @@ final class TaskScheduler {
     }
 
     private func runPing(host: String) async -> String {
-        let config = PingConfig(count: 5, interval: 0.3, timeout: 2)
         do {
-            let stats = try await ICMPPinger().measure(host: host, config: config)
-            SharedStore.appendHistory(CheckRecord(
-                tool: "ping", host: host, timestamp: Date(),
-                latencyMillis: stats.avg, lossPercent: stats.lossPercent,
-                succeeded: stats.received > 0,
-                detail: "\(stats.received)/\(stats.transmitted), \(Int(stats.lossPercent))% потерь",
-                source: .scheduled
+            let stats = try await ICMPPinger().measure(host: host, config: .standard)
+            SharedStore.appendHistory(.ping(
+                host: host, avg: stats.avg, lossPercent: stats.lossPercent,
+                received: stats.received, transmitted: stats.transmitted, source: .scheduled
             ))
             WebhookReporter.reportPing(stats, samples: [])
             return stats.received > 0
                 ? "\(Int(stats.avg ?? 0)) мс, потери \(Int(stats.lossPercent))%"
                 : "хост недоступен"
         } catch {
-            SharedStore.appendHistory(CheckRecord(
-                tool: "ping", host: host, timestamp: Date(),
-                latencyMillis: nil, lossPercent: nil, succeeded: false,
-                detail: "ошибка: \(error.localizedDescription)", source: .scheduled
+            SharedStore.appendHistory(.pingFailure(
+                host: host, reason: error.localizedDescription, source: .scheduled
             ))
             return "ошибка"
         }
     }
 
     private func runBlocking(checkID: String, target: String) async -> String {
-        guard let check = BlockingCheck(rawValue: checkID) else { return "неизвестная проверка" }
-        let host = target.isEmpty ? check.defaultTarget : target
-        let finding = await check.run(target: host)
-        SharedStore.appendHistory(CheckRecord(
-            tool: "blocking.\(checkID)", host: host, timestamp: Date(),
-            latencyMillis: nil, lossPercent: nil,
-            succeeded: finding.verdict != .restricted,
-            detail: finding.headline, source: .scheduled
+        guard let kind = CensorshipCheckKind(rawValue: checkID) else { return "неизвестная проверка" }
+        let host = target.isEmpty ? kind.defaultTarget : target
+        let finding = await kind.run(target: host)
+        SharedStore.appendHistory(.blocking(
+            checkID: checkID, host: host, headline: finding.headline,
+            restricted: finding.verdict == .restricted, source: .scheduled
         ))
         WebhookReporter.reportBlocking(check: checkID, target: host, finding: finding, eventPrefix: "schedule")
         return finding.headline

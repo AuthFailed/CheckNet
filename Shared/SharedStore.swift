@@ -52,9 +52,7 @@ enum SharedStore {
             all.removeAll { $0.host == snapshot.host }
             all.insert(snapshot, at: 0)
             if all.count > 12 { all = Array(all.prefix(12)) }
-            if let data = try? JSONEncoder().encode(all) {
-                AppGroup.defaults.set(data, forKey: snapshotsKey)
-            }
+            AppGroup.defaults.setJSON(all, forKey: snapshotsKey)
         }
     }
 
@@ -67,9 +65,7 @@ enum SharedStore {
     }
 
     private static func snapshotsUnlocked() -> [PingSnapshot] {
-        guard let data = AppGroup.defaults.data(forKey: snapshotsKey),
-              let decoded = try? JSONDecoder().decode([PingSnapshot].self, from: data) else { return [] }
-        return decoded
+        AppGroup.defaults.json([PingSnapshot].self, forKey: snapshotsKey) ?? []
     }
 
     static func latestSnapshot(for host: String? = nil) -> PingSnapshot? {

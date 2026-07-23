@@ -43,18 +43,14 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Whether the check accepts a target host/domain.
-    var needsTarget: Bool { self != .whitelist }
+    /// The UI-free counterpart in NetworkKit that owns dispatch and defaults.
+    /// Raw values are identical, so the mapping is total.
+    var kind: CensorshipCheckKind { CensorshipCheckKind(rawValue: rawValue)! }
 
-    var defaultTarget: String {
-        switch self {
-        case .dnsSpoofing, .httpBlock: return "rutracker.org"
-        case .sniBlocking, .siberian: return "www.tor-project.org"
-        case .ipBlocking: return "x.com"
-        case .whitelist: return ""
-        case .transferCutoff: return TransferCutoffCheck.defaultTarget
-        }
-    }
+    /// Whether the check accepts a target host/domain.
+    var needsTarget: Bool { kind.needsTarget }
+
+    var defaultTarget: String { kind.defaultTarget }
 
     var explanation: String {
         switch self {
@@ -76,17 +72,7 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
     }
 
     func run(target: String) async -> CensorshipFinding {
-        let checks = CensorshipChecks()
-        let host = target.trimmingCharacters(in: .whitespaces)
-        switch self {
-        case .dnsSpoofing: return await checks.checkDNSSpoofing(domain: host)
-        case .httpBlock:   return await checks.checkHTTPBlockPage(domain: host)
-        case .sniBlocking: return await checks.checkSNIBlocking(blockedDomain: host)
-        case .ipBlocking:  return await checks.checkIPBlocking(domain: host)
-        case .whitelist:   return await checks.checkWhitelistMode()
-        case .siberian:    return await checks.checkSiberianBlock(host: host)
-        case .transferCutoff: return await TransferCutoffCheck().run(target: host)
-        }
+        await kind.run(target: target)
     }
 }
 

@@ -12,13 +12,9 @@ struct ToolRoute: Hashable {
 /// e.g. `CheckNet -openTool ping -host 1.1.1.1 -run 1`
 enum LaunchOptions {
     static var initialRoute: ToolRoute? {
-        let args = ProcessInfo.processInfo.arguments
-        guard let idx = args.firstIndex(of: "-openTool"), idx + 1 < args.count,
-              let tool = Tool(rawValue: args[idx + 1]) else { return nil }
-        var host: String? = nil
-        if let h = args.firstIndex(of: "-host"), h + 1 < args.count { host = args[h + 1] }
-        let run = args.contains("-run")
-        return ToolRoute(tool: tool, autostart: run, presetHost: host)
+        guard let parsed = LaunchArguments.parse(ProcessInfo.processInfo.arguments),
+              let tool = Tool(rawValue: parsed.toolRawValue) else { return nil }
+        return ToolRoute(tool: tool, autostart: parsed.run, presetHost: parsed.host)
     }
 }
 

@@ -240,11 +240,9 @@ final class PingViewModel {
             jitterMillis: stats.jitter, status: status, timestamp: Date()
         )
         SharedStore.saveSnapshot(snapshot)
-        SharedStore.appendHistory(CheckRecord(
-            tool: "ping", host: host, timestamp: Date(),
-            latencyMillis: stats.avg, lossPercent: stats.lossPercent,
-            succeeded: stats.received > 0,
-            detail: "\(stats.received)/\(stats.transmitted), \(Int(stats.lossPercent))% потерь, avg \(stats.avg.map { String(format: "%.0f", $0) } ?? "—") мс"
+        SharedStore.appendHistory(.ping(
+            host: host, avg: stats.avg, lossPercent: stats.lossPercent,
+            received: stats.received, transmitted: stats.transmitted
         ))
         // Samples are stored newest-first for the UI; send them chronologically.
         WebhookReporter.reportPing(stats, samples: replies.reversed())

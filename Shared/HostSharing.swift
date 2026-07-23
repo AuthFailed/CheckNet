@@ -75,7 +75,7 @@ enum HostSharing {
     /// Accepts IP literals and plausible domain names, rejects everything else.
     private static func isPlausibleTarget(_ value: String) -> Bool {
         guard (1...253).contains(value.count) else { return false }
-        if SavedHostsStore.isIP(value) { return true }
+        if IPAddress.isValid(value) { return true }
         guard value.contains("."), !value.contains(" ") else { return false }
         let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_")
         return value.unicodeScalars.allSatisfy { allowed.contains($0) }

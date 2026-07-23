@@ -39,15 +39,7 @@ enum HistoryExporter {
     }
 
     private static func csv(_ records: [CheckRecord]) throws -> Data {
-        var lines = ["timestamp,tool,host,latency_ms,loss_pct,succeeded,detail"]
-        let formatter = ISO8601DateFormatter()
-        for r in records {
-            let latency = r.latencyMillis.map { String(format: "%.1f", $0) } ?? ""
-            let loss = r.lossPercent.map { String(format: "%.1f", $0) } ?? ""
-            let detail = "\"\(r.detail.replacingOccurrences(of: "\"", with: "\"\""))\""
-            lines.append("\(formatter.string(from: r.timestamp)),\(r.tool),\(r.host),\(latency),\(loss),\(r.succeeded),\(detail)")
-        }
-        guard let data = lines.joined(separator: "\n").data(using: .utf8) else {
+        guard let data = HistoryCSV.document(records).data(using: .utf8) else {
             throw CocoaError(.fileWriteInapplicableStringEncoding)
         }
         return data
