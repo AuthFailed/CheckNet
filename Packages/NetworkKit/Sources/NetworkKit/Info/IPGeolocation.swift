@@ -13,12 +13,19 @@ public struct IPGeolocation: Sendable {
 
     /// Look up `query` across every provider — an IP literal, a hostname
     /// (resolved first), or empty for the caller's own public address.
+    static let maxmindSource = "MaxMind GeoLite2"
+
     public func lookup(query: String) async throws -> IPGeoLookup {
         let ip = try await Self.resolveTarget(query)
+        // Refresh the offline database in the background; this run uses whatever
+        // is already cached and MaxMind joins the results once it's present.
+        Task.detached(priority: .utility) { await GeoLiteDatabase.shared.ensureFresh() }
+
         let collected = await withTaskGroup(of: IPGeoResult?.self) { group -> [IPGeoResult] in
             for provider in Self.providers {
                 group.addTask { await provider.fetch(ip) }
             }
+            group.addTask { await Self.maxmindLookup(ip) }   // offline, cached DB
             var out: [IPGeoResult] = []
             for await result in group { if let result { out.append(result) } }
             return out
@@ -26,9 +33,39 @@ public struct IPGeolocation: Sendable {
         guard !collected.isEmpty else {
             throw NetworkError.protocolError("Сервисы геолокации не ответили. Попробуйте позже.")
         }
-        // Stable provider order regardless of which finished first.
-        let ordered = Self.providers.compactMap { p in collected.first { $0.source == p.name } }
+        // Stable order: API providers as declared, then MaxMind.
+        var ordered = Self.providers.compactMap { p in collected.first { $0.source == p.name } }
+        if let maxmind = collected.first(where: { $0.source == Self.maxmindSource }) { ordered.append(maxmind) }
         return IPGeoLookup(ip: ip, providers: ordered, consensus: Self.consolidate(ordered, ip: ip))
+    }
+
+    // MARK: MaxMind GeoLite2 (offline)
+
+    static func maxmindLookup(_ ip: String) async -> IPGeoResult? {
+        let db = GeoLiteDatabase.shared
+        guard let cityReader = await db.reader(.city), let city = cityReader.lookup(ip: ip) else { return nil }
+        let country = localizedName(city["country"]?["names"])
+        let asnData = await db.reader(.asn)?.lookup(ip: ip)
+        var asn: String?
+        if let number = asnData?["autonomous_system_number"]?.uintValue { asn = "AS\(number)" }
+        guard country != nil || asn != nil else { return nil }
+        return IPGeoResult(
+            ip: ip,
+            country: country,
+            countryCode: city["country"]?["iso_code"]?.stringValue,
+            region: localizedName(city["subdivisions"]?.arrayValue?.first?["names"]),
+            city: localizedName(city["city"]?["names"]),
+            latitude: city["location"]?["latitude"]?.doubleValue,
+            longitude: city["location"]?["longitude"]?.doubleValue,
+            asn: asn, asnOrg: asnData?["autonomous_system_organization"]?.stringValue, isp: nil,
+            timezone: city["location"]?["time_zone"]?.stringValue,
+            isHosting: nil, isVPN: nil, isProxy: nil, isTor: nil, source: maxmindSource
+        )
+    }
+
+    /// A GeoLite `names` map is keyed by language; prefer Russian, fall back to English.
+    private static func localizedName(_ value: MMDBReader.Value?) -> String? {
+        value?["ru"]?.stringValue ?? value?["en"]?.stringValue
     }
 
     // MARK: Consensus (pure)
