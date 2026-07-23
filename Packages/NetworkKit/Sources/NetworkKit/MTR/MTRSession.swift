@@ -84,7 +84,12 @@ private final class MTRRunner: @unchecked Sendable {
     func start() {
         Task {
             do {
-                let endpoint = try await HostResolver.resolveFirst(host: host, family: .ipv4)
+                // No family restriction: the ICMP engine and socket layer are
+                // fully IPv6-aware (echo/reply, hop-limit via IPV6_UNICAST_HOPS),
+                // so MTR runs over IPv6 too — which is what a NAT64/IPv6-only
+                // network needs. Dual-stack still prefers IPv4 (resolve sorts it
+                // first).
+                let endpoint = try await HostResolver.resolveFirst(host: host)
                 queue.async { [self] in run(endpoint: endpoint) }
             } catch {
                 if !isCancelled {

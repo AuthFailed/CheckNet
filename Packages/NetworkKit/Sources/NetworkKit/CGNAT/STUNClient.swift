@@ -22,6 +22,8 @@ public struct STUNClient: Sendable {
     }
 
     func query(server: String, port: UInt16, timeout: TimeInterval) async throws -> PublicAddress {
+        // IPv4 on purpose: this detects IPv4 (CG)NAT. IPv6 is typically not NATed,
+        // so a v6 STUN result wouldn't answer the question the tool asks.
         let endpoint = try await HostResolver.resolveFirst(host: server, port: port, family: .ipv4)
         let request = Self.bindingRequest()
         let response = try await UDPExchange.request(endpoint: endpoint, payload: request, timeout: timeout)

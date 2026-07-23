@@ -134,6 +134,7 @@ public final class IPRangeScanner: Sendable {
     }
 
     private static func pingOnce(ip: String, timeout: TimeInterval) async -> Double? {
+        // IPv4 on purpose: this sweeps an IPv4 subnet (each `ip` is a v4 literal).
         let config = PingConfig(count: 1, interval: 0.1, timeout: timeout, family: .ipv4)
         for await event in ICMPPinger().ping(host: ip, config: config) {
             if case .reply(let r) = event { return r.rttMillis }

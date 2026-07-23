@@ -47,8 +47,11 @@ final class PortScanModel {
             // Resolved once, up front. Every port of a name that does not
             // resolve comes back closed, and "0 открытых портов" reads as a
             // locked-down host rather than as a host that was never reached.
+            // No family restriction: the scan connects over IPv6 too, so on a
+            // NAT64/IPv6-only network (where forcing IPv4 would find nothing)
+            // this still works.
             do {
-                _ = try await HostResolver.resolveFirst(host: target, family: .ipv4)
+                _ = try await HostResolver.resolveFirst(host: target)
             } catch {
                 errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 isRunning = false

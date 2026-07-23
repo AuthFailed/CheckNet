@@ -37,6 +37,11 @@ public final class MTUDiscovery: Sendable {
         AsyncStream { continuation in
             let task = Task {
                 do {
+                    // IPv4 on purpose: this probes the path MTU by sending
+                    // don't-fragment ICMP echoes of growing size (IP_DONTFRAG).
+                    // IPv6 has no in-path DF — PMTUD there relies on IPV6_DONTFRAG
+                    // plus ICMPv6 "Packet Too Big", a different mechanism that this
+                    // engine doesn't implement yet (tracked separately).
                     let endpoint = try await HostResolver.resolveFirst(host: host, family: .ipv4)
                     var probes: [MTUResult.MTUProbe] = []
 

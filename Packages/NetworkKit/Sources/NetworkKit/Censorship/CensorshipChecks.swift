@@ -35,6 +35,8 @@ public struct CensorshipChecks: Sendable {
     // MARK: 1. DNS spoofing / substitution
 
     public func checkDNSSpoofing(domain: String = "rutracker.org") async -> CensorshipFinding {
+        // IPv4 on purpose: compared against DoH A records below, so both sides
+        // must be A records for the spoofing check to be apples-to-apples.
         let systemIPs = (try? await HostResolver.resolve(host: domain, family: .ipv4).map(\.ipString)) ?? []
         let dohIPs = (try? await DoHClient().resolveA(domain)) ?? []
 

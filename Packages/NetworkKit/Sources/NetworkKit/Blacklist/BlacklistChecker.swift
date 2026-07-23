@@ -54,6 +54,8 @@ public struct BlacklistChecker: Sendable {
                     let query = "\(reversed).\(provider.zone)"
                     let start = MonoClock.nanos()
                     do {
+                        // IPv4 on purpose: DNSBLs answer with 127.0.0.x A records;
+                        // the protocol is IPv4-only.
                         let results = try await HostResolver.resolve(host: query, family: .ipv4)
                         let codes = results.map(\.ipString).filter { $0.hasPrefix("127.") }
                         // A 127.x answer means listed; anything else treat as clean.
