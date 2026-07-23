@@ -388,6 +388,8 @@ struct ToolDestinationView: View {
             NetworkBrowserView()
         case .speedTest:
             SpeedTestView()
+        case .bufferbloat:
+            BufferbloatView(autostart: route.autostart)
         case .dns:
             DNSLookupView(presetHost: route.presetHost, autostart: route.autostart)
         case .dnsCompare:
