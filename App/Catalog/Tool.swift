@@ -240,7 +240,12 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
              .speedTest, .bufferbloat, .ipLocation, .worldPing:
             return true
         case .wifiAnalysis, .wifiSignal:
+            // iOS doesn't expose Wi-Fi channels/RSSI/scan; these run on macOS via CoreWLAN.
+            #if os(macOS)
+            return true
+            #else
             return false
+            #endif
         }
     }
 

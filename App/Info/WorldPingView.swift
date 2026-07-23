@@ -280,14 +280,13 @@ private struct NodeSelectionSheet: View {
                     }
                 }
             }
-            .listStyle(.insetGrouped)
             .searchable(text: $query, prompt: "Поиск страны")
             .navigationTitle("Откуда проверять")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     if !model.selectedCountries.isEmpty {
                         Button("Сбросить") { model.selectedCountries = [] }
                     }
