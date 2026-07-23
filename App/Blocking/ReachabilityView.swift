@@ -97,9 +97,8 @@ struct ReachabilityView: View {
                 Section("Узлы") {
                     ForEach(model.results) { result in
                         HStack(spacing: 10) {
-                            Circle()
-                                .fill(color(for: result.status))
-                                .frame(width: 8, height: 8)
+                            StatusDot(level: level(for: result.status),
+                                      label: LocalizedStringKey(result.status.label))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(result.target.host).font(.callout)
                                 Text("\(result.target.provider) · \(result.status.label)"
@@ -127,6 +126,16 @@ struct ReachabilityView: View {
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
+        // This screen opens straight from a NavigationLink, bypassing the
+        // ToolDestinationView that gives every other tool its ⓘ, so it carries
+        // its own — every check explains itself.
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                InfoButton(title: "Доступность узлов", systemImage: "network",
+                           message: "Проверяет по одному эталонному узлу для каждого провайдера, сервиса и сервера push-уведомлений — отвечает ли он и не мешает ли сеть. Профиль соединения меняет вид TLS-рукопожатия: если один проходит, а другой обрывается, ограничение зависит от вида соединения.")
+            }
+        }
+        .refreshable { await model.run() }
         .safeAreaInset(edge: .bottom) {
             RunButton(title: "Проверить", running: model.isRunning, disabled: false) {
                 if model.isRunning { return }
@@ -135,11 +144,11 @@ struct ReachabilityView: View {
         }
     }
 
-    private func color(for status: ReachabilityResult.Status) -> Color {
+    private func level(for status: ReachabilityResult.Status) -> StatusDot.Level {
         switch status {
-        case .reachable: .green
-        case .obstructed: .red
-        case .unavailable: .orange
+        case .reachable: .ok
+        case .obstructed: .bad
+        case .unavailable: .warning
         }
     }
 

@@ -38,6 +38,13 @@ final class BonjourModel {
 
     func stop() { task?.cancel(); task = nil; isRunning = false }
 
+    /// Restart the browse and wait for it to finish, so a pull-to-refresh
+    /// spinner stays up for the length of the actual scan.
+    func refresh() async {
+        start()
+        await task?.value
+    }
+
     var grouped: [(type: String, label: String, services: [BonjourService])] {
         let groups = Dictionary(grouping: services, by: \.type)
         return groups.keys.sorted().map { key in
@@ -82,6 +89,7 @@ struct BonjourView: View {
             RunButton(title: "Искать сервисы", running: model.isRunning) { model.toggle() }
         }
         .animation(.snappy, value: model.services)
+        .refreshable { await model.refresh() }
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }

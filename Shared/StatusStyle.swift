@@ -10,6 +10,16 @@ enum StatusStyle {
         case .unknown: return .gray
         }
     }
+    /// What the marker means in words — for VoiceOver, and for anyone reading
+    /// the screen in greyscale.
+    static func label(_ status: PingSnapshot.Status) -> String {
+        switch status {
+        case .ok: return "Отвечает"
+        case .degraded: return "Есть потери"
+        case .down: return "Недоступен"
+        case .unknown: return "Нет данных"
+        }
+    }
     static func symbol(_ status: PingSnapshot.Status) -> String {
         switch status {
         case .ok: return "checkmark.circle.fill"

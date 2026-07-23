@@ -119,6 +119,8 @@ struct DNSTamperView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = DNSTamperModel()
+    /// The finding bullet grows with text size instead of sitting at 6 pt.
+    @ScaledMetric(relativeTo: .callout) private var bulletSize: CGFloat = 7
 
     var body: some View {
         ToolScaffold {
@@ -168,8 +170,8 @@ struct DNSTamperView: View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(report.findings.enumerated()), id: \.offset) { idx, finding in
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "circle.fill").font(.system(size: 6)).foregroundStyle(.secondary)
-                        .padding(.top, 6)
+                    Image(systemName: "circle.fill").font(.system(size: bulletSize)).foregroundStyle(.secondary)
+                        .padding(.top, 6).accessibilityHidden(true)
                     Text(LocalizedStringKey(finding)).font(.callout)
                     Spacer()
                 }

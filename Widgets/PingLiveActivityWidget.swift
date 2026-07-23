@@ -78,7 +78,7 @@ struct PingLiveActivityWidget: Widget {
     private func stat(_ label: String, _ value: String) -> some View {
         VStack(spacing: 1) {
             Text(value).font(.caption.weight(.semibold).monospacedDigit())
-            Text(label).font(.system(size: 9)).foregroundStyle(.secondary)
+            Text(label).font(.caption2).foregroundStyle(.secondary)
         }
     }
 

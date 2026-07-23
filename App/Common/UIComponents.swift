@@ -62,11 +62,16 @@ enum Palette {
 /// A subtle opacity pulse for "live" indicators.
 struct PulseModifier: ViewModifier {
     @State private var on = false
+    /// An animation that never ends is the first thing "Reduce Motion" is meant
+    /// to stop. The indicator stays visible — it just holds still.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     func body(content: Content) -> some View {
         content
-            .opacity(on ? 1 : 0.35)
-            .animation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true), value: on)
-            .onAppear { on = true }
+            .opacity(reduceMotion || on ? 1 : 0.35)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.7).repeatForever(autoreverses: true),
+                       value: on)
+            .onAppear { if !reduceMotion { on = true } }
     }
 }
 
@@ -74,27 +79,36 @@ struct PulseModifier: ViewModifier {
 struct PulseRing: View {
     let value: Double?
     @State private var animate = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// Scales with the user's text size, so the ring grows with the number it
     /// encircles instead of clipping it.
     @ScaledMetric(relativeTo: .title2) private var diameter: CGFloat = 64
 
     var body: some View {
         ZStack {
+            // Expanding rings are decoration around the number; with Reduce
+            // Motion they become a still outline rather than nothing, so the
+            // shape of the control does not change.
             ForEach(0..<2, id: \.self) { i in
                 Circle()
                     .strokeBorder(Color.blue, lineWidth: 2)
-                    .scaleEffect(animate ? 1.2 : 0.66)
-                    .opacity(animate ? 0 : 0.6)
-                    .animation(.easeOut(duration: 1.6).repeatForever(autoreverses: false).delay(Double(i) * 0.8),
+                    .scaleEffect(reduceMotion ? 1 : (animate ? 1.2 : 0.66))
+                    .opacity(reduceMotion ? 0.25 : (animate ? 0 : 0.6))
+                    .animation(reduceMotion ? nil
+                               : .easeOut(duration: 1.6).repeatForever(autoreverses: false).delay(Double(i) * 0.8),
                                value: animate)
             }
             Text(value.map { String(format: $0 >= 100 ? "%.0f" : "%.0f", $0) } ?? "—")
                 .font(.title2.weight(.bold).monospaced())
                 .foregroundStyle(.blue)
-                .contentTransition(.numericText())
+                .contentTransition(.numericText(value: value ?? 0))
         }
         .frame(width: diameter, height: diameter)
-        .onAppear { animate = true }
+        .onAppear { if !reduceMotion { animate = true } }
+        // Read as one value, not as a stack of rings with a number in it.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Текущая задержка")
+        .accessibilityValue(value.map { "\(Int($0)) мс" } ?? "нет ответа")
     }
 }
 

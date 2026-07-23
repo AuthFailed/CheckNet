@@ -124,10 +124,10 @@ struct PingView: View {
         HStack(spacing: 12) {
             Image(systemName: "globe")
                 .foregroundStyle(.secondary)
-                .font(.system(size: 19))
+                .font(.title3)
             TextField("Хост или IP", text: $model.host)
                 .textFieldStyle(.plain)
-                .font(.system(size: 17))
+                .font(.body)
                 .focused($hostFieldFocused)
                 .submitLabel(.go)
                 .autocorrectionDisabled()
@@ -141,8 +141,11 @@ struct PingView: View {
                 HStack(spacing: 6) {
                     Circle().fill(.green).frame(width: 8, height: 8)
                         .modifier(PulseModifier())
+                        .accessibilityHidden(true)
                     Text("Идёт").font(.caption.weight(.semibold)).foregroundStyle(.blue)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Проверка выполняется")
             } else {
                 savedHostsMenu
             }
@@ -258,7 +261,7 @@ struct PingView: View {
     private func replyRow(_ reply: PingReply, dim: Bool) -> some View {
         HStack {
             Text(replyLine(reply))
-                .font(.system(size: 12.5, design: .monospaced))
+                .font(.caption.monospaced())
                 .foregroundStyle(dim ? .secondary : .primary)
             Spacer()
         }
@@ -298,7 +301,7 @@ struct PingView: View {
         return VStack(spacing: 14) {
             HStack(spacing: 11) {
                 Image(systemName: reachable ? "checkmark" : "xmark")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.title3.weight(.bold))
                     .foregroundStyle(.white)
                     .frame(width: 38, height: 38)
                     .background(reachable ? Color.green : Color.red, in: Circle())
@@ -430,7 +433,7 @@ struct PingView: View {
 
     private func statCell(value: String, label: String, color: Color = .primary) -> some View {
         VStack(spacing: 3) {
-            Text(value).font(.system(size: 17, weight: .bold, design: .monospaced)).foregroundStyle(color)
+            Text(value).font(.callout.weight(.bold).monospaced()).foregroundStyle(color)
             Text(LocalizedStringKey(label)).font(.caption2).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)

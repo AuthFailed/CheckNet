@@ -58,31 +58,37 @@ struct BlockingView: View {
                     }
                 }
 
-                ForEach(BlockingSection.allCases) { section in
+                ForEach(Array(BlockingSection.allCases.enumerated()), id: \.element) { index, section in
                     Section {
                         if section == .availability {
+                            // A real link, like every other row — the sidebar
+                            // used to mix NavigationLink here with onTapGesture
+                            // below, so only this one had press feedback and a
+                            // button trait.
                             NavigationLink(value: BlockingRoute.reachability) {
                                 sweepRow
                             }
                         }
                         ForEach(section.checks) { check in
-                            row(check)
-                                .contentShape(.rect)
-                                .onTapGesture { path.append(.check(check)) }
+                            NavigationLink(value: BlockingRoute.check(check)) {
+                                row(check)
+                            }
                         }
                     } header: {
                         Text(LocalizedStringKey(section.title))
                     } footer: {
-                        if let footer = section.footer {
-                            Text(LocalizedStringKey(footer))
+                        // The last section carries the app-wide disclaimer, so
+                        // it lives in a real footer rather than an empty section
+                        // faked up to hold one.
+                        VStack(alignment: .leading, spacing: 12) {
+                            if let footer = section.footer {
+                                Text(LocalizedStringKey(footer))
+                            }
+                            if index == BlockingSection.allCases.count - 1 {
+                                Text("Только диагностика: приложение показывает, какие ограничения применяет сеть, и не помогает их обходить.")
+                            }
                         }
                     }
-                }
-
-                Section {
-                    EmptyView()
-                } footer: {
-                    Text("Только диагностика: приложение показывает, какие ограничения применяет сеть, и не помогает их обходить.")
                 }
             }
             .navigationTitle("Блокировки")
@@ -123,13 +129,19 @@ struct BlockingView: View {
     private var sweepRow: some View {
         HStack(spacing: 13) {
             Image(systemName: "network")
-                .font(.system(size: 17))
+                .font(.title3)
                 .foregroundStyle(.tint)
                 .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Доступность узлов").foregroundStyle(.primary)
                 Text("Провайдеры, сервисы, push-уведомления").font(.caption).foregroundStyle(.secondary)
             }
+            Spacer(minLength: 8)
+            // The neighbouring rows all carry an ⓘ; this one used to be the
+            // exception, which read as a missing control rather than a choice.
+            InfoButton(title: "Доступность узлов", systemImage: "network",
+                       message: "Проверяет по одному эталонному узлу для каждого провайдера, сервиса и сервера push-уведомлений — отвечает ли он и не мешает ли сеть. Сравнение с эталоном показывает, что именно недоступно.")
         }
         .padding(.vertical, 2)
     }
@@ -137,16 +149,18 @@ struct BlockingView: View {
     private func row(_ check: BlockingCheck) -> some View {
         HStack(spacing: 13) {
             Image(systemName: check.systemImage)
-                .font(.system(size: 17))
+                .font(.title3)
                 .foregroundStyle(.tint)
                 .frame(width: 28, height: 28)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(LocalizedStringKey(check.title)).foregroundStyle(.primary)
                 Text(LocalizedStringKey(check.subtitle)).font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
+            // No hand-drawn chevron: the row is a NavigationLink now, and the
+            // system draws the disclosure. Keeping ours put two side by side.
             InfoButton(title: check.title, systemImage: check.systemImage, message: check.explanation)
-            Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
         }
         .padding(.vertical, 2)
     }
