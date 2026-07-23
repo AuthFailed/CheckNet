@@ -1,5 +1,19 @@
 import Foundation
 
+/// Localizes a Live Activity string through `Bundle.main.localizedString` — the
+/// same path `Text`/`LocalizedStringKey` use, so it honours the app's in-app
+/// language switch (see `LanguageBundle`). `String(localized:)` bypasses that
+/// override and would fall back to the system language. Content is always built
+/// in the app process, so the widget just renders the already-localized result.
+private func L(_ key: String) -> String {
+    Bundle.main.localizedString(forKey: key, value: key, table: nil)
+}
+
+/// `L` for a format key with arguments, e.g. `Lf("раунд %lld", round)`.
+private func Lf(_ key: String, _ args: CVarArg...) -> String {
+    String(format: L(key), locale: .current, arguments: args)
+}
+
 /// Which check a Live Activity represents — drives the icon and the interactive
 /// button in the widget.
 enum CheckActivityKind: String, Codable, Sendable {
@@ -38,8 +52,8 @@ enum PingActivityContent {
     static func statusText(_ status: PingSnapshot.Status) -> String {
         switch status {
         case .ok: return "OK"
-        case .degraded: return "Плохо"
-        case .down: return "Нет"
+        case .degraded: return L("Плохо")
+        case .down: return L("Нет")
         case .unknown: return "…"
         }
     }
@@ -48,12 +62,12 @@ enum PingActivityContent {
                      status: PingSnapshot.Status, isRunning: Bool) -> CheckActivityView {
         CheckActivityView(
             status: status,
-            headline: latency.map { "\(Int($0)) мс" } ?? "—",
-            caption: isRunning ? "идёт проверка" : "завершено",
+            headline: latency.map { Lf("%lld мс", Int($0)) } ?? "—",
+            caption: isRunning ? L("идёт проверка") : L("завершено"),
             stats: [
-                CheckStat(label: "Потери", value: "\(Int(loss))%"),
-                CheckStat(label: "Пакеты", value: "\(received)/\(transmitted)"),
-                CheckStat(label: "Статус", value: statusText(status))
+                CheckStat(label: L("Потери"), value: "\(Int(loss))%"),
+                CheckStat(label: L("Пакеты"), value: "\(received)/\(transmitted)"),
+                CheckStat(label: L("Статус"), value: statusText(status))
             ],
             isRunning: isRunning
         )
@@ -72,7 +86,7 @@ enum MonitorActivityContent {
     }
 
     static func subtitle(for entries: [MonitoredEntry]) -> String {
-        "\(entries.count) хостов"
+        Lf("%lld хостов", entries.count)
     }
 
     static func view(for entries: [MonitoredEntry], isRunning: Bool = true) -> CheckActivityView {
@@ -80,18 +94,18 @@ enum MonitorActivityContent {
         let down = entries.filter { $0.status == .down }.count
         let anyChecked = entries.contains { $0.status != .unknown }
         let caption: String
-        if entries.isEmpty { caption = "нет хостов" }
-        else if down > 0 { caption = "не отвечают: \(down)" }
-        else if anyChecked { caption = "все отвечают" }
-        else { caption = "ожидание проверки" }
+        if entries.isEmpty { caption = L("нет хостов") }
+        else if down > 0 { caption = Lf("не отвечают: %lld", down) }
+        else if anyChecked { caption = L("все отвечают") }
+        else { caption = L("ожидание проверки") }
         return CheckActivityView(
             status: overallStatus(entries),
             headline: "\(online)/\(entries.count)",
             caption: caption,
             stats: [
-                CheckStat(label: "Онлайн", value: "\(online)"),
-                CheckStat(label: "Не отвечают", value: "\(down)"),
-                CheckStat(label: "Хостов", value: "\(entries.count)")
+                CheckStat(label: L("Онлайн"), value: "\(online)"),
+                CheckStat(label: L("Не отвечают"), value: "\(down)"),
+                CheckStat(label: L("Хостов"), value: "\(entries.count)")
             ],
             isRunning: isRunning
         )
@@ -106,17 +120,17 @@ enum SpeedActivityContent {
     static func view(liveMbps: Double, directionLabel: String, download: Double?, upload: Double?,
                      phaseLabel: String, isRunning: Bool) -> CheckActivityView {
         let headline = isRunning
-            ? "\(Int(liveMbps.rounded())) Мбит/с"
-            : (download.map { "\(Int($0.rounded())) Мбит/с" } ?? "—")
-        let caption = isRunning ? (phaseLabel.isEmpty ? directionLabel : phaseLabel) : "готово"
+            ? Lf("%lld Мбит/с", Int(liveMbps.rounded()))
+            : (download.map { Lf("%lld Мбит/с", Int($0.rounded())) } ?? "—")
+        let caption = isRunning ? (phaseLabel.isEmpty ? directionLabel : phaseLabel) : L("готово")
         return CheckActivityView(
             status: isRunning ? .unknown : .ok,
             headline: headline,
             caption: caption,
             stats: [
-                CheckStat(label: "Загрузка", value: mbps(download)),
-                CheckStat(label: "Отдача", value: mbps(upload)),
-                CheckStat(label: "Сейчас", value: "\(Int(liveMbps.rounded()))")
+                CheckStat(label: L("Загрузка"), value: mbps(download)),
+                CheckStat(label: L("Отдача"), value: mbps(upload)),
+                CheckStat(label: L("Сейчас"), value: "\(Int(liveMbps.rounded()))")
             ],
             isRunning: isRunning
         )
@@ -141,21 +155,21 @@ enum BufferbloatActivityContent {
         let headline: String
         let caption: String
         if isRunning {
-            headline = latestRTT.map { "\(Int($0.rounded())) мс" } ?? "…"
+            headline = latestRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "…"
             caption = phaseLabel
         } else if let grade = gradeLetter {
             headline = grade
-            caption = addedLatency.map { "+\(Int($0.rounded())) мс под нагрузкой" } ?? "готово"
+            caption = addedLatency.map { Lf("+%lld мс под нагрузкой", Int($0.rounded())) } ?? L("готово")
         } else {
             headline = "—"
-            caption = "готово"
+            caption = L("готово")
         }
         let stats = isRunning
-            ? [CheckStat(label: "Фаза", value: phaseLabel.isEmpty ? "…" : phaseLabel),
-               CheckStat(label: "RTT", value: latestRTT.map { "\(Int($0.rounded())) мс" } ?? "—")]
-            : [CheckStat(label: "Простой", value: idleRTT.map { "\(Int($0.rounded())) мс" } ?? "—"),
-               CheckStat(label: "Нагрузка", value: loadedRTT.map { "\(Int($0.rounded())) мс" } ?? "—"),
-               CheckStat(label: "Оценка", value: gradeLetter ?? "—")]
+            ? [CheckStat(label: L("Фаза"), value: phaseLabel.isEmpty ? "…" : phaseLabel),
+               CheckStat(label: "RTT", value: latestRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "—")]
+            : [CheckStat(label: L("Простой"), value: idleRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "—"),
+               CheckStat(label: L("Нагрузка"), value: loadedRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "—"),
+               CheckStat(label: L("Оценка"), value: gradeLetter ?? "—")]
         return CheckActivityView(
             status: isRunning ? .unknown : status(gradeLetter: gradeLetter),
             headline: headline, caption: caption, stats: stats, isRunning: isRunning)
@@ -171,12 +185,12 @@ enum MTRActivityContent {
             : PingSnapshot.status(loss: lastLoss, latency: lastAvg)
         return CheckActivityView(
             status: status,
-            headline: lastAvg.map { "\(Int($0.rounded())) мс" } ?? "\(hopCount) хопов",
-            caption: isRunning ? "раунд \(round)" : "готово",
+            headline: lastAvg.map { Lf("%lld мс", Int($0.rounded())) } ?? Lf("%lld хопов", hopCount),
+            caption: isRunning ? Lf("раунд %lld", round) : L("готово"),
             stats: [
-                CheckStat(label: "Хопы", value: "\(hopCount)"),
-                CheckStat(label: "Потери", value: "\(Int(lastLoss.rounded()))%"),
-                CheckStat(label: "Раунд", value: "\(round)")
+                CheckStat(label: L("Хопы"), value: "\(hopCount)"),
+                CheckStat(label: L("Потери"), value: "\(Int(lastLoss.rounded()))%"),
+                CheckStat(label: L("Раунд"), value: "\(round)")
             ],
             isRunning: isRunning
         )
@@ -193,13 +207,13 @@ enum LookupActivityContent {
         switch phase {
         case .idle, .running:
             return CheckActivityView(status: .unknown, headline: running,
-                                     caption: "выполняется", isRunning: true)
+                                     caption: L("выполняется"), isRunning: true)
         case .success(let value):
             let d = describe(value)
             return CheckActivityView(status: status(value), headline: d.headline,
                                      caption: d.caption, isRunning: false)
         case .failure(let message):
-            return CheckActivityView(status: .down, headline: "Ошибка",
+            return CheckActivityView(status: .down, headline: L("Ошибка"),
                                      caption: String(message.prefix(60)), isRunning: false)
         }
     }
@@ -214,11 +228,11 @@ enum ScanActivityContent {
         CheckActivityView(
             status: isRunning ? .unknown : .ok,
             headline: total > 0 ? "\(scanned)/\(total)" : "\(scanned)",
-            caption: isRunning ? "сканирование" : "готово — \(found) \(foundLabel.lowercased())",
+            caption: isRunning ? L("сканирование") : Lf("готово — %lld %@", found, foundLabel.lowercased() as NSString),
             stats: [
                 CheckStat(label: foundLabel, value: "\(found)"),
-                CheckStat(label: "Проверено", value: "\(scanned)"),
-                CheckStat(label: "Всего", value: "\(total)")
+                CheckStat(label: L("Проверено"), value: "\(scanned)"),
+                CheckStat(label: L("Всего"), value: "\(total)")
             ],
             isRunning: isRunning
         )
@@ -230,11 +244,11 @@ enum TracerouteActivityContent {
     static func view(host: String, hopCount: Int, reached: Bool, isRunning: Bool) -> CheckActivityView {
         CheckActivityView(
             status: isRunning ? .unknown : (reached ? .ok : .degraded),
-            headline: "\(hopCount) хопов",
-            caption: isRunning ? "идёт трассировка" : (reached ? "цель достигнута" : "цель не достигнута"),
+            headline: Lf("%lld хопов", hopCount),
+            caption: isRunning ? L("идёт трассировка") : (reached ? L("цель достигнута") : L("цель не достигнута")),
             stats: [
-                CheckStat(label: "Хопы", value: "\(hopCount)"),
-                CheckStat(label: "Цель", value: reached ? "достигнута" : (isRunning ? "…" : "нет"))
+                CheckStat(label: L("Хопы"), value: "\(hopCount)"),
+                CheckStat(label: L("Цель"), value: reached ? L("достигнута") : (isRunning ? "…" : L("нет")))
             ],
             isRunning: isRunning
         )
