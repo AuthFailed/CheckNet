@@ -1,14 +1,6 @@
 import SwiftUI
 import Observation
 
-/// A saved host/target the user can quickly reuse, optionally scoped to a tool.
-struct SavedHost: Identifiable, Codable, Hashable {
-    var id: UUID = UUID()
-    var name: String
-    var value: String       // host or IP
-    var toolID: String?     // nil = global favorite
-}
-
 /// Persists the user's saved hosts across launches.
 @Observable
 final class SavedHostsStore {
@@ -32,10 +24,7 @@ final class SavedHostsStore {
     var savedIPs: [SavedHost] { hosts.filter { $0.toolID == nil && SavedHostsStore.isIP($0.value) } }
     var savedDomains: [SavedHost] { hosts.filter { $0.toolID == nil && !SavedHostsStore.isIP($0.value) } }
 
-    static func isIP(_ value: String) -> Bool {
-        var v4 = in_addr(); var v6 = in6_addr()
-        return value.withCString { inet_pton(AF_INET, $0, &v4) == 1 || inet_pton(AF_INET6, $0, &v6) == 1 }
-    }
+    static func isIP(_ value: String) -> Bool { IPAddress.isValid(value) }
 
     func update(_ host: SavedHost, name: String, value: String) {
         guard let idx = hosts.firstIndex(where: { $0.id == host.id }) else { return }

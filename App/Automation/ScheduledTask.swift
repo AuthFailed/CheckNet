@@ -36,14 +36,12 @@ struct ScheduledTask: Identifiable, Codable, Hashable {
     var lastRun: Date?
     var lastSummary: String?
 
-    static let minimumIntervalMinutes = 5
+    static let minimumIntervalMinutes = ScheduleRule.minimumIntervalMinutes
 
     /// Whether the task is due to run at `now`, given its interval and last run.
     func isDue(at now: Date) -> Bool {
-        guard isEnabled else { return false }
-        guard let last = lastRun else { return true }
-        let interval = TimeInterval(max(Self.minimumIntervalMinutes, intervalMinutes) * 60)
-        return now.timeIntervalSince(last) >= interval
+        ScheduleRule.isDue(isEnabled: isEnabled, lastRun: lastRun,
+                           intervalMinutes: intervalMinutes, now: now)
     }
 
     var title: String { "\(kind.toolLabel) · \(kind.target)" }

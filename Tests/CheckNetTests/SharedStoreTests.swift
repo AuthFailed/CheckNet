@@ -69,6 +69,17 @@ final class SharedStoreTests: XCTestCase {
         XCTAssertEqual(stored.count, 99, "appends were lost alongside the delete")
     }
 
+    /// History is capped: the newest 2000 records survive, older ones fall off.
+    func testHistoryRotatesAtCap() {
+        let cap = 2000
+        for i in 0...cap { SharedStore.appendHistory(record(i)) }   // 2001 records
+        let stored = SharedStore.history()
+        XCTAssertEqual(stored.count, cap)
+        // The oldest append (index 0) is evicted; the newest is retained.
+        XCTAssertFalse(stored.contains { $0.host == "t-0" }, "oldest record was not rotated out")
+        XCTAssertTrue(stored.contains { $0.host == "t-\(cap)" }, "newest record was dropped")
+    }
+
     func testHistoryIsScopedBySource() {
         SharedStore.appendHistory(record(1))
         var scheduled = record(2)
