@@ -83,7 +83,7 @@ struct WhoisView: View {
     private func rawDisclosure(_ result: WhoisResult) -> some View {
         DisclosureGroup(isExpanded: $showRaw) {
             Text(result.raw)
-                .font(.system(size: 11, design: .monospaced))
+                .font(.caption.monospaced())
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 8)

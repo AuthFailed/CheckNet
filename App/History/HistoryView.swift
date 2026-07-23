@@ -144,6 +144,12 @@ struct HistoryView: View {
     @State private var groups: [DayGroup] = []
     @State private var expanded: Set<UUID> = []
     @State private var showClearConfirm = false
+    @State private var query = ""
+    @State private var scope: Scope = .all
+
+    /// History can hold up to 2000 records, so it needs a way in besides
+    /// scrolling: by host or tool name, and narrowed to just the failures.
+    enum Scope: Hashable { case all, failures }
 
     var body: some View {
         NavigationStack {
@@ -151,6 +157,8 @@ struct HistoryView: View {
                 if records.isEmpty {
                     ContentUnavailableView("Нет истории", systemImage: "clock.arrow.circlepath",
                                            description: Text("Результаты проверок будут появляться здесь."))
+                } else if groups.isEmpty {
+                    ContentUnavailableView.search(text: query)
                 } else {
                     List {
                         ForEach(groups) { group in
@@ -163,8 +171,16 @@ struct HistoryView: View {
                             }
                         }
                     }
+                    .refreshable { reload() }
                 }
             }
+            .searchable(text: $query, prompt: "Хост или инструмент")
+            .searchScopes($scope) {
+                Text("Все").tag(Scope.all)
+                Text("С ошибками").tag(Scope.failures)
+            }
+            .onChange(of: query) { _, _ in regroup() }
+            .onChange(of: scope) { _, _ in regroup() }
             // A plain String would be taken verbatim and never look up a
             // translation, leaving the title Russian in every other language.
             .navigationTitle(LocalizedStringKey(title))
@@ -209,8 +225,15 @@ struct HistoryView: View {
     }
 
     private func regroup() {
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        let filtered = records.filter { record in
+            (scope == .all || !record.succeeded) &&
+            (trimmed.isEmpty
+             || record.host.localizedCaseInsensitiveContains(trimmed)
+             || record.tool.localizedCaseInsensitiveContains(trimmed))
+        }
         let cal = Calendar.current
-        let byDay = Dictionary(grouping: records) { cal.startOfDay(for: $0.timestamp) }
+        let byDay = Dictionary(grouping: filtered) { cal.startOfDay(for: $0.timestamp) }
         groups = byDay.keys.sorted(by: >).map { day in
             DayGroup(day: day, records: byDay[day]!.sorted { $0.timestamp > $1.timestamp })
         }
@@ -225,6 +248,7 @@ struct HistoryView: View {
                 HStack(spacing: 12) {
                     Image(systemName: record.succeeded ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .foregroundStyle(record.succeeded ? .green : .red)
+                        .accessibilityLabel(record.succeeded ? "Успешно" : "С ошибкой")
                     VStack(alignment: .leading, spacing: 2) {
                         Text(record.host).font(.callout.weight(.medium))
                         Text(record.detail).font(.caption).foregroundStyle(.secondary)
@@ -240,6 +264,7 @@ struct HistoryView: View {
                     Image(systemName: "chevron.right")
                         .font(.caption2).foregroundStyle(.tertiary)
                         .rotationEffect(.degrees(isOpen ? 90 : 0))
+                        .accessibilityHidden(true)
                 }
             }
             .buttonStyle(.plain)

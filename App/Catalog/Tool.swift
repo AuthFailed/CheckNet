@@ -113,6 +113,47 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    /// Search synonyms — the names people actually type, in both languages, so
+    /// "latency", "nslookup", "dig", "пинг", "порты", "сертификат" all land on
+    /// the right tool even though none of them is in its title.
+    var keywords: [String] {
+        switch self {
+        case .ping: return ["ping", "пинг", "latency", "задержка", "потери", "loss", "jitter", "джиттер", "icmp"]
+        case .traceroute: return ["traceroute", "tracert", "трассировка", "маршрут", "route", "хопы", "hops"]
+        case .mtr: return ["mtr", "my traceroute", "winmtr", "трассировка", "потери по хопам"]
+        case .portScan: return ["port", "порт", "порты", "ports", "scan", "скан", "tcp", "открытые порты"]
+        case .tlsInspector: return ["tls", "ssl", "сертификат", "certificate", "cert", "https", "handshake", "рукопожатие", "шифр", "cipher"]
+        case .dns: return ["dns", "nslookup", "dig", "домен", "запись", "record", "a", "aaaa", "mx", "txt", "резолв", "resolve"]
+        case .dnsCompare: return ["dns", "резолверы", "resolvers", "сравнение", "compare", "doh", "1.1.1.1", "8.8.8.8"]
+        case .dnsTamper: return ["dns", "подмена", "spoof", "tamper", "мониторинг dns"]
+        case .reverseDns: return ["reverse dns", "ptr", "обратный dns", "rdns", "имя по ip"]
+        case .networkBrowser: return ["network", "устройства", "devices", "обзор", "browse", "mac", "vendor", "arp"]
+        case .ipScanner: return ["ip", "scan", "скан", "диапазон", "range", "cidr", "хосты", "hosts", "сеть"]
+        case .bonjour: return ["bonjour", "mdns", "zeroconf", "сервисы", "services", "airplay", "chromecast"]
+        case .wakeOnLan: return ["wake on lan", "wol", "magic packet", "пробуждение", "включить", "mac"]
+        case .interfaces: return ["interface", "интерфейс", "адаптер", "ip", "netmask", "маска", "gateway", "шлюз"]
+        case .hostToIP: return ["host", "хост", "ip", "resolve", "домен в ip", "a запись"]
+        case .ipLocation: return ["geo", "геолокация", "location", "страна", "город", "asn"]
+        case .whois: return ["whois", "домен", "регистратор", "registrar", "владелец", "срок регистрации"]
+        case .blacklist: return ["blacklist", "чёрный список", "dnsbl", "rbl", "спам", "spam", "репутация"]
+        case .speedTest: return ["speed", "скорость", "iperf", "speedtest", "download", "upload", "загрузка", "отдача"]
+        case .bufferbloat: return ["bufferbloat", "буфер", "задержка под нагрузкой", "latency under load"]
+        case .mtuDiscovery: return ["mtu", "фрагментация", "fragmentation", "pmtud", "размер пакета", "packet size"]
+        case .wifiAnalysis: return ["wifi", "вайфай", "каналы", "channels", "помехи"]
+        case .wifiSignal: return ["wifi", "сигнал", "signal", "rssi", "уровень"]
+        case .worldPing: return ["world ping", "мировой пинг", "из разных точек", "global"]
+        case .cgnatDetect: return ["cgnat", "nat", "серый ip", "carrier grade", "двойной nat"]
+        case .monitoring: return ["monitoring", "мониторинг", "непрерывно", "уведомления", "alerts", "падение"]
+        }
+    }
+
+    /// Everything a query is matched against: title, subtitle, synonyms and the
+    /// ⓘ description.
+    func matches(_ query: String) -> Bool {
+        let haystack = ([title, subtitle, info] + keywords).joined(separator: "\n")
+        return haystack.localizedCaseInsensitiveContains(query)
+    }
+
     /// A short "what & why" description shown behind the ⓘ button.
     var info: String {
         switch self {
@@ -187,6 +228,10 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     var isCensorshipCheck: Bool { self == .dnsTamper }
 
     /// Tools with a fully-implemented, tested screen.
+    ///
+    /// An exhaustive switch on purpose: `default: return false` meant a new tool
+    /// silently shipped as a placeholder. Now the compiler makes adding a case a
+    /// deliberate answer to "is this done?".
     var isImplemented: Bool {
         switch self {
         case .ping, .traceroute, .mtr, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
@@ -194,8 +239,53 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
              .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser,
              .speedTest:
             return true
-        default:
+        case .ipLocation, .bufferbloat, .wifiAnalysis, .wifiSignal, .worldPing:
             return false
+        }
+    }
+
+    /// Why an unimplemented tool is not here — the honest version, not "скоро".
+    enum Unavailable {
+        /// The engine is planned; it will arrive in a build.
+        case inDevelopment(String)
+        /// It cannot exist on this platform, and no amount of waiting changes
+        /// that. iOS does not hand RSSI to apps; some checks need a paid API.
+        case platformLimit(String)
+
+        var headline: LocalizedStringKey {
+            switch self {
+            case .inDevelopment: "В разработке"
+            case .platformLimit: "Недоступно на этой платформе"
+            }
+        }
+        var icon: String {
+            switch self {
+            case .inDevelopment: "hammer"
+            case .platformLimit: "hand.raised.slash"
+            }
+        }
+        var detail: String {
+            switch self {
+            case .inDevelopment(let s), .platformLimit(let s): s
+            }
+        }
+    }
+
+    /// Present only for tools that are not implemented.
+    var unavailable: Unavailable? {
+        switch self {
+        case .bufferbloat:
+            return .inDevelopment("Движок нагрузки уже есть — проверка задержки под нагрузкой соберётся на его основе.")
+        case .ipLocation:
+            return .platformLimit("Точная геолокация IP требует платного внешнего сервиса, а он ещё не выбран.")
+        case .worldPing:
+            return .platformLimit("Пинг из разных точек мира выполняется на внешних серверах — нужен сторонний сервис.")
+        case .wifiAnalysis:
+            return .platformLimit("iOS не отдаёт приложениям данные о Wi-Fi-каналах и соседних сетях — это доступно только в версии для Mac (CoreWLAN).")
+        case .wifiSignal:
+            return .platformLimit("iOS не отдаёт приложениям уровень сигнала Wi-Fi (RSSI) — измерить его можно только на Mac.")
+        default:
+            return nil
         }
     }
 }

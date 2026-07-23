@@ -172,7 +172,7 @@ struct PortScanView: View {
             VStack(spacing: 0) {
                 ForEach(Array(model.openPorts.enumerated()), id: \.element.port) { idx, port in
                     HStack {
-                        Circle().fill(.green).frame(width: 8, height: 8)
+                        StatusDot(level: .ok, label: "Порт открыт")
                         Text("\(port.port)").font(.system(.body, design: .monospaced)).bold()
                         if let svc = port.serviceName {
                             Text(svc).font(.caption).foregroundStyle(.secondary)

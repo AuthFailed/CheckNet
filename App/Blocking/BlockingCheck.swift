@@ -118,6 +118,8 @@ struct BlockingCheckView: View {
     @State private var model: BlockingCheckModel
     @State private var showWebhookFields = false
     @State private var showSchedule = false
+    /// The evidence bullet grows with text size instead of sitting at 5 pt.
+    @ScaledMetric(relativeTo: .caption) private var bulletSize: CGFloat = 6
 
     init(check: BlockingCheck) {
         self.check = check
@@ -235,7 +237,7 @@ struct BlockingCheckView: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(finding.evidence.enumerated()), id: \.offset) { idx, line in
                     HStack(alignment: .top, spacing: 8) {
-                        Image(systemName: "circle.fill").font(.system(size: 5)).foregroundStyle(.tertiary).padding(.top, 6)
+                        Image(systemName: "circle.fill").font(.system(size: bulletSize)).foregroundStyle(.tertiary).padding(.top, 6).accessibilityHidden(true)
                         Text(line).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
                         Spacer()
                     }

@@ -169,7 +169,8 @@ struct InterfacesView: View {
                     HStack {
                         Text(iface.friendlyName).font(.headline)
                         Spacer()
-                        Circle().fill(iface.isUp ? .green : .gray).frame(width: 8, height: 8)
+                        StatusDot(level: iface.isUp ? .ok : .unknown,
+                                  label: iface.isUp ? "Интерфейс активен" : "Интерфейс не активен")
                     }
                     LabeledContent("Адрес") { Text(iface.address).monospaced().textSelection(.enabled) }
                         .font(.callout)

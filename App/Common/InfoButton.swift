@@ -14,7 +14,7 @@ struct InfoButton: View {
             show = true
         } label: {
             Image(systemName: "info.circle")
-                .font(.system(size: 17))
+                .font(.body)
                 .foregroundStyle(.secondary)
                 .contentShape(.rect)
         }
@@ -33,6 +33,10 @@ struct InfoSheet: View {
     let message: String
     var note: String? = nil
     @Environment(\.dismiss) private var dismiss
+    // A header badge keeps its proportions with text size instead of a fixed
+    // 28 pt glyph in a 54 pt tile that stops matching at large sizes.
+    @ScaledMetric(relativeTo: .title2) private var glyph: CGFloat = 28
+    @ScaledMetric(relativeTo: .title2) private var badge: CGFloat = 54
 
     var body: some View {
         NavigationStack {
@@ -40,9 +44,9 @@ struct InfoSheet: View {
                 VStack(alignment: .leading, spacing: 18) {
                     HStack(spacing: 14) {
                         Image(systemName: systemImage)
-                            .font(.system(size: 28))
+                            .font(.system(size: glyph))
                             .foregroundStyle(.tint)
-                            .frame(width: 54, height: 54)
+                            .frame(width: badge, height: badge)
                             .background(Color.accentColor.opacity(0.12),
                                         in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                         Text(LocalizedStringKey(title))

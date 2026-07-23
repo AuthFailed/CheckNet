@@ -102,7 +102,9 @@ struct SpeedTestView: View {
             if model.phase == .running {
                 VStack(spacing: 4) {
                     Text(String(format: "%.1f", model.liveMbps))
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                        .minimumScaleFactor(0.6)
+                        .lineLimit(1)
                         .foregroundStyle(model.liveDirection == .download ? .blue : .green)
                         .contentTransition(.numericText())
                     let dirLabel: LocalizedStringKey = model.liveDirection == .download ? "Загрузка" : "Отдача"
@@ -159,32 +161,57 @@ struct SpeedTestView: View {
 struct ServerPickerView: View {
     @Bindable var model: SpeedTestModel
     @Environment(\.dismiss) private var dismiss
+    @State private var query = ""
+
+    /// The list caps each group at 40 rows, so without search a specific city
+    /// far down the list is simply unreachable. A query filters by city or host
+    /// and lifts the cap, since the match is what the user is after.
+    private var filteredGroups: [(id: String, title: String, servers: [IperfServer])] {
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        return model.serverGroups.compactMap { group in
+            let servers = trimmed.isEmpty
+                ? Array(group.servers.prefix(40))
+                : group.servers.filter {
+                    $0.locationLabel.localizedCaseInsensitiveContains(trimmed)
+                    || $0.host.localizedCaseInsensitiveContains(trimmed)
+                }
+            return servers.isEmpty ? nil : (group.id, group.title, servers)
+        }
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                Section {
-                    Button {
-                        Task { await model.pingServers() }
-                    } label: {
-                        Label(model.phase == .pinging
-                              ? "Проверка \(model.pingProgress.done)/\(model.pingProgress.total)…"
-                              : "Проверить доступность и пинг", systemImage: "bolt.horizontal")
+                if query.isEmpty {
+                    Section {
+                        Button {
+                            Task { await model.pingServers() }
+                        } label: {
+                            Label(model.phase == .pinging
+                                  ? "Проверка \(model.pingProgress.done)/\(model.pingProgress.total)…"
+                                  : "Проверить доступность и пинг", systemImage: "bolt.horizontal")
+                        }
+                        .disabled(model.phase == .pinging)
+                        Button {
+                            Task { await model.refreshServers() }
+                        } label: {
+                            Label("Обновить список серверов", systemImage: "arrow.clockwise")
+                        }
+                        .disabled(model.phase == .pinging || model.phase == .loadingServers)
                     }
-                    .disabled(model.phase == .pinging)
-                    Button {
-                        Task { await model.refreshServers() }
-                    } label: {
-                        Label("Обновить список серверов", systemImage: "arrow.clockwise")
-                    }
-                    .disabled(model.phase == .pinging || model.phase == .loadingServers)
                 }
-                ForEach(model.serverGroups) { group in
+                ForEach(filteredGroups, id: \.id) { group in
                     Section("\(group.title) (\(group.servers.count))") {
-                        ForEach(group.servers.prefix(40)) { server in
+                        ForEach(group.servers) { server in
                             serverRow(server)
                         }
                     }
+                }
+            }
+            .searchable(text: $query, prompt: "Город или адрес сервера")
+            .overlay {
+                if !query.isEmpty && filteredGroups.isEmpty {
+                    ContentUnavailableView.search(text: query)
                 }
             }
             .navigationTitle("Серверы iperf3")

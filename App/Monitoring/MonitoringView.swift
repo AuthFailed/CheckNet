@@ -41,6 +41,8 @@ struct MonitoringView: View {
             }
         }
         .animation(.snappy, value: manager.entries)
+        // Pull to re-check every host now, without waiting for the interval.
+        .refreshable { await manager.checkAll() }
         // Monitoring is the one screen people leave running while doing
         // something else, so a host going down is worth feeling.
         .haptic(.failure, trigger: manager.entries.filter { $0.status == .down }.count) { $0 > 0 }
@@ -67,7 +69,7 @@ struct MonitoringView: View {
         VStack(spacing: 0) {
             ForEach(Array(manager.entries.enumerated()), id: \.element.id) { idx, entry in
                 HStack(spacing: 12) {
-                    Circle().fill(StatusStyle.color(entry.status)).frame(width: 10, height: 10)
+                    StatusDot(level: .init(entry.status), label: LocalizedStringKey(StatusStyle.label(entry.status)))
                     VStack(alignment: .leading, spacing: 2) {
                         Text(entry.host).font(.callout.weight(.medium))
                         if let checked = entry.lastChecked {

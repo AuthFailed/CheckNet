@@ -196,20 +196,23 @@ struct CatalogView: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.tertiary)
                         .rotationEffect(.degrees(collapsed ? 0 : 90))
+                        .accessibilityHidden(true)
                 }
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
             .textCase(nil)
             .font(.footnote)
+            // The chevron is hidden, so the button says its own state instead.
+            .accessibilityLabel(Text(LocalizedStringKey(section.title)))
+            .accessibilityValue(collapsed ? Text("свёрнуто") : Text("развёрнуто"))
+            .accessibilityHint(collapsed ? Text("Развернуть раздел") : Text("Свернуть раздел"))
         }
     }
 
     private var searchResults: some View {
         let matches = Tool.allCases.filter {
-            !$0.isCensorshipCheck &&
-            ($0.title.localizedCaseInsensitiveContains(query) ||
-             $0.subtitle.localizedCaseInsensitiveContains(query))
+            !$0.isCensorshipCheck && $0.matches(query)
         }
         return Section {
             if matches.isEmpty {
@@ -279,7 +282,7 @@ struct ToolRowView: View {
     var body: some View {
         HStack(spacing: 13) {
             Image(systemName: tool.systemImage)
-                .font(.system(size: 17, weight: .regular))
+                .font(.title3)
                 .foregroundStyle(tool.isImplemented ? Color.accentColor : Color.secondary)
                 .frame(width: 28, height: 28)
             VStack(alignment: .leading, spacing: 2) {
@@ -289,7 +292,7 @@ struct ToolRowView: View {
                         .foregroundStyle(.primary)
                     if isPinned {
                         Image(systemName: "star.fill")
-                            .font(.system(size: 11))
+                            .font(.caption)
                             .foregroundStyle(.orange)
                             .accessibilityLabel("В избранном")
                     }

@@ -16,10 +16,11 @@ struct HostInputBar: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundStyle(.secondary)
-                .font(.system(size: 19))
+                .font(.title3)
+                .accessibilityHidden(true)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 17))
+                .font(.body)
                 .submitLabel(.go)
                 .autocorrectionDisabled()
                 #if os(iOS)
@@ -71,7 +72,7 @@ struct SavedHostsMenu: View {
             .disabled(trimmed.isEmpty)
         } label: {
             Image(systemName: "bookmark.fill")
-                .font(.system(size: 15))
+                .font(.subheadline)
                 .foregroundStyle(.blue)
                 .padding(7)
                 .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))

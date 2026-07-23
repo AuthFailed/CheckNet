@@ -120,7 +120,7 @@ struct IPScannerView: View {
         VStack(spacing: 0) {
             ForEach(Array(model.hosts.enumerated()), id: \.element.id) { idx, host in
                 HStack {
-                    Circle().fill(.green).frame(width: 8, height: 8)
+                    StatusDot(level: .ok, label: "Отвечает")
                     VStack(alignment: .leading, spacing: 2) {
                         Text(host.ip).font(.system(.callout, design: .monospaced)).textSelection(.enabled)
                         if let name = host.hostname {

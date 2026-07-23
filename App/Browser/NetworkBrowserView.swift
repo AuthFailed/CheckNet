@@ -34,6 +34,13 @@ final class NetworkBrowserModel {
     }
 
     func stop() { task?.cancel(); task = nil; isRunning = false }
+
+    /// Restart the sweep and wait for it to finish, so the pull-to-refresh
+    /// spinner lasts as long as the scan does.
+    func refresh() async {
+        start()
+        await task?.value
+    }
 }
 
 struct NetworkBrowserView: View {
@@ -59,6 +66,7 @@ struct NetworkBrowserView: View {
             RunButton(title: "Сканировать сеть", running: model.isRunning) { model.toggle() }
         }
         .animation(.snappy, value: model.devices)
+        .refreshable { await model.refresh() }
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
@@ -103,11 +111,11 @@ struct NetworkBrowserView: View {
                 Text(device.ip).font(.caption.monospaced()).foregroundStyle(.secondary)
                 if let mac = device.mac {
                     HStack(spacing: 4) {
-                        Text(mac).font(.system(size: 10, design: .monospaced)).foregroundStyle(.tertiary)
+                        Text(mac).font(.caption2.monospaced()).foregroundStyle(.tertiary)
                         if let vendor = device.vendor {
-                            Text("· \(vendor)").font(.system(size: 10)).foregroundStyle(.secondary)
+                            Text("· \(vendor)").font(.caption2).foregroundStyle(.secondary)
                         } else if device.randomizedMAC {
-                            Text("· случайный MAC").font(.system(size: 10)).foregroundStyle(.tertiary)
+                            Text("· случайный MAC").font(.caption2).foregroundStyle(.tertiary)
                         }
                     }
                 }
@@ -133,7 +141,7 @@ struct NetworkBrowserView: View {
 
     private func tag(_ text: String, _ color: Color) -> some View {
         Text(LocalizedStringKey(text))
-            .font(.system(size: 9, weight: .semibold))
+            .font(.caption2.weight(.semibold))
             .foregroundStyle(color)
             .padding(.horizontal, 5).padding(.vertical, 1)
             .background(color.opacity(0.15), in: Capsule())

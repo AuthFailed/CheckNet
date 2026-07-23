@@ -92,7 +92,9 @@ struct MTUView: View {
         VStack(spacing: 14) {
             VStack(spacing: 4) {
                 Text("\(result.pathMTU)")
-                    .font(.system(size: 52, weight: .bold, design: .rounded))
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
                     .foregroundStyle(.tint)
                     .contentTransition(.numericText())
                 Text("Path MTU · байт").font(.subheadline).foregroundStyle(.secondary)
