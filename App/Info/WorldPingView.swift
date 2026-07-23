@@ -83,7 +83,7 @@ struct WorldPingView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: hostPlaceholder, icon: "globe.badge.chevron.backward",
+            HostInputBar(text: $model.host, placeholder: LocalizedStringKey(hostPlaceholder), icon: "globe.badge.chevron.backward",
                          disabled: model.isRunning, savedHostTool: .worldPing) { model.start() }
             controlsCard
             if let error = model.errorMessage {

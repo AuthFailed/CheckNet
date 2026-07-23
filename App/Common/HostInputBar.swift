@@ -5,7 +5,9 @@ import SwiftUI
 /// tool that takes a host or IP can reuse the user's saved targets.
 struct HostInputBar: View {
     @Binding var text: String
-    var placeholder: String = "Хост или IP"
+    // LocalizedStringKey (not String) so the placeholder localizes: a String
+    // passed to TextField takes the verbatim overload and always shows Russian.
+    var placeholder: LocalizedStringKey = "Хост или IP"
     var icon: String = "globe"
     var disabled: Bool = false
     var savedHostTool: Tool? = nil

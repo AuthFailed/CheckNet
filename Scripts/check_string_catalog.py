@@ -83,6 +83,10 @@ def dynamic_key_candidates():
                         continue
                     if "\\(" in value:
                         continue
+                    # Tail of a multi-line String(format:) interpolation, e.g.
+                    # the `", avg)) мс"` left over when `\(` sat on the line above.
+                    if value.lstrip().startswith(",") or "))" in value:
+                        continue
                     found.setdefault(value, f"{Path(path).name}:{number}")
     return found
 
