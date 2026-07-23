@@ -1,28 +1,20 @@
 import SwiftUI
 import NetworkKit
 
-@MainActor
-@Observable
-final class NATModel {
-    private(set) var isRunning = false
-    private(set) var report: NATReport?
-
-    func run() async {
-        isRunning = true; report = nil
-        report = await NATDetector().detect()
-        isRunning = false
-    }
-}
-
 struct NATView: View {
     var autostart = false
-    @State private var model = NATModel()
+    @State private var run = ToolRunModel<NATReport>()
+
+    private func start() {
+        guard !run.isRunning else { return }
+        run.start { await NATDetector().detect() }
+    }
 
     var body: some View {
         ToolScaffold {
-            if let report = model.report {
+            if let report = run.value {
                 typeCard(report)
-            } else if model.isRunning {
+            } else if run.isRunning {
                 VStack(spacing: 10) {
                     ProgressView()
                     Text("Анализ маршрута и внешнего адреса…").font(.caption).foregroundStyle(.secondary)
@@ -34,19 +26,19 @@ struct NATView: View {
                 .padding(.top, 40)
             }
         } content: {
-            if let report = model.report {
+            if let report = run.value {
                 addressCard(report)
                 if !report.findings.isEmpty { findingsCard(report) }
             }
         } bottom: {
-            RunButton(title: "Проверить NAT", running: model.isRunning) {
-                if model.isRunning { return }; Task { await model.run() }
+            RunButton(title: "Проверить NAT", running: run.isRunning) {
+                start()
             }
         }
-        .animation(.snappy, value: model.report?.natType)
+        .animation(.snappy, value: run.value?.natType)
         .navigationTitle("CGNAT / NAT")
         .toolTitleDisplayMode()
-        .onAppear { if autostart { Task { await model.run() } } }
+        .onAppear { if autostart { start() } }
     }
 
     private func typeCard(_ report: NATReport) -> some View {

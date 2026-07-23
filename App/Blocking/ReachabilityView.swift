@@ -3,71 +3,63 @@ import NetworkKit
 
 /// "What exactly can't I reach" — sweeps a group of hosts and shows the result
 /// per provider.
-@MainActor
-@Observable
-final class ReachabilityModel {
-    var scope: ProbeTarget.Category = .foreignInfrastructure
-    var fingerprint: TLSFingerprint = .system
-    private(set) var isRunning = false
-    private(set) var results: [ReachabilityResult] = []
-    private(set) var finding: CensorshipFinding?
-
-    var targets: [ProbeTarget] { ProbeCatalog.targets(in: scope) }
-
-    func run() async {
-        isRunning = true
-        results = []
-        finding = nil
-
-        let sweep = ReachabilitySweep(fingerprint: fingerprint)
-        // Include the domestic control group so the verdict can distinguish
-        // "this provider is filtered" from "the connection is down".
-        var targetsToRun = ProbeCatalog.targets(in: scope)
-        if scope == .foreignInfrastructure {
-            targetsToRun += ProbeCatalog.targets(in: .russianInfrastructure)
-        }
-
-        let collected = await sweep.run(targets: targetsToRun)
-        results = collected
-        finding = sweep.verdict(for: collected)
-        isRunning = false
-
-        WebhookReporter.reportReachability(
-            scope: scope.rawValue, results: collected,
-            verdict: (finding?.verdict ?? .inconclusive).rawValue
-        )
-    }
-
-    var summaries: [ProviderSummary] {
-        ReachabilitySweep().summarise(results)
-    }
-}
-
 struct ReachabilityView: View {
-    @State private var model = ReachabilityModel()
+    @State private var scope: ProbeTarget.Category = .foreignInfrastructure
+    @State private var fingerprint: TLSFingerprint = .system
+    @State private var run = ToolRunModel<Sweep>()
+
+    /// The sweep's two outputs: per-host results and the overall verdict.
+    private struct Sweep: Sendable {
+        let results: [ReachabilityResult]
+        let finding: CensorshipFinding?
+    }
+
+    private var targets: [ProbeTarget] { ProbeCatalog.targets(in: scope) }
+    private var results: [ReachabilityResult] { run.value?.results ?? [] }
+    private var summaries: [ProviderSummary] { ReachabilitySweep().summarise(results) }
+
+    /// Awaitable so pull-to-refresh keeps its spinner until the sweep finishes.
+    private func performSweep() async {
+        let scope = scope, fingerprint = fingerprint
+        await run.perform {
+            let sweep = ReachabilitySweep(fingerprint: fingerprint)
+            // Include the domestic control group so the verdict can distinguish
+            // "this provider is filtered" from "the connection is down".
+            var targetsToRun = ProbeCatalog.targets(in: scope)
+            if scope == .foreignInfrastructure {
+                targetsToRun += ProbeCatalog.targets(in: .russianInfrastructure)
+            }
+            let collected = await sweep.run(targets: targetsToRun)
+            return Sweep(results: collected, finding: sweep.verdict(for: collected))
+        } onSuccess: { sweep in
+            WebhookReporter.reportReachability(
+                scope: scope.rawValue, results: sweep.results,
+                verdict: (sweep.finding?.verdict ?? .inconclusive).rawValue
+            )
+        }
+    }
+
+    private func start() {
+        guard !run.isRunning else { return }
+        Task { await performSweep() }
+    }
 
     var body: some View {
         List {
             Section {
-                Picker("Группа", selection: Binding(
-                    get: { model.scope },
-                    set: { model.scope = $0 }
-                )) {
+                Picker("Группа", selection: $scope) {
                     ForEach(ProbeTarget.Category.allCases, id: \.self) { category in
                         Text(LocalizedStringKey(category.label)).tag(category)
                     }
                 }
-                Picker("Профиль соединения", selection: Binding(
-                    get: { model.fingerprint },
-                    set: { model.fingerprint = $0 }
-                )) {
+                Picker("Профиль соединения", selection: $fingerprint) {
                     ForEach(TLSFingerprint.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
             } footer: {
                 Text("Профиль меняет вид TLS-рукопожатия. Это не полная имитация браузера — порядок расширений задаёт система. Но если один профиль проходит, а другой обрывается, ограничение зависит от вида соединения.")
             }
 
-            if let finding = model.finding {
+            if let finding = run.value?.finding {
                 Section {
                     HStack(spacing: 12) {
                         Image(systemName: symbol(finding.verdict))
@@ -81,9 +73,9 @@ struct ReachabilityView: View {
                 }
             }
 
-            if !model.results.isEmpty {
+            if !results.isEmpty {
                 Section("По провайдерам") {
-                    ForEach(model.summaries) { summary in
+                    ForEach(summaries) { summary in
                         HStack {
                             Text(summary.provider)
                             Spacer()
@@ -95,7 +87,7 @@ struct ReachabilityView: View {
                 }
 
                 Section("Узлы") {
-                    ForEach(model.results) { result in
+                    ForEach(results) { result in
                         HStack(spacing: 10) {
                             StatusDot(level: level(for: result.status),
                                       label: LocalizedStringKey(result.status.label))
@@ -112,12 +104,12 @@ struct ReachabilityView: View {
                         }
                     }
                 }
-            } else if !model.isRunning {
+            } else if !run.isRunning {
                 Section {
                     ContentUnavailableView(
                         "Проверка не запускалась",
                         systemImage: "network",
-                        description: Text("Будет проверено узлов: \(model.targets.count). Каталог от \(ProbeCatalog.revision).")
+                        description: Text("Будет проверено узлов: \(targets.count). Каталог от \(ProbeCatalog.revision).")
                     )
                 }
             }
@@ -135,11 +127,11 @@ struct ReachabilityView: View {
                            message: "Проверяет по одному эталонному узлу для каждого провайдера, сервиса и сервера push-уведомлений — отвечает ли он и не мешает ли сеть. Профиль соединения меняет вид TLS-рукопожатия: если один проходит, а другой обрывается, ограничение зависит от вида соединения.")
             }
         }
-        .refreshable { await model.run() }
+        .refreshable { await performSweep() }
         .safeAreaInset(edge: .bottom) {
-            RunButton(title: "Проверить", running: model.isRunning, disabled: false) {
-                if model.isRunning { return }
-                Task { await model.run() }
+            RunButton(title: "Проверить", running: run.isRunning, disabled: false) {
+                if run.isRunning { return }
+                start()
             }
         }
     }

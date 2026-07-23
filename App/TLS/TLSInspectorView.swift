@@ -1,69 +1,54 @@
 import SwiftUI
 import NetworkKit
 
-@MainActor
-@Observable
-final class TLSInspectorModel {
-    var host = "cloudflare.com"
-    var port = 443
-    private(set) var isRunning = false
-    private(set) var info: TLSInfo?
-    private(set) var errorMessage: String?
-
-    private let inspector = TLSInspector()
-
-    func run() async {
-        let target = host.trimmingCharacters(in: .whitespaces)
-        guard !target.isEmpty else { return }
-        isRunning = true; errorMessage = nil; info = nil
-        do {
-            info = try await inspector.inspect(host: target, port: port)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isRunning = false
-    }
-}
-
 struct TLSInspectorView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = TLSInspectorModel()
+    @State private var host = "cloudflare.com"
+    @State private var port = 443
+    @State private var run = ToolRunModel<TLSInfo>()
+
+    private func start() {
+        let target = host.trimmingCharacters(in: .whitespaces)
+        guard !target.isEmpty, !run.isRunning else { return }
+        let port = port
+        run.start { try await TLSInspector().inspect(host: target, port: port) }
+    }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Хост (напр. example.com)",
-                         icon: "lock.shield", disabled: model.isRunning,
+            HostInputBar(text: $host, placeholder: "Хост (напр. example.com)",
+                         icon: "lock.shield", disabled: run.isRunning,
                          savedHostTool: .tlsInspector) {
-                Task { await model.run() }
+                start()
             } trailing: {
                 AnyView(
                     HStack(spacing: 2) {
                         Text(":").foregroundStyle(.secondary)
-                        TextField("порт", value: $model.port, format: .number)
+                        TextField("порт", value: $port, format: .number)
                             .frame(minWidth: 46)
                             .multilineTextAlignment(.leading)
                             .font(.system(.body, design: .monospaced))
                             #if os(iOS)
                             .keyboardType(.numberPad)
                             #endif
-                            .disabled(model.isRunning)
+                            .disabled(run.isRunning)
                     }
                 )
             }
 
-            if let error = model.errorMessage {
-                ErrorCard(message: error) { Task { await model.run() } }
-            } else if let info = model.info {
+            if let error = run.errorMessage {
+                ErrorCard(message: error) { start() }
+            } else if let info = run.value {
                 handshakeCard(info)
             }
         } content: {
-            if model.errorMessage == nil {
-                if let info = model.info {
+            if run.errorMessage == nil {
+                if let info = run.value {
                     ForEach(Array(info.certificates.enumerated()), id: \.offset) { idx, cert in
                         certCard(cert, index: idx, isLeaf: idx == 0)
                     }
-                } else if model.isRunning {
+                } else if run.isRunning {
                     ProgressView().padding(.top, 40)
                 } else {
                     ToolIdleHint(
@@ -71,26 +56,25 @@ struct TLSInspectorView: View {
                         title: "Готово к разбору TLS",
                         message: "Покажем цепочку сертификатов, сроки действия, версию TLS и шифр.",
                         example: "cloudflare.com",
-                        current: model.host
-                    ) { model.host = "cloudflare.com" }
+                        current: host
+                    ) { host = "cloudflare.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning,
-                      disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }
-                Task { await model.run() }
+            RunButton(title: "Проверить", running: run.isRunning,
+                      disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
             }
         }
-        .animation(.snappy, value: model.info)
+        .animation(.snappy, value: run.value)
         // A check runs for seconds; people put the phone down while it does.
-        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
-        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
+        .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
+        .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
         .navigationTitle("TLS-инспектор")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.host = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { host = presetHost }
+            if autostart { start() }
         }
     }
 

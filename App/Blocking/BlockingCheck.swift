@@ -76,32 +76,11 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
     }
 }
 
-@MainActor
-@Observable
-final class BlockingCheckModel {
-    let check: BlockingCheck
-    var target: String
-    private(set) var isRunning = false
-    private(set) var finding: CensorshipFinding?
-
-    init(check: BlockingCheck) {
-        self.check = check
-        self.target = check.defaultTarget
-    }
-
-    func run() async {
-        isRunning = true; finding = nil
-        let result = await check.run(target: target)
-        finding = result
-        isRunning = false
-        WebhookReporter.reportBlocking(check: check.rawValue, target: target, finding: result)
-    }
-}
-
 struct BlockingCheckView: View {
     let check: BlockingCheck
     @Environment(WebhookSettings.self) private var webhooks
-    @State private var model: BlockingCheckModel
+    @State private var target: String
+    @State private var run = ToolRunModel<CensorshipFinding>()
     @State private var showWebhookFields = false
     @State private var showSchedule = false
     /// The evidence bullet grows with text size instead of sitting at 5 pt.
@@ -109,7 +88,17 @@ struct BlockingCheckView: View {
 
     init(check: BlockingCheck) {
         self.check = check
-        _model = State(initialValue: BlockingCheckModel(check: check))
+        _target = State(initialValue: check.defaultTarget)
+    }
+
+    private func start() {
+        guard !run.isRunning else { return }
+        let check = check, target = target
+        run.start {
+            await check.run(target: target)
+        } onSuccess: { finding in
+            WebhookReporter.reportBlocking(check: check.rawValue, target: target, finding: finding)
+        }
     }
 
     var body: some View {
@@ -122,16 +111,16 @@ struct BlockingCheckView: View {
                 .card()
 
             if check.needsTarget {
-                HostInputBar(text: $model.target, placeholder: "Домен для проверки",
-                             icon: check.systemImage, disabled: model.isRunning,
+                HostInputBar(text: $target, placeholder: "Домен для проверки",
+                             icon: check.systemImage, disabled: run.isRunning,
                              savedHostTool: .dnsTamper) {
-                    Task { await model.run() }
+                    start()
                 }
             }
 
-            if let finding = model.finding {
+            if let finding = run.value {
                 verdictCard(finding)
-            } else if model.isRunning {
+            } else if run.isRunning {
                 VStack(spacing: 10) {
                     ProgressView()
                     Text("Проверяем ваше соединение…").font(.caption).foregroundStyle(.secondary)
@@ -139,21 +128,21 @@ struct BlockingCheckView: View {
                 .padding(.top, 40)
             }
         } content: {
-            if let finding = model.finding, !finding.evidence.isEmpty {
+            if let finding = run.value, !finding.evidence.isEmpty {
                 evidenceCard(finding)
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning,
-                      disabled: check.needsTarget && model.target.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }
-                Task { await model.run() }
+            RunButton(title: "Проверить", running: run.isRunning,
+                      disabled: check.needsTarget && target.trimmingCharacters(in: .whitespaces).isEmpty) {
+                if run.isRunning { return }
+                start()
             }
         }
-        .animation(.snappy, value: model.finding?.verdict)
+        .animation(.snappy, value: run.value?.verdict)
         // A restriction is not an error but it is the answer people came for,
         // so it gets the warning pattern rather than the success one.
-        .haptic(.warning, trigger: model.finding?.verdict) { $0 == .restricted }
-        .haptic(.success, trigger: model.finding?.verdict) { $0 == .clean }
+        .haptic(.warning, trigger: run.value?.verdict) { $0 == .restricted }
+        .haptic(.success, trigger: run.value?.verdict) { $0 == .clean }
         .navigationTitle(LocalizedStringKey(check.title))
         .toolTitleDisplayMode()
         .toolbar {
@@ -183,7 +172,7 @@ struct BlockingCheckView: View {
                 Form {
                     SchedulingSection(
                         makeKind: {
-                            let target = model.target.trimmingCharacters(in: .whitespaces)
+                            let target = target.trimmingCharacters(in: .whitespaces)
                             let host = target.isEmpty ? check.defaultTarget : target
                             return .blocking(checkID: check.rawValue, target: host)
                         },

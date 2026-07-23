@@ -1,43 +1,32 @@
 import SwiftUI
 import NetworkKit
 
-@MainActor
-@Observable
-final class WhoisModel {
-    var query = "apple.com"
-    private(set) var isRunning = false
-    private(set) var result: WhoisResult?
-    private(set) var errorMessage: String?
-
-    func run() async {
-        let q = query.trimmingCharacters(in: .whitespaces)
-        guard !q.isEmpty else { return }
-        isRunning = true; errorMessage = nil; result = nil
-        do { result = try await WhoisClient().lookup(q) }
-        catch { errorMessage = error.localizedDescription }
-        isRunning = false
-    }
-}
-
 struct WhoisView: View {
     var presetHost: String? = nil
     var autostart = false
-    @State private var model = WhoisModel()
+    @State private var query = "apple.com"
+    @State private var run = ToolRunModel<WhoisResult>()
     @State private var showRaw = false
+
+    private func start() {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty, !run.isRunning else { return }
+        run.start { try await WhoisClient().lookup(q) }
+    }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
-                         disabled: model.isRunning, savedHostTool: .whois) { Task { await model.run() } }
-            if let error = model.errorMessage {
-                ErrorCard(message: error) { Task { await model.run() } }
+            HostInputBar(text: $query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
+                         disabled: run.isRunning, savedHostTool: .whois) { start() }
+            if let error = run.errorMessage {
+                ErrorCard(message: error) { start() }
             }
         } content: {
-            if model.errorMessage == nil {
-                if let result = model.result {
+            if run.errorMessage == nil {
+                if let result = run.value {
                     if !result.fields.isEmpty { fieldsCard(result) }
                     rawDisclosure(result)
-                } else if model.isRunning {
+                } else if run.isRunning {
                     ProgressView().padding(.top, 40)
                 } else {
                     ToolIdleHint(
@@ -45,25 +34,25 @@ struct WhoisView: View {
                         title: "Готово к запросу whois",
                         message: "Узнаем регистратора домена, даты регистрации и окончания, серверы имён.",
                         example: "apple.com",
-                        current: model.query
-                    ) { model.query = "apple.com" }
+                        current: query
+                    ) { query = "apple.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Запросить", running: model.isRunning,
-                      disabled: model.query.trimmingCharacters(in: .whitespaces).isEmpty) {
-                if model.isRunning { return }; Task { await model.run() }
+            RunButton(title: "Запросить", running: run.isRunning,
+                      disabled: query.trimmingCharacters(in: .whitespaces).isEmpty) {
+                start()
             }
         }
-        .animation(.snappy, value: model.result)
+        .animation(.snappy, value: run.value)
         // A check runs for seconds; people put the phone down while it does.
-        .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
-        .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
+        .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
+        .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
         .navigationTitle("Whois")
         .toolTitleDisplayMode()
         .onAppear {
-            if let presetHost { model.query = presetHost }
-            if autostart { Task { await model.run() } }
+            if let presetHost { query = presetHost }
+            if autostart { start() }
         }
     }
 
