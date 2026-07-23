@@ -54,6 +54,7 @@ final class NetworkBrowserModel {
 }
 
 struct NetworkBrowserView: View {
+    var autostart = false
     @State private var model = NetworkBrowserModel()
     @Environment(AppSettings.self) private var settings
 
@@ -83,7 +84,10 @@ struct NetworkBrowserView: View {
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Обзор сети")
         .toolTitleDisplayMode()
-        .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
+        .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
+            if autostart, !model.isRunning { model.start() }
+        }
     }
 
     private var progressCard: some View {

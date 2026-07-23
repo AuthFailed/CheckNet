@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MonitoringView: View {
+    var autostart = false
     @Environment(MonitoringManager.self) private var manager
     @State private var newHost = ""
 
@@ -48,6 +49,9 @@ struct MonitoringView: View {
         .haptic(.failure, trigger: manager.entries.filter { $0.status == .down }.count) { $0 > 0 }
         .navigationTitle("Мониторинг")
         .toolTitleDisplayMode()
+        .onAppear {
+            if autostart, !manager.isMonitoring, !manager.entries.isEmpty { manager.start() }
+        }
     }
 
     private var statusBanner: some View {

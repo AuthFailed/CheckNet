@@ -3,6 +3,7 @@ import Charts
 import NetworkKit
 
 struct SpeedTestView: View {
+    var autostart = false
     @State private var model = SpeedTestModel()
     @Environment(AppSettings.self) private var settings
     @ScaledMetric(relativeTo: .body) private var statRule: CGFloat = 44
@@ -42,7 +43,11 @@ struct SpeedTestView: View {
         .navigationTitle("Тест скорости")
         .toolTitleDisplayMode()
         .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
-        .task { await model.loadServers() }
+        .task {
+            await model.loadServers()
+            // Deep-link autostart runs once the nearest server is auto-selected.
+            if autostart, model.selected != nil, model.phase == .ready { model.startTest() }
+        }
         .sheet(isPresented: $showServerPicker) {
             // A long, searchable server list grouped by geography — half height
             // would show two rows.

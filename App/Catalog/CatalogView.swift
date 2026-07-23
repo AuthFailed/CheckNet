@@ -405,11 +405,11 @@ struct ToolDestinationView: View {
         case .cgnatDetect:
             NATView(autostart: route.autostart)
         case .monitoring:
-            MonitoringView()
+            MonitoringView(autostart: route.autostart)
         case .networkBrowser:
-            NetworkBrowserView()
+            NetworkBrowserView(autostart: route.autostart)
         case .speedTest:
-            SpeedTestView()
+            SpeedTestView(autostart: route.autostart)
         case .bufferbloat:
             BufferbloatView(autostart: route.autostart)
         case .dns:
@@ -429,7 +429,7 @@ struct ToolDestinationView: View {
         case .ipScanner:
             IPScannerView(autostart: route.autostart)
         case .bonjour:
-            BonjourView()
+            BonjourView(autostart: route.autostart)
         case .portScan:
             PortScanView(presetHost: route.presetHost, autostart: route.autostart)
         case .tlsInspector:

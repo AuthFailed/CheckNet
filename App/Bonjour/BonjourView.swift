@@ -69,6 +69,7 @@ final class BonjourModel {
 }
 
 struct BonjourView: View {
+    var autostart = false
     @State private var model = BonjourModel()
     @Environment(AppSettings.self) private var settings
 
@@ -110,7 +111,10 @@ struct BonjourView: View {
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Bonjour / mDNS")
         .toolTitleDisplayMode()
-        .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
+        .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
+            if autostart, !model.isRunning { model.start() }
+        }
     }
 
     private func groupCard(_ group: (type: String, label: String, services: [BonjourService])) -> some View {
