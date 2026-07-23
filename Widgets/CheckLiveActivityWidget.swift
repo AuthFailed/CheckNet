@@ -94,6 +94,10 @@ struct CheckLiveActivityWidget: Widget {
         case .portScan: return "square.grid.3x3.middle.filled"
         case .ipScan: return "barcode.viewfinder"
         case .lookup: return "magnifyingglass"
+        case .worldPing: return "globe"
+        case .mtu: return "ruler"
+        case .bonjour: return "bonjour"
+        case .browser: return "network"
         }
     }
 

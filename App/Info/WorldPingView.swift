@@ -14,9 +14,15 @@ final class WorldPingModel {
     private(set) var isRunning = false
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     var reachableCount: Int { results.filter { $0.status == .ok }.count }
     var reportedCount: Int { results.filter { $0.status != .pending }.count }
+
+    private func activityView() -> CheckActivityView {
+        ScanActivityContent.view(foundLabel: "Доступно", found: reachableCount,
+                                 scanned: reportedCount, total: results.count, isRunning: isRunning)
+    }
 
     /// Countries offered by the backend, for the picker.
     var countries: [(country: String, code: String, count: Int)] {
@@ -42,6 +48,8 @@ final class WorldPingModel {
         results = []; errorMessage = nil; isRunning = true
         let type = self.type
         let names = selectedCountries.isEmpty ? [] : nodes.filter { selectedCountries.contains($0.country) }.map(\.name)
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .worldPing, title: target, subtitle: "World Ping", view: activityView())
         task = Task { [weak self] in
             for await event in WorldProbe().run(type: type, host: target, nodeNames: names) {
                 guard let self, !Task.isCancelled else { break }
@@ -51,8 +59,10 @@ final class WorldPingModel {
                 case .finished(let r): self.results = r; self.isRunning = false
                 case .failed(let reason): self.errorMessage = reason; self.isRunning = false
                 }
+                await activity?.update(self.activityView())
             }
             self?.isRunning = false
+            if let self { await activity?.end(self.activityView()) }
         }
     }
 
@@ -68,6 +78,7 @@ struct WorldPingView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = WorldPingModel()
+    @Environment(AppSettings.self) private var settings
     @State private var showNodePicker = false
 
     var body: some View {
@@ -104,6 +115,7 @@ struct WorldPingView: View {
             NodeSelectionSheet(model: model)
         }
         .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }
         }

@@ -8,12 +8,24 @@ final class BonjourModel {
     private(set) var services: [BonjourService] = []
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     func toggle() { isRunning ? stop() : start() }
+
+    private func activityView() -> CheckActivityView {
+        CheckActivityView(
+            status: isRunning ? .unknown : .ok,
+            headline: "\(services.count)",
+            caption: isRunning ? "поиск сервисов" : "готово — сервисов: \(services.count)",
+            stats: [CheckStat(label: "Сервисов", value: "\(services.count)")],
+            isRunning: isRunning)
+    }
 
     func start() {
         stop()
         services = []; errorMessage = nil; isRunning = true
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .bonjour, title: "Bonjour", subtitle: "mDNS", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in BonjourBrowser().browse(duration: 8.0) {
@@ -31,8 +43,10 @@ final class BonjourModel {
                 case .failed(let reason):
                     errorMessage = reason
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
+            await activity?.end(activityView())
         }
     }
 
@@ -56,6 +70,7 @@ final class BonjourModel {
 
 struct BonjourView: View {
     @State private var model = BonjourModel()
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         ToolScaffold {
@@ -95,6 +110,7 @@ struct BonjourView: View {
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Bonjour / mDNS")
         .toolTitleDisplayMode()
+        .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
     }
 
     private func groupCard(_ group: (type: String, label: String, services: [BonjourService])) -> some View {

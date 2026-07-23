@@ -7,6 +7,7 @@ enum CheckActivityKind: String, Codable, Sendable {
     /// One-shot lookups on `ToolRunModel` (host→IP, DNS, whois, TLS…). The
     /// subtitle names the specific tool.
     case lookup
+    case worldPing, mtu, bonjour, browser
 }
 
 /// One label/value chip shown in a check's Live Activity (expanded Dynamic

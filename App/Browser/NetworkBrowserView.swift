@@ -10,12 +10,20 @@ final class NetworkBrowserModel {
     private(set) var total = 0
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     func toggle() { isRunning ? stop() : start() }
+
+    private func activityView() -> CheckActivityView {
+        ScanActivityContent.view(foundLabel: "Устройств", found: devices.count,
+                                 scanned: scanned, total: total, isRunning: isRunning)
+    }
 
     func start() {
         stop()
         devices = []; scanned = 0; total = 0; errorMessage = nil; isRunning = true
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .browser, title: "Обзор сети", subtitle: "Устройства", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in NetworkBrowser().browse() {
@@ -28,8 +36,10 @@ final class NetworkBrowserModel {
                 case .finished: break
                 case .failed(let reason): errorMessage = reason
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
+            await activity?.end(activityView())
         }
     }
 
@@ -45,6 +55,7 @@ final class NetworkBrowserModel {
 
 struct NetworkBrowserView: View {
     @State private var model = NetworkBrowserModel()
+    @Environment(AppSettings.self) private var settings
 
     var body: some View {
         ToolScaffold {
@@ -72,6 +83,7 @@ struct NetworkBrowserView: View {
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Обзор сети")
         .toolTitleDisplayMode()
+        .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
     }
 
     private var progressCard: some View {

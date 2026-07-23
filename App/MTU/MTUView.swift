@@ -10,14 +10,31 @@ final class MTUModel {
     private(set) var result: MTUResult?
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
+    var useLiveActivity = true
 
     func toggle() { isRunning ? stop() : start() }
+
+    private func activityView() -> CheckActivityView {
+        let headline: String
+        if let mtu = result?.pathMTU { headline = "\(mtu)" }
+        else if let probe = currentProbe { headline = "\(probe)" }
+        else { headline = "…" }
+        return CheckActivityView(
+            status: isRunning ? .unknown : .ok,
+            headline: headline,
+            caption: isRunning ? "поиск MTU…" : "путь MTU, байт",
+            stats: result.map { [CheckStat(label: "Path MTU", value: "\($0.pathMTU)"),
+                                 CheckStat(label: "Payload", value: "\($0.maxPayload)")] } ?? [],
+            isRunning: isRunning)
+    }
 
     func start() {
         let target = host.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty else { return }
         stop()
         result = nil; errorMessage = nil; currentProbe = nil; isRunning = true
+        let activity = useLiveActivity ? CheckActivityController() : nil
+        activity?.start(kind: .mtu, title: target, subtitle: "MTU", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await progress in MTUDiscovery().discover(host: target) {
@@ -27,9 +44,11 @@ final class MTUModel {
                 case .finished(let r): result = r
                 case .failed(let msg): errorMessage = msg
                 }
+                await activity?.update(activityView())
             }
             isRunning = false
             currentProbe = nil
+            await activity?.end(activityView())
         }
     }
 
@@ -40,6 +59,7 @@ struct MTUView: View {
     var presetHost: String? = nil
     var autostart = false
     @State private var model = MTUModel()
+    @Environment(AppSettings.self) private var settings
     @ScaledMetric(relativeTo: .body) private var statRule: CGFloat = 34
 
     var body: some View {
@@ -83,6 +103,7 @@ struct MTUView: View {
         .navigationTitle("MTU discovery")
         .toolTitleDisplayMode()
         .onAppear {
+            model.useLiveActivity = settings.liveActivitiesEnabled
             if let presetHost { model.host = presetHost }
             if autostart { model.start() }
         }

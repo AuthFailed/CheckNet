@@ -7,10 +7,18 @@ struct IPLocationView: View {
     var autostart = false
     @State private var query = ""
     @State private var run = ToolRunModel<IPGeoLookup>()
+    @Environment(AppSettings.self) private var settings
 
     private func start() {
         guard !run.isRunning else { return }
         let q = query.trimmingCharacters(in: .whitespaces)
+        run.activity = settings.liveActivitiesEnabled ? .init(
+            kind: .lookup, title: q.isEmpty ? "Ваш IP" : q, subtitle: "Геолокация",
+            content: { LookupActivityContent.view($0, running: q.isEmpty ? "ваш IP" : q) { g in
+                let c = g.consensus
+                let place = [c.city, c.country].compactMap { $0 }.joined(separator: ", ")
+                return (place.isEmpty ? c.ip : place, c.asnOrg ?? c.ip) } }
+        ) : nil
         run.start { try await IPGeolocation().lookup(query: q) }
     }
 
