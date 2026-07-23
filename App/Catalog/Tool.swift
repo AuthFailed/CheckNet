@@ -196,7 +196,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .speedTest:
             return "Измеряет скорость загрузки и отдачи через iperf3-серверы или HTTP. Показывает реальную пропускную способность канала."
         case .bufferbloat:
-            return "Измеряет рост задержки под нагрузкой (bufferbloat). Требует нагрузочного сервера."
+            return "Замеряет задержку в простое и под полной нагрузкой (загрузка и отдача), показывает прирост и оценку A–F. Именно рост задержки под нагрузкой рвёт звонки и игры при быстром интернете."
         case .mtuDiscovery:
             return "Находит максимальный размер пакета, проходящий без фрагментации (Path MTU). Помогает диагностировать обрывы и залипания соединений."
         case .wifiAnalysis:
@@ -237,9 +237,9 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .ping, .traceroute, .mtr, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
              .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan,
              .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser,
-             .speedTest:
+             .speedTest, .bufferbloat:
             return true
-        case .ipLocation, .bufferbloat, .wifiAnalysis, .wifiSignal, .worldPing:
+        case .ipLocation, .wifiAnalysis, .wifiSignal, .worldPing:
             return false
         }
     }
@@ -274,8 +274,6 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     /// Present only for tools that are not implemented.
     var unavailable: Unavailable? {
         switch self {
-        case .bufferbloat:
-            return .inDevelopment("Движок нагрузки уже есть — проверка задержки под нагрузкой соберётся на его основе.")
         case .ipLocation:
             return .platformLimit("Точная геолокация IP требует платного внешнего сервиса, а он ещё не выбран.")
         case .worldPing:
