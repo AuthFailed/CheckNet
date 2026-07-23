@@ -25,12 +25,15 @@ struct PingLiveActivityWidget: Widget {
                         .foregroundStyle(StatusStyle.color(context.state.status))
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack {
-                        stat("Потери", "\(Int(context.state.lossPercent))%")
-                        Spacer()
-                        stat("Пакеты", "\(context.state.received)/\(context.state.transmitted)")
-                        Spacer()
-                        stat("Статус", statusText(context.state))
+                    VStack(spacing: 6) {
+                        HStack {
+                            stat("Потери", "\(Int(context.state.lossPercent))%")
+                            Spacer()
+                            stat("Пакеты", "\(context.state.received)/\(context.state.transmitted)")
+                            Spacer()
+                            stat("Статус", statusText(context.state))
+                        }
+                        if context.state.isRunning { stopButton(fill: true) }
                     }
                     .padding(.top, 2)
                 }
@@ -49,30 +52,45 @@ struct PingLiveActivityWidget: Widget {
     }
 
     private func lockScreen(_ context: ActivityViewContext<PingActivityAttributes>) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle().stroke(StatusStyle.color(context.state.status).opacity(0.3), lineWidth: 4)
-                Image(systemName: StatusStyle.symbol(context.state.status))
-                    .font(.title2)
-                    .foregroundStyle(StatusStyle.color(context.state.status))
-            }
-            .frame(width: 46, height: 46)
+        VStack(spacing: 10) {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().stroke(StatusStyle.color(context.state.status).opacity(0.3), lineWidth: 4)
+                    Image(systemName: StatusStyle.symbol(context.state.status))
+                        .font(.title2)
+                        .foregroundStyle(StatusStyle.color(context.state.status))
+                }
+                .frame(width: 46, height: 46)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(context.attributes.host).font(.headline).lineLimit(1)
-                Text("\(context.attributes.ip) · \(context.state.isRunning ? "идёт проверка" : "завершено")")
-                    .font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(context.attributes.host).font(.headline).lineLimit(1)
+                    Text("\(context.attributes.ip) · \(context.state.isRunning ? "идёт проверка" : "завершено")")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(latency(context.state))
+                        .font(.title2.weight(.bold).monospacedDigit())
+                        .foregroundStyle(StatusStyle.color(context.state.status))
+                    Text("потери \(Int(context.state.lossPercent))%")
+                        .font(.caption2).foregroundStyle(.secondary)
+                }
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(latency(context.state))
-                    .font(.title2.weight(.bold).monospacedDigit())
-                    .foregroundStyle(StatusStyle.color(context.state.status))
-                Text("потери \(Int(context.state.lossPercent))%")
-                    .font(.caption2).foregroundStyle(.secondary)
-            }
+            if context.state.isRunning { stopButton(fill: true) }
         }
         .padding()
+    }
+
+    /// Interactive "Стоп" — a `LiveActivityIntent` runs in the app and ends the
+    /// ping. Only shown while a run is live.
+    private func stopButton(fill: Bool) -> some View {
+        Button(intent: StopPingLiveActivityIntent()) {
+            Label("Стоп", systemImage: "stop.fill")
+                .font(.caption.weight(.semibold))
+                .frame(maxWidth: fill ? .infinity : nil)
+        }
+        .tint(.red)
+        .buttonStyle(.bordered)
     }
 
     private func stat(_ label: String, _ value: String) -> some View {

@@ -42,6 +42,8 @@ final class HostNotifier: NSObject, UNUserNotificationCenterDelegate {
     /// Builds and posts a notification for a monitor transition. `nonisolated`
     /// so the background task can call it directly.
     nonisolated static func post(_ plan: MonitorNotification.Plan, host: String) {
+        // A Focus filter (see MonitorFocusFilter) can silence monitor alerts.
+        guard !FocusMonitorState.isMuted() else { return }
         let content = UNMutableNotificationContent()
         content.title = plan.title
         content.body = plan.body

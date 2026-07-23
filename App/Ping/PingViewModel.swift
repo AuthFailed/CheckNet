@@ -46,6 +46,9 @@ final class PingViewModel {
     private(set) var elapsedSeconds: Double = 0
 
     private var runTask: Task<Void, Never>?
+    /// Snapshot of the Live Activity stop-generation at run start; a later bump
+    /// (the "Стоп" button) ends the run.
+    private var stopBaseline = 0
     private var startDate: Date?
     private let liveActivity = PingLiveActivityController()
     /// When true, the run drives a Live Activity / Dynamic Island.
@@ -67,6 +70,7 @@ final class PingViewModel {
         reset()
         phase = .running
         startDate = Date()
+        stopBaseline = LiveActivitySignal.generation()
 
         let targetHost = host.trimmingCharacters(in: .whitespaces)
         let cfg = makeConfig()
@@ -90,6 +94,10 @@ final class PingViewModel {
         runTask?.cancel()
         runTask = nil
     }
+
+    /// The Live Activity "Стоп" button fires in the app process and bumps a
+    /// shared generation; the run loop ends the moment it sees a later value.
+    private var stopSignalled: Bool { LiveActivitySignal.stopRequested(since: stopBaseline) }
 
     private func reset() {
         replies = []
@@ -117,7 +125,7 @@ final class PingViewModel {
     private func runICMP(host: String, config: PingConfig, reverseDNS: Bool) async {
         let pinger = ICMPPinger()
         for await event in pinger.ping(host: host, config: config) {
-            if Task.isCancelled { break }
+            if Task.isCancelled || stopSignalled { break }
             switch event {
             case .started(let ip, _):
                 resolvedIP = ip
@@ -164,6 +172,7 @@ final class PingViewModel {
         var seq = 0
         let total = config.count
         while !Task.isCancelled {
+            if stopSignalled { break }
             if let total, seq >= total { break }
             let result = await scanner.check(host: host, port: port, timeout: config.timeout)
             if Task.isCancelled { break }
