@@ -64,6 +64,9 @@ targets:
             CFBundleURLSchemes:
               - checknet
         NSSupportsLiveActivities: true
+        # Handoff: the system only resumes activities of a declared type.
+        NSUserActivityTypes:
+          - com.chrsnv.checknet.tool
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true

@@ -382,6 +382,15 @@ struct ToolDestinationView: View {
                 }
             }
             .modifier(LocalNetworkGate(tool: route.tool))
+            // Handoff: advertise the open tool so it can resume on another
+            // device. Continuation is handled once, in the app's root scene.
+            .userActivity(ToolActivity.type) { activity in
+                activity.title = route.tool.title
+                activity.isEligibleForHandoff = true
+                activity.targetContentIdentifier = route.tool.rawValue
+                activity.addUserInfoEntries(from: ToolActivity.userInfo(
+                    toolRawValue: route.tool.rawValue, host: route.presetHost))
+            }
     }
 
     @ViewBuilder

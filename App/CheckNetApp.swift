@@ -4,7 +4,8 @@ import CoreSpotlight
 @main
 struct CheckNetApp: App {
     @State private var toolStore = ToolStore()
-    @State private var savedHosts = SavedHostsStore()
+    @State private var savedHosts: SavedHostsStore
+    @State private var cloudSync: CloudHostSync
     @State private var settings = AppSettings()
     @State private var webhooks = WebhookSettings()
     @State private var networkProfiles = NetworkProfileStore()
@@ -18,6 +19,11 @@ struct CheckNetApp: App {
         let store = ScheduledTaskStore()
         _scheduledTasks = State(initialValue: store)
         _scheduler = State(initialValue: TaskScheduler(store: store))
+
+        // One saved-hosts store, shared with the iCloud sync that mirrors it.
+        let hosts = SavedHostsStore()
+        _savedHosts = State(initialValue: hosts)
+        _cloudSync = State(initialValue: CloudHostSync(store: hosts))
 
         // The Local Network prompt is deliberately *not* requested here any
         // more. Asking on launch, before any context, is the anti-pattern that
@@ -40,12 +46,20 @@ struct CheckNetApp: App {
             .environment(navigator)
     }
 
-    /// Index the catalogue into Spotlight and route a tapped result to its tool.
+    /// Index the catalogue into Spotlight and route a tapped result to its tool,
+    /// and resume a tool handed off from another device.
     private func spotlight<Content: View>(_ content: Content) -> some View {
         content
             .task { SpotlightIndexer.index() }
+            .task { cloudSync.start() }
             .onContinueUserActivity(CSSearchableItemActionType) { activity in
                 if let tool = SpotlightIndexer.tool(from: activity) { navigator.open(tool) }
+            }
+            .onContinueUserActivity(ToolActivity.type) { activity in
+                if let payload = ToolActivity.payload(from: activity.userInfo),
+                   let tool = Tool(rawValue: payload.toolRawValue) {
+                    navigator.open(tool, host: payload.host)
+                }
             }
     }
 

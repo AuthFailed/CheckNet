@@ -63,6 +63,12 @@ final class SavedHostsStore {
         persist()
     }
 
+    /// Replaces the whole list — used when iCloud sync reconciles a merged set.
+    func replaceAll(with hosts: [SavedHost]) {
+        self.hosts = hosts
+        persist()
+    }
+
     private func persist() {
         SavedHostsPersistence.save(hosts)
     }

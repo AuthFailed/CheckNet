@@ -19,7 +19,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("Сохранённые хосты") {
+                Section {
                     NavigationLink {
                         SavedHostsEditor(kind: .domain)
                     } label: {
@@ -38,6 +38,18 @@ struct SettingsView: View {
                         HostSharingView()
                     } label: {
                         Label("Поделиться и импорт", systemImage: "square.and.arrow.up")
+                    }
+                    LabeledContent {
+                        Text(CloudHostSync.isAvailable ? "Включена" : "Недоступна")
+                            .foregroundStyle(.secondary)
+                    } label: {
+                        Label("iCloud-синхронизация", systemImage: "icloud")
+                    }
+                } header: {
+                    Text("Сохранённые хосты")
+                } footer: {
+                    if !CloudHostSync.isAvailable {
+                        Text("Синхронизация хостов через iCloud требует платного аккаунта разработчика и включается в соответствующей сборке.")
                     }
                 }
 
