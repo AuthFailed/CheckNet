@@ -63,17 +63,8 @@ enum BlockingCheckChoice: String, AppEnum {
         .transferCutoff: "Обрыв на 16–20 КБ"
     ]
 
-    var check: BlockingCheck {
-        switch self {
-        case .dnsSpoofing: .dnsSpoofing
-        case .httpBlock: .httpBlock
-        case .sniBlocking: .sniBlocking
-        case .ipBlocking: .ipBlocking
-        case .whitelist: .whitelist
-        case .siberian: .siberian
-        case .transferCutoff: .transferCutoff
-        }
-    }
+    /// Dispatch happens in NetworkKit; raw values match one-to-one.
+    var kind: CensorshipCheckKind { CensorshipCheckKind(rawValue: rawValue)! }
 }
 
 /// Target groups for the reachability sweep.

@@ -25,12 +25,12 @@ struct RunBlockingCheckIntent: AppIntent {
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<CheckOutcome> {
-        let blockingCheck = check.check
+        let kind = check.kind
         let trimmed = target.trimmingCharacters(in: .whitespacesAndNewlines)
         // Checks that take no target ignore it; the rest fall back to their default.
-        let host = trimmed.isEmpty ? blockingCheck.defaultTarget : trimmed
+        let host = trimmed.isEmpty ? kind.defaultTarget : trimmed
 
-        let finding = await blockingCheck.run(target: host)
+        let finding = await kind.run(target: host)
         let outcome = CheckOutcome(finding: finding, target: host)
 
         SharedStore.appendHistory(CheckRecord(

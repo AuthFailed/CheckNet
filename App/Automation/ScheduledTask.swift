@@ -177,9 +177,9 @@ final class TaskScheduler {
     }
 
     private func runBlocking(checkID: String, target: String) async -> String {
-        guard let check = BlockingCheck(rawValue: checkID) else { return "неизвестная проверка" }
-        let host = target.isEmpty ? check.defaultTarget : target
-        let finding = await check.run(target: host)
+        guard let kind = CensorshipCheckKind(rawValue: checkID) else { return "неизвестная проверка" }
+        let host = target.isEmpty ? kind.defaultTarget : target
+        let finding = await kind.run(target: host)
         SharedStore.appendHistory(CheckRecord(
             tool: "blocking.\(checkID)", host: host, timestamp: Date(),
             latencyMillis: nil, lossPercent: nil,
