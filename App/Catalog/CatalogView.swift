@@ -418,6 +418,8 @@ struct ToolDestinationView: View {
             ReverseDNSView(presetHost: route.presetHost, autostart: route.autostart)
         case .interfaces:
             InterfacesView()
+        case .ipLocation:
+            IPLocationView(presetHost: route.presetHost, autostart: route.autostart)
         default:
             PlaceholderToolView(tool: route.tool)
         }

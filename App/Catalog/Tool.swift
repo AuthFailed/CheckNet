@@ -188,7 +188,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .hostToIP:
             return "Преобразует доменное имя в IP-адрес (и наоборот). Простейшая проверка работы DNS."
         case .ipLocation:
-            return "Показывает предполагаемую страну, город и ASN по IP-адресу. Требует внешнего сервиса геолокации."
+            return "Определяет предполагаемую страну, город, сеть (ASN и оператора) для IP или домена, и даёт ссылки на bgp.tools, Hurricane Electric и PeeringDB. Запрос уходит к внешнему сервису геолокации."
         case .whois:
             return "Запрашивает данные о регистрации домена: регистратор, даты, серверы имён. Помогает узнать, кому принадлежит домен."
         case .blacklist:
@@ -237,9 +237,9 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .ping, .traceroute, .mtr, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
              .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan,
              .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser,
-             .speedTest, .bufferbloat:
+             .speedTest, .bufferbloat, .ipLocation:
             return true
-        case .ipLocation, .wifiAnalysis, .wifiSignal, .worldPing:
+        case .wifiAnalysis, .wifiSignal, .worldPing:
             return false
         }
     }
@@ -274,8 +274,6 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     /// Present only for tools that are not implemented.
     var unavailable: Unavailable? {
         switch self {
-        case .ipLocation:
-            return .platformLimit("Точная геолокация IP требует платного внешнего сервиса, а он ещё не выбран.")
         case .worldPing:
             return .platformLimit("Пинг из разных точек мира выполняется на внешних серверах — нужен сторонний сервис.")
         case .wifiAnalysis:
