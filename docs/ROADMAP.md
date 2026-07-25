@@ -45,10 +45,11 @@ M1 Стабилизация ──┬─→ M2 Адаптивный UI ──→
                   └─→ M4 Архитектура и тесты ────┘
                                │
                                ├─→ M5 Платформенные интеграции
-                               └─→ M6 Новые инструменты
+                               ├─→ M6 Новые инструменты
+                               └─→ M7 Инструменты для VPN ──→ M8 Публикация в App Store
 ```
 
-**Статус вех:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 почти закрыта (#39–#44 ✅, остаётся P3 #45) · M6 ✅ (инструменты сделаны; #49 — живой бэклог идей) · **M7 🔨 в работе** (раздел для владельцев VPN: #70/#72/#75/#76/#77/#78/#79 ✅, остаются #71/#73/#74).
+**Статус вех:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 почти закрыта (#39–#44 ✅, остаётся P3 #45) · M6 ✅ (инструменты сделаны; #49 — живой бэклог идей) · **M7 🔨 в работе** (раздел для владельцев VPN: #70/#72/#73/#75/#76/#77/#78/#79 ✅, остаются #71/#74) · **M8 📋 запланирована** (подготовка и публикация в App Store).
 
 - **M1 первым** — там блокеры релиза (privacy manifest), потеря данных (гонка в истории) и
   неработающий CI. Строить новое на нестабильном фундаменте дороже.
@@ -304,7 +305,7 @@ ClientHello и подобное; помогаем оператору настр�
 | [#70](https://github.com/AuthFailed/CheckNet/issues/70) | Пригодность домена как SNI/dest для Reality | P2 | ✅ |
 | [#71](https://github.com/AuthFailed/CheckNet/issues/71) | Доступность Xray-инбаунда (VLESS/Trojan) — реальный handshake | P2 | 📋 |
 | [#72](https://github.com/AuthFailed/CheckNet/issues/72) | Парсинг подписки — хосты, роутинг, быстрые действия | P2 | ✅ |
-| [#73](https://github.com/AuthFailed/CheckNet/issues/73) | Просмотр geosite/geoip — загрузка, разбор, поиск тегов, фильтры | P3 | 📋 |
+| [#73](https://github.com/AuthFailed/CheckNet/issues/73) | Просмотр geosite/geoip — загрузка, разбор, поиск тегов, фильтры | P3 | ✅ |
 | [#74](https://github.com/AuthFailed/CheckNet/issues/74) | Просмотр mihomo rule-set (`.mrs`) | P3 | 📋 |
 | [#75](https://github.com/AuthFailed/CheckNet/issues/75) | Ответ сервера подписки на заголовки разных клиентов | P3 | ✅ |
 | [#76](https://github.com/AuthFailed/CheckNet/issues/76) | Конфигуратор правил роутинга Happ + разбор | P3 | ✅ |
@@ -369,6 +370,21 @@ Shadowrocket, V2Box) остаются ручными. **HWID:** тумблер �
 версий: v2rayNG 1.9.5→2.2.6, clash-verge→2.5.2, sing-box→1.14.0-beta.2). **Осталось в M7:** #71
 (Xray-инбаунд, через-прокси только на macOS), #73/#74 (просмотрщики geosite/`.mrs`).
 
+**#73 — просмотрщик geosite/geoip (сделан).** `GeoData` (NetworkKit/VPN) — ручной разбор
+wire-format protobuf v2fly (свой `ProtoReader`: varint/length-delimited/skip, как рукописные
+DER/MMDB-парсеры). `GeoDataDocument.load` авто-определяет geosite vs geoip (по типу первого поля
+внутреннего сообщения: varint=домен → geosite, bytes=IP → geoip), строит индекс категорий
+(`country_code` + счётчик, диапазон байт), а правила декодирует по требованию — файл на ~0.5 млн
+правил не материализуется в объекты целиком. geosite: тип домена (full/domain/keyword/regexp) +
+значение + атрибуты `@ads`; geoip: CIDR (v4 и v6). Поиск: `categoriesContaining(domain:)` (точное/
+поддомен/keyword/regex) и `categoriesContaining(ip:)` (IPv4-принадлежность по маске). Экран
+`GeoDataView` — открыть свой `.dat` (`fileImporter`) или загрузить сборку Loyalsoldier, шапка
+(тип/категории/правила), поиск домена/IP по категориям, `.searchable` список категорий → детальный
+экран правил с бейджами типа. 10 юнит-тестов на самодельных protobuf-фикстурах + живой разбор
+реальных geosite.dat/geoip.dat (GOOGLE/NETFLIX/CN, CN >1000 доменов, IP 1.2.4.8→CN). Проверено на
+устройстве: geosite.dat = 1527 категорий / 498 682 правил; geoip рендерит CIDR. **Осталось в M7:**
+#71 (Xray-инбаунд, через-прокси только на macOS), #74 (`.mrs`, нужен zstd).
+
 Источники идеи (референсы поведения сканера, не зависимость):
 - `XTLS/RealiTLScanner` — https://github.com/XTLS/RealiTLScanner (эталон: `-addr <IP/CIDR/домен>`,
   правило приёма `version==TLS1.3 && alpn=="h2" && есть CN && есть issuer`, вывод `IP  домен  издатель`,
@@ -396,6 +412,128 @@ Rev, Hiddify, Karing, FlClash), с кэшем и бандл-фоллбэком; 
 `vless://`/`trojan://`/`ss://` с QR; проверка целостности Reality-конфига (SNI/dest, pbk/sid, flow,
 ALPN); «палевность» конфига (uTLS-fingerprint/ALPN vs браузер, steal-oneself); внешний
 аптайм/латентность инбаундов; проверка IP сервера по чёрным спискам/ASN (переиспользовать DNSBL).
+
+---
+
+## M8 · Подготовка и публикация в App Store — запланирована
+
+До сих пор «релиз» в плане был только про технику (M1: privacy-манифест, CI, гонки данных).
+M8 — это **фактический выход в App Store**: аккаунт и юридический слой, экспортный контроль
+шифрования, прохождение App Review, метаданные и витрина, бета через TestFlight и автоматизация
+выката. Веха последняя не потому, что простая, а потому, что бессмысленно подавать движущуюся
+цель: набор инструментов должен быть заморожен.
+
+Приложение **нетипичное для стора** и это главный риск: сетевые сканеры (порты, IP-диапазон,
+Reality-сканер доменов), целый раздел **для VPN-операторов** и криптоинструменты (Happ Decrypt,
+Incy `crypt1`). Поэтому здесь много не про «залить бинарь», а про то, **как объяснить Apple, что
+это диагностика и управление своим сервером, а не средство обхода/взлома** — тот же принцип
+границы, что во вкладке «Блокировки».
+
+> **Два самых больших ревью-риска — закладываем время на них заранее.**
+> 1. **Guideline 5.4 (VPN).** У приложения есть раздел «VPN», но оно **не является** VPN-провайдером
+>    и не маршрутизирует трафик — это инструменты диагностики и подготовки конфигов. Ревьюер может
+>    решить иначе по одному слову «VPN». Митигируем формулировками в описании и UI (при риске —
+>    переименовать раздел в «Инструменты оператора»), подробными заметками ревьюеру и демо-данными.
+> 2. **Сетевые сканеры и крипта.** Сканеры на Apple допустимы (пример — Fing), но только с явным
+>    согласием и понятной целью — согласие у нас уже гейтом (`SensitiveConsentModifier`). Happ/Incy
+>    расшифровывают **собственные** конфиги оператора по опубликованным алгоритмам — это надо явно
+>    проговорить в заметках, иначе выглядит подозрительно.
+
+**Экспортный контроль (не пропустить — это блокер подачи).** Кроме стандартного TLS приложение
+использует собственную крипту для интероперабельности: ChaCha20-Poly1305, AES-256-GCM, RSA (Happ,
+Incy). Это, скорее всего, попадает под mass-market exemption 740.17(b) (стандартные опубликованные
+алгоритмы), но требует правильной обработки `ITSAppUsesNonExemptEncryption`, **годового
+self-classification report** в BIS/ENC и, при распространении во Франции, декларации ANSSI. Нужна
+явная задача с итоговым определением, а не «поставили false и забыли».
+
+### A. Аккаунт, юридический слой, экспортный контроль
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#80](https://github.com/AuthFailed/CheckNet/issues/80) | Enrollment в Apple Developer Program (индивид/организация; для организации — D-U-N-S) | P0 | ⬜ |
+| [#81](https://github.com/AuthFailed/CheckNet/issues/81) | Соглашения в App Store Connect (Free Apps Agreement), заполнить Tax & Banking | P0 | ⬜ |
+| [#82](https://github.com/AuthFailed/CheckNet/issues/82) | Политика конфиденциальности + Support URL — сверстать и захостить (кандидат: GitHub Pages) | P0 | ⬜ |
+| [#83](https://github.com/AuthFailed/CheckNet/issues/83) | Экспортный контроль: определить статус, `ITSAppUsesNonExemptEncryption`, годовой self-classification в BIS/ENC, декларация ANSSI | P0 | ⬜ |
+| [#84](https://github.com/AuthFailed/CheckNet/issues/84) | Проверка имени «CheckNet» (товарный знак/коллизии в сторе), резерв bundle ID и App ID с нужными capabilities | P0 | ⬜ |
+
+### B. Соответствие App Review Guidelines
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#85](https://github.com/AuthFailed/CheckNet/issues/85) | Ревью-аудит чувствительных инструментов: сканеры, VPN-раздел, крипта Happ/Incy — легитимная формулировка назначения | P0 | ⬜ |
+| [#86](https://github.com/AuthFailed/CheckNet/issues/86) | Заметки ревьюеру (App Review Information): что делает каждый чувствительный инструмент + демо-данные (тестовая подписка, тест-хосты), чтобы ревьюер прогнал VPN-раздел | P0 | ⬜ |
+| [#87](https://github.com/AuthFailed/CheckNet/issues/87) | Границы 5.4 VPN: явно показать, что приложение НЕ маршрутизирует трафик (формулировки в описании/UI, при риске — переименовать раздел) | P1 | ⬜ |
+| [#88](https://github.com/AuthFailed/CheckNet/issues/88) | 2.5.1 приватные API: аудит на отсутствие непубличных фреймворков/символов (raw sockets, `rt_msghdr2`, CoreWLAN) в iOS-сборке | P1 | ⬜ |
+| [#89](https://github.com/AuthFailed/CheckNet/issues/89) | App Privacy («nutrition labels») в ASC: честно задекларировать «Data Not Collected», отсутствие трекинга | P0 | ⬜ |
+| [#90](https://github.com/AuthFailed/CheckNet/issues/90) | Возрастной рейтинг (age rating questionnaire) | P1 | ⬜ |
+| [#91](https://github.com/AuthFailed/CheckNet/issues/91) | Правовая чистота данных: атрибуции сторонних источников (v2fly geosite/geoip, iperf server list, GitHub Releases), проверка их условий на встраивание | P2 | ⬜ |
+
+### C. Технический релиз-билд
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#92](https://github.com/AuthFailed/CheckNet/issues/92) | Дистрибуционный сертификат + App Store provisioning profile; архив Release реально собирается (`xcodebuild archive`) | P0 | ⬜ |
+| [#93](https://github.com/AuthFailed/CheckNet/issues/93) | Аудит entitlements: выключить неполученные (iCloud KV — дормантна, Wi-Fi) так, чтобы подпись прошла; сверить capabilities App ID | P0 | ⬜ |
+| [#94](https://github.com/AuthFailed/CheckNet/issues/94) | `PrivacyInfo.xcprivacy`: задекларировать required-reason API (UserDefaults, file timestamp, boot time, disk space) — обязательное требование Apple | P0 | ⬜ |
+| [#95](https://github.com/AuthFailed/CheckNet/issues/95) | Бамп версии/билда, выключить debug-логи и тестовые хосты, выгрузка dSYM для символикации | P1 | ⬜ |
+| [#96](https://github.com/AuthFailed/CheckNet/issues/96) | Решение по macOS: отдельная подача в Mac App Store (свой профиль/скриншоты) или пока только iOS; notarization если вне стора | P1 | ⬜ |
+| [#97](https://github.com/AuthFailed/CheckNet/issues/97) | Санити `Info.plist`: usage-строки (Local Network и др.), ориентации, обоснование background modes, launch screen, min deployment target | P1 | ⬜ |
+
+### D. Метаданные и витрина
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#98](https://github.com/AuthFailed/CheckNet/issues/98) | Тексты стора: имя, подзаголовок, описание, keywords, промо-текст, категория (Утилиты / Разработка), What's New | P1 | ⬜ |
+| [#99](https://github.com/AuthFailed/CheckNet/issues/99) | Скриншоты под все обязательные размеры (iPhone 6.9″/6.5″, iPad 13″, + Mac при подаче) + опц. app preview | P1 | ⬜ |
+| [#100](https://github.com/AuthFailed/CheckNet/issues/100) | Иконка 1024 без альфы/скруглений; проверка иконок всех размеров в asset catalog | P1 | ⬜ |
+| [#101](https://github.com/AuthFailed/CheckNet/issues/101) | Локализация метаданных: минимум основной язык полностью; топ-языки стора по мере сил (13 языков уже в приложении) | P2 | ⬜ |
+
+### E. QA на реальных устройствах
+
+Почти все «device-only» фичи из `CLAUDE.md` (Local Network Privacy, `BGTask`, уведомления, Handoff,
+Live Activity) до этого проверялись только на симуляторе или в тестах логики — здесь их наконец
+гоняют на живых устройствах.
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#102](https://github.com/AuthFailed/CheckNet/issues/102) | Прогон на реальных iPhone/iPad: Local Network Privacy, `BGTask`-пробуждение, доставка уведомлений, Handoff, Live Activity/Dynamic Island, контролы | P0 | ⬜ |
+| [#103](https://github.com/AuthFailed/CheckNet/issues/103) | Стабильность: нет крашей на холодном старте и всех экранах, нет утечек памяти, корректная работа без сети | P0 | ⬜ |
+| [#104](https://github.com/AuthFailed/CheckNet/issues/104) | Доступность: VoiceOver-проход по ключевым экранам, Dynamic Type до accessibility-размеров, тап-таргеты ≥44 pt | P1 | ⬜ |
+| [#105](https://github.com/AuthFailed/CheckNet/issues/105) | Проверка на «чистом» устройстве без платных entitlement: дормантные фичи (iCloud/Wi-Fi) честно показывают «недоступно», не крашат | P1 | ⬜ |
+
+### F. TestFlight и бета
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#106](https://github.com/AuthFailed/CheckNet/issues/106) | Внутреннее тестирование TestFlight (свои устройства) | P1 | ⬜ |
+| [#107](https://github.com/AuthFailed/CheckNet/issues/107) | Внешняя бета (Beta App Review) + сбор фидбэка перед релизом | P2 | ⬜ |
+
+### G. Автоматизация выката
+
+«Возможно автоматизировать какие-то процессы» — да, и это окупается со второй подачи. Ручной путь
+для первого релиза допустим, но всё ниже стоит поставить, чтобы обновления не были ручным ритуалом.
+
+| # | Задача | Приоритет | Статус |
+|---|---|---|---|
+| [#108](https://github.com/AuthFailed/CheckNet/issues/108) | App Store Connect API key + fastlane (`gym` — архив, `deliver` — метаданные/скриншоты/бинарь, `match` — подпись) | P2 | ⬜ |
+| [#109](https://github.com/AuthFailed/CheckNet/issues/109) | Автогенерация скриншотов (fastlane `snapshot` / UI-тест) под все размеры и языки | P2 | ⬜ |
+| [#110](https://github.com/AuthFailed/CheckNet/issues/110) | CI: по git-тегу собирать архив и заливать в TestFlight (расширение существующего GitHub Actions) | P3 | ⬜ |
+| [#111](https://github.com/AuthFailed/CheckNet/issues/111) | Автопубликация Privacy Policy/Support как статических страниц (GitHub Pages) из репозитория | P3 | ⬜ |
+
+**Порядок.** Сначала блокеры подачи — вся группа A плюс M8.13–M8.15 и M8.10: без аккаунта,
+экспортного статуса, дистрибуционной подписи, privacy-манифеста и App-Privacy-меток бинарь просто
+не примут. Параллельно с этим готовится юридический слой (политика, support). Затем B (ревью-риски
+и заметки ревьюеру) — то, из-за чего именно наше приложение могут развернуть. Дальше D (витрина) и
+E (QA на устройстве) идут вместе. F (бета) — репетиция перед релизом. G (автоматизация) — P2/P3, по
+мере надобности.
+
+**Зависимость от M7.** Подача осмысленна, когда набор инструментов заморожен — иначе каждый новый
+экран тянет новые скриншоты, строки и заметки ревьюеру. M8 стартует, когда M7 закрыта (или её
+чувствительные инструменты сознательно спрятаны из релизной сборки). Локальная гигиена из
+`CLAUDE.md` (нулевые следы тулчейна в репозитории, коммитах, метаданных стора) действует и здесь.
+
+Задачи заведены как GitHub Issues [#80–#111](https://github.com/AuthFailed/CheckNet/milestone/8) и
+подвешены к вехе M8, как остальные.
 
 ---
 
