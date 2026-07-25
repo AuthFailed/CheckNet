@@ -360,7 +360,10 @@ Hiddify, Streisand, Shadowrocket, NekoBox, V2Box, Karing) и стримит per-
 `ClientReleaseIndex` подтягивает реальные версии с GitHub Releases (карта клиент→репозиторий:
 2dust/v2rayNG, SagerNet/sing-box, clash-verge-rev, hiddify-app, NekoBox, Karing, mihomo, FlClash) —
 кнопка «подтянуть последние» + per-row меню выбора версии; closed-source (Happ, Streisand,
-Shadowrocket, V2Box) остаются ручными. Набор персистится в UserDefaults. 11 + 6 юнит-тестов (разбор
+Shadowrocket, V2Box) остаются ручными. **HWID:** тумблер «передавать HWID» + своё значение (или
+генерация) — уходит заголовком `X-HWID` для панелей с привязкой к устройству; можно выключить
+передачу целиком. **Сырые заголовки ответа** сохраняются и показываются per-client (раскрывающийся
+список «Заголовки ответа (N)»). Набор клиентов/HWID персистится в UserDefaults. 11 + 6 юнит-тестов (разбор
 заголовков и релизов GitHub) + живые смоуки против cloudflare-trace и GitHub API; проверено на реальной
 подписке (Happ → 200/20 узлов, трафик/название/поддержка распарсились) и на устройстве (подтяжка
 версий: v2rayNG 1.9.5→2.2.6, clash-verge→2.5.2, sing-box→1.14.0-beta.2). **Осталось в M7:** #71

@@ -33,6 +33,9 @@ public struct ClientProbeResult: Sendable, Hashable, Codable, Identifiable {
     public let userInfo: SubscriptionUserInfo?
     public let supportURL: String?
 
+    /// Every header the server returned, so the operator can inspect the raw response.
+    public let responseHeaders: [String: String]
+
     public let errorText: String?
 
     /// A request is "good" when the server answered 2xx with at least one node.
@@ -57,9 +60,12 @@ public enum ClientHeaderProbe {
         SubscriptionUserAgents.all.filter { $0.header != nil }
     }
 
+    /// - Parameter hwid: sent as the `X-HWID` header (device id some panels bind
+    ///   to); `nil` sends no HWID header at all.
     public static func probe(
         urlString: String,
         clients: [SubscriptionUserAgent] = defaultClients,
+        hwid: String? = nil,
         timeout: TimeInterval = 15
     ) -> AsyncStream<ClientProbeEvent> {
         AsyncStream(bufferingPolicy: .unbounded) { continuation in
@@ -74,7 +80,7 @@ public enum ClientHeaderProbe {
                 var served = 0
                 await withTaskGroup(of: ClientProbeResult.self) { group in
                     for client in clients {
-                        group.addTask { await one(url: url, client: client, timeout: timeout) }
+                        group.addTask { await one(url: url, client: client, hwid: hwid, timeout: timeout) }
                     }
                     for await result in group {
                         if Task.isCancelled { break }
@@ -89,10 +95,11 @@ public enum ClientHeaderProbe {
         }
     }
 
-    private static func one(url: URL, client: SubscriptionUserAgent, timeout: TimeInterval) async -> ClientProbeResult {
+    private static func one(url: URL, client: SubscriptionUserAgent, hwid: String?, timeout: TimeInterval) async -> ClientProbeResult {
         let ua = client.header ?? "CheckNet"
         var req = URLRequest(url: url)
         req.setValue(ua, forHTTPHeaderField: "User-Agent")
+        if let hwid, !hwid.isEmpty { req.setValue(hwid, forHTTPHeaderField: "X-HWID") }
         req.timeoutInterval = timeout
 
         func failure(_ text: String) -> ClientProbeResult {
@@ -100,7 +107,7 @@ public enum ClientHeaderProbe {
                 clientID: client.id, clientLabel: client.label, userAgent: ua,
                 statusCode: 0, contentType: nil, byteCount: 0, format: nil, nodeCount: 0,
                 filename: nil, title: nil, updateIntervalHours: nil, userInfo: nil,
-                supportURL: nil, errorText: text
+                supportURL: nil, responseHeaders: [:], errorText: text
             )
         }
 
@@ -123,6 +130,7 @@ public enum ClientHeaderProbe {
                 updateIntervalHours: headers["profile-update-interval"].flatMap { Double($0) },
                 userInfo: userInfo(from: headers["subscription-userinfo"]),
                 supportURL: headers["support-url"] ?? headers["profile-web-page-url"],
+                responseHeaders: headers,
                 errorText: nil
             )
         } catch {

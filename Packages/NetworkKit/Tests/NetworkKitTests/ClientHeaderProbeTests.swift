@@ -74,7 +74,7 @@ final class ClientHeaderProbeTests: XCTestCase {
         var results: [ClientProbeResult] = []
         var finishedTotal = 0
         for await event in ClientHeaderProbe.probe(urlString: "https://www.cloudflare.com/cdn-cgi/trace",
-                                                   clients: clients, timeout: 10) {
+                                                   clients: clients, hwid: "test-hwid-123", timeout: 10) {
             switch event {
             case .result(let r): results.append(r)
             case .finished(_, let total): finishedTotal = total
@@ -85,6 +85,8 @@ final class ClientHeaderProbeTests: XCTestCase {
         XCTAssertEqual(finishedTotal, clients.count)
         // Trace endpoint returns 200 for every client, though it parses to 0 nodes.
         XCTAssertTrue(results.allSatisfy { $0.statusCode == 200 })
+        // The full response header set is captured for the operator to inspect.
+        XCTAssertTrue(results.allSatisfy { !$0.responseHeaders.isEmpty })
     }
 
     func testInvalidURLFails() async {

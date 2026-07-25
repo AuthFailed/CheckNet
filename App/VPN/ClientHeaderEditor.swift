@@ -30,6 +30,31 @@ struct ClientEditorView: View {
                     Text("Приложение и версия собирают User-Agent «Приложение/Версия». Версии с GitHub доступны для клиентов с открытым исходным кодом; остальные вводятся вручную.")
                 }
 
+                Section {
+                    Toggle("Передавать HWID", isOn: $model.sendHWID)
+                        .onChange(of: model.sendHWID) { model.saveHWID() }
+                    if model.sendHWID {
+                        HStack(spacing: 8) {
+                            TextField("HWID устройства", text: $model.hwid)
+                                .font(.system(.body, design: .monospaced))
+                                .autocorrectionDisabled()
+                                #if os(iOS)
+                                .textInputAutocapitalization(.never)
+                                #endif
+                                .onChange(of: model.hwid) { model.saveHWID() }
+                            Button { model.generateHWID() } label: {
+                                Image(systemName: "wand.and.stars")
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Сгенерировать HWID")
+                        }
+                    }
+                } header: {
+                    Text("HWID")
+                } footer: {
+                    Text("Отправляется как заголовок X-HWID — некоторые панели привязывают подписку к устройству и лимитируют число HWID. Выключите, чтобы не передавать HWID вовсе.")
+                }
+
                 Section("Клиенты") {
                     ForEach($model.clients) { $client in
                         clientRow($client)

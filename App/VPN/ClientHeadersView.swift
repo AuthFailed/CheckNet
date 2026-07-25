@@ -39,6 +39,9 @@ struct EditableClient: Identifiable, Codable, Equatable {
 final class ClientHeadersModel {
     var url = ""
     var clients: [EditableClient] = ClientHeadersModel.loadClients() ?? EditableClient.defaults()
+    /// HWID (device id) some panels bind subscriptions to. Off by default.
+    var sendHWID = UserDefaults.standard.bool(forKey: "checknet.vpn.sendHWID")
+    var hwid = UserDefaults.standard.string(forKey: "checknet.vpn.hwid") ?? ""
     /// Fetched GitHub versions, keyed by `owner/repo`.
     var githubVersions: [String: [String]] = [:]
     private(set) var loadingVersions = false
@@ -69,9 +72,11 @@ final class ClientHeadersModel {
         stop()
         results = []; served = 0; total = 0; errorMessage = nil; isRunning = true
         let rank = order()
+        let hwidToSend = (sendHWID && !hwid.trimmingCharacters(in: .whitespaces).isEmpty)
+            ? hwid.trimmingCharacters(in: .whitespaces) : nil
         task = Task { [weak self] in
             guard let self else { return }
-            for await event in ClientHeaderProbe.probe(urlString: u, clients: clientSet) {
+            for await event in ClientHeaderProbe.probe(urlString: u, clients: clientSet, hwid: hwidToSend) {
                 if Task.isCancelled { break }
                 switch event {
                 case .result(let r):
@@ -138,6 +143,17 @@ final class ClientHeadersModel {
         if let data = try? JSONEncoder().encode(clients) {
             UserDefaults.standard.set(data, forKey: Self.storeKey)
         }
+    }
+
+    func saveHWID() {
+        UserDefaults.standard.set(sendHWID, forKey: "checknet.vpn.sendHWID")
+        UserDefaults.standard.set(hwid, forKey: "checknet.vpn.hwid")
+    }
+
+    /// A plausible random device id for panels that expect one.
+    func generateHWID() {
+        hwid = UUID().uuidString.lowercased()
+        saveHWID()
     }
 
     static func loadClients() -> [EditableClient]? {
@@ -279,6 +295,28 @@ struct ClientHeadersView: View {
                         if row.0 != details.last?.0 { Divider().padding(.leading, 14) }
                     }
                 }
+            }
+
+            if !r.responseHeaders.isEmpty {
+                Divider().padding(.leading, 14)
+                DisclosureGroup {
+                    VStack(alignment: .leading, spacing: 7) {
+                        ForEach(r.responseHeaders.sorted { $0.key < $1.key }, id: \.key) { key, value in
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(key).font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                                Text(value).font(.caption2.monospaced())
+                                    .textSelection(.enabled)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .padding(.top, 6)
+                } label: {
+                    Text("Заголовки ответа (\(r.responseHeaders.count))")
+                        .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 14).padding(.vertical, 9)
             }
         }
         .card()
