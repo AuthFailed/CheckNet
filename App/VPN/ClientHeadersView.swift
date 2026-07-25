@@ -1,10 +1,48 @@
 import SwiftUI
 import NetworkKit
 
+/// One client identity the user can edit: app name + version compose the
+/// `User-Agent`. Persisted so custom versions stick between sessions.
+struct EditableClient: Identifiable, Codable, Equatable {
+    var id: String
+    var app: String
+    var version: String
+    var enabled: Bool = true
+    /// Preset id used to resolve a GitHub repo; nil for user-added rows.
+    var presetID: String?
+
+    var userAgent: String {
+        version.trimmingCharacters(in: .whitespaces).isEmpty
+            ? app : "\(app)/\(version.trimmingCharacters(in: .whitespaces))"
+    }
+    /// `owner/repo` on GitHub, if this client is open source.
+    var repo: String? { ClientReleaseIndex.repo(clientID: presetID, product: app) }
+
+    static func splitUA(_ ua: String) -> (app: String, version: String) {
+        guard let slash = ua.lastIndex(of: "/") else { return (ua, "") }
+        return (String(ua[..<slash]), String(ua[ua.index(after: slash)...]))
+    }
+
+    /// The built-in clients (v2rayNG, Happ, Clash Meta…) as editable rows.
+    static func defaults() -> [EditableClient] {
+        SubscriptionUserAgents.all.compactMap { ua in
+            guard let header = ua.header else { return nil }
+            let parts = splitUA(header)
+            return EditableClient(id: ua.id, app: parts.app, version: parts.version,
+                                  enabled: true, presetID: ua.id)
+        }
+    }
+}
+
 @MainActor
 @Observable
 final class ClientHeadersModel {
     var url = ""
+    var clients: [EditableClient] = ClientHeadersModel.loadClients() ?? EditableClient.defaults()
+    /// Fetched GitHub versions, keyed by `owner/repo`.
+    var githubVersions: [String: [String]] = [:]
+    private(set) var loadingVersions = false
+    var versionsNote: String?
     private(set) var isRunning = false
     private(set) var results: [ClientProbeResult] = []
     private(set) var served = 0
@@ -12,24 +50,33 @@ final class ClientHeadersModel {
     private(set) var errorMessage: String?
     private var task: Task<Void, Never>?
 
-    /// Display order = the client order the engine defines (popular → niche).
-    private static let order: [String: Int] = Dictionary(
-        uniqueKeysWithValues: ClientHeaderProbe.defaultClients.enumerated().map { ($1.id, $0) }
-    )
+    private static let storeKey = "checknet.vpn.clientHeaders"
+
+    /// Enabled rows, in list order, as the probe's client set.
+    private func probeClients() -> [SubscriptionUserAgent] {
+        clients.filter { $0.enabled && !$0.app.trimmingCharacters(in: .whitespaces).isEmpty }
+            .map { SubscriptionUserAgent(id: $0.id, label: $0.app, header: $0.userAgent) }
+    }
+
+    private func order() -> [String: Int] {
+        Dictionary(uniqueKeysWithValues: clients.enumerated().map { ($1.id, $0) })
+    }
 
     func start() {
         let u = url.trimmingCharacters(in: .whitespaces)
-        guard !u.isEmpty else { return }
+        let clientSet = probeClients()
+        guard !u.isEmpty, !clientSet.isEmpty else { return }
         stop()
         results = []; served = 0; total = 0; errorMessage = nil; isRunning = true
+        let rank = order()
         task = Task { [weak self] in
             guard let self else { return }
-            for await event in ClientHeaderProbe.probe(urlString: u) {
+            for await event in ClientHeaderProbe.probe(urlString: u, clients: clientSet) {
                 if Task.isCancelled { break }
                 switch event {
                 case .result(let r):
                     results.append(r)
-                    results.sort { (Self.order[$0.clientID] ?? 99) < (Self.order[$1.clientID] ?? 99) }
+                    results.sort { (rank[$0.clientID] ?? 99) < (rank[$1.clientID] ?? 99) }
                 case .finished(let s, let t):
                     served = s; total = t
                 case .failed(let reason):
@@ -41,6 +88,62 @@ final class ClientHeadersModel {
     }
 
     func stop() { task?.cancel(); task = nil; isRunning = false }
+
+    // MARK: - Client editing
+
+    func addClient() {
+        clients.append(EditableClient(id: "custom-\(clients.count)-\(UUID().uuidString.prefix(4))",
+                                      app: "", version: "", enabled: true, presetID: nil))
+    }
+
+    func remove(atOffsets offsets: IndexSet) { clients.remove(atOffsets: offsets); saveClients() }
+
+    func resetClients() {
+        clients = EditableClient.defaults()
+        githubVersions = [:]; versionsNote = nil
+        saveClients()
+    }
+
+    /// Pulls the latest release list from GitHub for every open-source client and
+    /// fills each with its newest version. Leaves closed-source clients as-is.
+    func loadVersionsFromGitHub() async {
+        guard !loadingVersions else { return }
+        loadingVersions = true; versionsNote = nil
+        let repos = Set(clients.compactMap { $0.repo })
+        guard !repos.isEmpty else {
+            loadingVersions = false
+            versionsNote = "Ни один клиент не связан с GitHub-репозиторием."
+            return
+        }
+        var updated = 0
+        for repo in repos {
+            if let versions = try? await ClientReleaseIndex.versions(repo: repo) {
+                githubVersions[repo] = versions
+            }
+        }
+        for i in clients.indices {
+            if let repo = clients[i].repo, let latest = githubVersions[repo]?.first {
+                clients[i].version = latest
+                updated += 1
+            }
+        }
+        saveClients()
+        loadingVersions = false
+        versionsNote = updated > 0
+            ? "Обновлено версий: \(updated) из GitHub."
+            : "Не удалось получить версии — проверьте сеть."
+    }
+
+    func saveClients() {
+        if let data = try? JSONEncoder().encode(clients) {
+            UserDefaults.standard.set(data, forKey: Self.storeKey)
+        }
+    }
+
+    static func loadClients() -> [EditableClient]? {
+        UserDefaults.standard.data(forKey: storeKey)
+            .flatMap { try? JSONDecoder().decode([EditableClient].self, from: $0) }
+    }
 }
 
 /// Ответ сервера подписки на заголовки разных клиентов (#75). Вводим URL
@@ -51,6 +154,7 @@ final class ClientHeadersModel {
 struct ClientHeadersView: View {
     var autostart = false
     @State private var model = ClientHeadersModel()
+    @State private var showEditor = false
     @Environment(SavedSubscriptionsStore.self) private var saved
 
     var body: some View {
@@ -94,6 +198,19 @@ struct ClientHeadersView: View {
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
         .navigationTitle("Заголовки клиентов")
         .toolTitleDisplayMode()
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showEditor = true
+                } label: {
+                    Label("Клиенты и версии", systemImage: "slider.horizontal.3")
+                }
+                .disabled(model.isRunning)
+            }
+        }
+        .sheet(isPresented: $showEditor) {
+            ClientEditorView(model: model)
+        }
         .onAppear { if autostart { model.start() } }
     }
 
