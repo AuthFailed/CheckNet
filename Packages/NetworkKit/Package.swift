@@ -13,6 +13,9 @@ let package = Package(
     targets: [
         .target(
             name: "NetworkKit",
+            resources: [
+                .copy("HappKeys")
+            ],
             swiftSettings: [
                 .swiftLanguageMode(.v6)
             ]
