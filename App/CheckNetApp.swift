@@ -5,6 +5,8 @@ import CoreSpotlight
 struct CheckNetApp: App {
     @State private var toolStore = ToolStore()
     @State private var savedHosts: SavedHostsStore
+    @State private var savedSubscriptions: SavedSubscriptionsStore
+    @State private var xrayCores = XrayCoreStore()
     @State private var cloudSync: CloudHostSync
     @State private var settings = AppSettings()
     @State private var webhooks = WebhookSettings()
@@ -26,6 +28,7 @@ struct CheckNetApp: App {
         // One saved-hosts store, shared with the iCloud sync that mirrors it.
         let hosts = SavedHostsStore()
         _savedHosts = State(initialValue: hosts)
+        _savedSubscriptions = State(initialValue: SavedSubscriptionsStore())
         _cloudSync = State(initialValue: CloudHostSync(store: hosts))
 
         // Must be registered before the app finishes launching.
@@ -45,6 +48,8 @@ struct CheckNetApp: App {
         content
             .environment(toolStore)
             .environment(savedHosts)
+            .environment(savedSubscriptions)
+            .environment(xrayCores)
             .environment(settings)
             .environment(webhooks)
             .environment(networkProfiles)

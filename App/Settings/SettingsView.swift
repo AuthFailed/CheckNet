@@ -3,6 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(SavedHostsStore.self) private var savedHosts
+    @Environment(SavedSubscriptionsStore.self) private var savedSubscriptions
+    @Environment(XrayCoreStore.self) private var xrayCores
     @State private var showHistory = false
     @State private var permissionResult: String?
 
@@ -33,6 +35,25 @@ struct SettingsView: View {
                         Label {
                             LabeledContent("IP-адреса", value: "\(savedHosts.savedIPs.count)")
                         } icon: { Image(systemName: "number") }
+                    }
+                    NavigationLink {
+                        SavedSubscriptionsEditor()
+                    } label: {
+                        Label {
+                            LabeledContent("Подписки VPN", value: "\(savedSubscriptions.items.count)")
+                        } icon: { Image(systemName: "list.bullet.rectangle") }
+                    }
+                    NavigationLink {
+                        XrayCoresEditor()
+                    } label: {
+                        Label {
+                            LabeledContent("Ядро Xray") {
+                                Text(xrayCores.installed.isEmpty
+                                     ? (XrayCoreStore.isSupported ? "нет" : "Mac")
+                                     : "\(xrayCores.installed.count)")
+                                .foregroundStyle(.secondary)
+                            }
+                        } icon: { Image(systemName: "shippingbox") }
                     }
                     NavigationLink {
                         HostSharingView()

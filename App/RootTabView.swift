@@ -19,7 +19,8 @@ struct RootTabView: View {
         switch name {
         case "tests": return 0
         case "blocking": return 1
-        case "settings": return 2
+        case "vpn": return 2
+        case "settings": return 3
         default: return nil
         }
     }
@@ -32,10 +33,13 @@ struct RootTabView: View {
             Tab("Блокировки", systemImage: "hand.raised", value: 1) {
                 BlockingView()
             }
+            Tab("VPN", systemImage: "network.badge.shield.half.filled", value: 2) {
+                VPNView()
+            }
             // Not on macOS: settings live in the ⌘, scene there, and a
             // Settings tab as well would be two doors to the same room.
             #if !os(macOS)
-            Tab("Настройки", systemImage: "gearshape", value: 2) {
+            Tab("Настройки", systemImage: "gearshape", value: 3) {
                 SettingsView()
             }
             #endif
