@@ -48,7 +48,7 @@ M1 Стабилизация ──┬─→ M2 Адаптивный UI ──→
                                └─→ M6 Новые инструменты
 ```
 
-**Статус вех:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 почти закрыта (#39–#44 ✅, остаётся P3 #45) · M6 ✅ (инструменты сделаны; #49 — живой бэклог идей) · **M7 📋 запланирована** (раздел для владельцев VPN, #69–#77).
+**Статус вех:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 почти закрыта (#39–#44 ✅, остаётся P3 #45) · M6 ✅ (инструменты сделаны; #49 — живой бэклог идей) · **M7 🔨 в работе** (раздел для владельцев VPN: #70/#72/#75/#76/#77/#78/#79 ✅, остаются #71/#73/#74).
 
 - **M1 первым** — там блокеры релиза (privacy manifest), потеря данных (гонка в истории) и
   неработающий CI. Строить новое на нестабильном фундаменте дороже.
@@ -301,20 +301,71 @@ ClientHello и подобное; помогаем оператору настр�
 | # | Задача | Приоритет | Статус |
 |---|---|---|---|
 | [#69](https://github.com/AuthFailed/CheckNet/issues/69) | Эпик: раздел «VPN» — зонтичная задача | P2 | 📋 |
-| [#70](https://github.com/AuthFailed/CheckNet/issues/70) | Пригодность домена как SNI/dest для Reality | P2 | 📋 |
+| [#70](https://github.com/AuthFailed/CheckNet/issues/70) | Пригодность домена как SNI/dest для Reality | P2 | ✅ |
 | [#71](https://github.com/AuthFailed/CheckNet/issues/71) | Доступность Xray-инбаунда (VLESS/Trojan) — реальный handshake | P2 | 📋 |
-| [#72](https://github.com/AuthFailed/CheckNet/issues/72) | Парсинг подписки — хосты, роутинг, быстрые действия | P2 | 📋 |
+| [#72](https://github.com/AuthFailed/CheckNet/issues/72) | Парсинг подписки — хосты, роутинг, быстрые действия | P2 | ✅ |
 | [#73](https://github.com/AuthFailed/CheckNet/issues/73) | Просмотр geosite/geoip — загрузка, разбор, поиск тегов, фильтры | P3 | 📋 |
 | [#74](https://github.com/AuthFailed/CheckNet/issues/74) | Просмотр mihomo rule-set (`.mrs`) | P3 | 📋 |
-| [#75](https://github.com/AuthFailed/CheckNet/issues/75) | Ответ сервера подписки на заголовки разных клиентов | P3 | 📋 |
-| [#76](https://github.com/AuthFailed/CheckNet/issues/76) | Конфигуратор правил роутинга Happ + разбор | P3 | 📋 |
-| [#77](https://github.com/AuthFailed/CheckNet/issues/77) | Happ Decrypt — расшифровка конфигов/подписок Happ | P3 | 📋 |
-| [#78](https://github.com/AuthFailed/CheckNet/issues/78) | Incy deep-link — разбор и генерация `incy://crypt1` (+ QR) | P3 | 📋 |
+| [#75](https://github.com/AuthFailed/CheckNet/issues/75) | Ответ сервера подписки на заголовки разных клиентов | P3 | ✅ |
+| [#76](https://github.com/AuthFailed/CheckNet/issues/76) | Конфигуратор правил роутинга Happ + разбор | P3 | ✅ |
+| [#77](https://github.com/AuthFailed/CheckNet/issues/77) | Happ Decrypt — расшифровка конфигов/подписок Happ | P3 | ✅ |
+| [#78](https://github.com/AuthFailed/CheckNet/issues/78) | Incy deep-link — разбор и генерация `incy://crypt1` (+ QR) | P3 | ✅ |
+| [#79](https://github.com/AuthFailed/CheckNet/issues/79) | Сканер доменов для Reality — обход IP/подсети в поиске TLS 1.3 dest | P2 | ✅ |
 
 **Порядок:** сначала разборщики и клиенты в `NetworkKit` (движок → тест → экран), от которых
 зависит остальное: парсинг подписки (#72) и клиент VLESS/Trojan (#71) — фундамент; SNI-проверка
 (#70) переиспользует TLS inspector/`X509Parser`; просмотрщики (#73/#74) — независимы; конфигуратор
 роутинга (#76) и Happ Decrypt (#77) ждут спецификаций форматов (см. открытые вопросы в issue).
+
+**#70 сделан:** `RealitySNICheck` выносит вердикт о пригодности домена как `dest`/SNI по тем же
+критериям, на которых стоит эталонный `XTLS/RealiTLScanner` и README REALITY. Обязательные (провал
+роняет вердикт): **TLS 1.3**, **ALPN `h2`**, реальный листовой сертификат с субъектом и издателем —
+это правило приёма RealiTLScanner. Мягкие (только замечание): **поддержка X25519**, отсутствие
+внешнего редиректа с главной (`example.com` → `www` допустим), доверенный неистёкший сертификат,
+покрытие домена SAN. Факты TLS берутся из существующего `TLSInspector`/`X509Parser`; редирект — из
+живого `GET /` поверх `TLSStream`. X25519 нельзя ограничить через Network.framework (нет API для
+key-exchange-групп), поэтому `TLS13GroupProbe` вручную шлёт минимальный TLS 1.3 ClientHello с
+единственной группой X25519 и читает ServerHello — так же, как RealiTLScanner фиксирует
+`CurvePreferences`. Всё поверх `NWConnection` (сырые BSD-сокеты в песочнице заблокированы, поэтому
+`TLSInspector` и раньше жил на Network.framework). Движок покрыт юнит-тестами (детерминированная
+логика вердикта/матчинга сертификата/редиректа) и проверен на живых доменах: microsoft/google/
+apple/cloudflare/github → «подходит», `dl.google.com` → «с замечанием» (кросс-субдоменный редирект
+на `www.google.com`). На устройстве подтверждён вердикт по www.microsoft.com. Экран
+`RealitySNIView` — вводим домен, `ToolRunModel<RealitySNIReport>`, карточка вердикта + список
+критериев со статусом формой и словом + карточка деталей. Граница соблюдена: только диагностика,
+никакого обхода. **Готово в M7:** #70, #72, #76, #77, #78; **осталось:** #71 (Xray-инбаунд),
+#73/#74 (просмотрщики geosite/`.mrs`), #75 (заголовки клиентов), #79 (сканер, в работе).
+
+**#79 — сканер доменов для Reality (сделан).** #70 проверяет один домен; сканер решает обратную
+задачу — «дай IP/подсеть рядом с моим сервером, найди в ней хосты, годные под `dest`». Обходит
+диапазон IPv4 (CIDR / `a.b.c.d-e` / `a.b.c` / одиночный IP; домен резолвится в IP, опц. соседний
+/24), к каждому IP делает TLS 1.3-хендшейк **без SNI** и собирает попадания: TLS 1.3 + сертификат,
+из листа берётся домен (CN/SAN) и издатель, помечается поддержка h2. Стриминговый результат
+(прогресс + список находок IP → домен → издатель), как в скане портов/IP. Переиспользует
+`IPv4Range.hosts` (разбор диапазона) и потоковый `withTaskGroup` из `IPRangeScanner`, TLS-факты — по
+образцу `TLSInspector`. Скан диапазона сетевой-интрузивный → гейт согласия (`.confirmationDialog`,
+как у скана портов/IP). Граница M7 соблюдена: находим камуфляжные домены, а не обходим DPI.
+
+**#75 — ответ сервера по клиентам (сделан).** `ClientHeaderProbe` (NetworkKit/VPN) запрашивает URL
+подписки от лица каждого клиента (`SubscriptionUserAgents`: v2rayNG, Happ, Clash Meta, sing-box,
+Hiddify, Streisand, Shadowrocket, NekoBox, V2Box, Karing) и стримит per-client результат: статус,
+число узлов, формат (через `SubscriptionParser`) и заголовки панели — `subscription-userinfo`
+(upload/download/total/expire; `expire=0` = без срока, не 1970), `content-disposition` (filename,
+в т.ч. RFC 5987), `profile-title` (plain/`base64:`), `profile-update-interval`, support-url. Экран
+`ClientHeadersView` — стриминговый список с цветным статусом (обслужен/без узлов/отказ) и раскрытыми
+деталями; поле URL подключено к общему `SavedSubscriptionsStore` (тот же список подписок, что в
+«Парсинг подписки», #72) — можно подставить сохранённую или закладкой сохранить текущую. 11
+юнит-тестов (разбор всех заголовков) + живой смоук против cloudflare-trace; проверено на реальной
+подписке (Happ → 200/20 узлов, трафик/название/поддержка распарсились). **Осталось в M7:** #71
+(Xray-инбаунд, через-прокси только на macOS), #73/#74 (просмотрщики geosite/`.mrs`).
+
+Источники идеи (референсы поведения сканера, не зависимость):
+- `XTLS/RealiTLScanner` — https://github.com/XTLS/RealiTLScanner (эталон: `-addr <IP/CIDR/домен>`,
+  правило приёма `version==TLS1.3 && alpn=="h2" && есть CN && есть issuer`, вывод `IP  домен  издатель`,
+  флаги `-port/-thread/-timeout/-showFail`).
+- Веб-реализация: https://ru.inettools.net/tools/reality-tls-scanner
+- Гайд по настройке Xray+Reality (выбор `dest`, применение сканера):
+  https://pikabu.ru/story/nastraivaem_server_i_klient_xray_s_xtlsreality_12073187
 
 **Форматы разобраны (спеки в issue):** Happ crypt/crypt5 (RSA PKCS#1 + ChaCha20-Poly1305,
 публичный материал ключей) — #77; Happ-роутинг (`happ://routing/add/<base64 JSON>`, точные поля) —
