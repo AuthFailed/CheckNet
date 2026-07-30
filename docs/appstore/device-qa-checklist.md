@@ -1,65 +1,62 @@
-# QA на реальных устройствах (#102–#105)
+# On-device QA (#102–#105)
 
-Чек-лист для прогона на твоих iPhone/iPad. Почти всё ниже симулятор либо скрывает, либо подделывает —
-поэтому это делается на живом железе перед подачей. Отмечай ✅/❌ и записывай, что сломалось.
+Checklist for a run on your iPhone/iPad. Almost everything below the simulator either hides or fakes —
+so it's done on real hardware before submission. Mark ✅/❌ and note what broke.
 
-## #102 · Платформенные фичи (device-only)
+## #102 · Platform features (device-only)
 
-- [ ] **Local Network Privacy.** На первом инструменте, который трогает LAN (Bonjour/обзор сети/скан),
-      iOS показывает системный запрос доступа к локальной сети. Разрешить → устройства/сервисы
-      находятся. Запретить → инструмент честно показывает ошибку, не «висит».
-- [ ] **BGTask-пробуждение.** Включить мониторинг хоста, свернуть приложение. Через время (можно
-      форсировать из Xcode: Debug → Simulate Background Fetch) приходит проверка. Идентификатор
-      `com.chrsnv.checknet.monitor.refresh` зарегистрирован.
-- [ ] **Уведомления.** Мониторинг ловит переход up→down и down→up, приходит баннер; действия
-      «Открыть»/«Проверить снова» работают; тап открывает нужный экран.
-- [ ] **Time-sensitive (после entitlement).** Уведомление о падении хоста приходит как
-      Time-Sensitive (пробивает Focus, если разрешено). До entitlement — приходит как обычное (это
-      ожидаемо, не баг).
-- [ ] **Handoff.** Открыть инструмент на одном устройстве → на втором (тот же Apple ID) в доке
-      появляется иконка продолжения; тап открывает тот же инструмент.
-- [ ] **Live Activity / Dynamic Island.** Долгая проверка (мониторинг/скорость) показывает Live
-      Activity на Lock Screen и в Dynamic Island (iPhone 14 Pro+); обновляется и корректно
-      завершается.
-- [ ] **Контролы (Control Center / Lock Screen).** Добавляются пользователем, запускают нужный
-      инструмент по deep-link.
-- [ ] **Deep links / Shortcuts.** `checknet://` + App Intents открывают инструмент и запускают
-      проверку.
+- [ ] **Local Network Privacy.** On the first tool that touches the LAN (Bonjour/network browse/scan),
+      iOS shows the system prompt for local network access. Allow → devices/services are found. Deny
+      → the tool honestly shows an error and doesn't "hang".
+- [ ] **BGTask wake-up.** Enable host monitoring, background the app. After a while (can be forced
+      from Xcode: Debug → Simulate Background Fetch) a check arrives. The identifier
+      `com.chrsnv.checknet.monitor.refresh` is registered.
+- [ ] **Notifications.** Monitoring catches the up→down and down→up transitions, a banner arrives; the
+      "Open"/"Check again" actions work; a tap opens the right screen.
+- [ ] **Time-sensitive (after the entitlement).** A host-down notification arrives as Time-Sensitive
+      (breaks through Focus, if allowed). Before the entitlement — it arrives as a regular one (this
+      is expected, not a bug).
+- [ ] **Handoff.** Open a tool on one device → on the second (same Apple ID) a continuation icon
+      appears in the dock; a tap opens the same tool.
+- [ ] **Live Activity / Dynamic Island.** A long check (monitoring/speed) shows a Live Activity on the
+      Lock Screen and in the Dynamic Island (iPhone 14 Pro+); it updates and finishes correctly.
+- [ ] **Controls (Control Center / Lock Screen).** Added by the user, they launch the right tool via
+      deep-link.
+- [ ] **Deep links / Shortcuts.** `checknet://` + App Intents open a tool and start a check.
 
-## #103 · Стабильность
+## #103 · Stability
 
-- [ ] Холодный старт без краша на iPhone и iPad.
-- [ ] Пройти **все** экраны инструментов — ни одного краша/зависания.
-- [ ] **Без сети** (авиарежим): проверки дают понятную ошибку, не крашат и не висят.
-- [ ] Нет утечек памяти на повторных прогонах тяжёлых инструментов (скан диапазона, скорость,
-      мониторинг) — глянуть в Instruments/Xcode Memory graph.
-- [ ] Поворот экрана (iPhone landscape, iPad split view) не ломает раскладку.
+- [ ] Cold start without a crash on iPhone and iPad.
+- [ ] Go through **all** tool screens — no crash/hang on any of them.
+- [ ] **No network** (airplane mode): checks give a clear error, don't crash and don't hang.
+- [ ] No memory leaks on repeated runs of heavy tools (range scan, speed, monitoring) — check in
+      Instruments/Xcode Memory graph.
+- [ ] Rotation (iPhone landscape, iPad split view) doesn't break the layout.
 
-## #104 · Доступность
+## #104 · Accessibility
 
-- [ ] **VoiceOver** проходит ключевые экраны: каталог, экран инструмента (idle→running→result),
-      Блокировки, Настройки. У всех icon-only контролов есть подписи.
-- [ ] **Dynamic Type** до accessibility-размеров: текст не обрезается, карточки растут, ничего не
-      наезжает.
-- [ ] Тап-таргеты ≥44 pt.
-- [ ] Статус читается **не только цветом** (форма + слово) — проверить с фильтром цветовосприятия.
+- [ ] **VoiceOver** goes through the key screens: catalog, tool screen (idle→running→result),
+      Censorship checks, Settings. Every icon-only control has a label.
+- [ ] **Dynamic Type** up to accessibility sizes: text isn't clipped, cards grow, nothing overlaps.
+- [ ] Tap targets ≥44 pt.
+- [ ] Status is readable **not by color alone** (shape + word) — check with a color-vision filter.
 
-## #105 · «Чистое» устройство без платных entitlement (дормантные фичи)
+## #105 · A "clean" device without paid entitlements (dormant features)
 
-Проверить, что до включения платных возможностей приложение ведёт себя честно, а не «делает вид»:
+Verify that before the paid capabilities are enabled the app behaves honestly rather than "pretending":
 
-- [ ] **iCloud-синхронизация хостов** (`CloudHostSync.isAvailable=false`): в Настройках либо скрыта,
-      либо показана как «недоступно», тумблер не притворяется рабочим. Не крашит.
-- [ ] **Wi-Fi SSID на iOS** (`CurrentNetwork.isSSIDReadable=false`): действие «проверить текущую сеть»
-      скрыто/помечено недоступным; приложение НЕ просит геопозицию ради лукапа, который всё равно не
-      сработает.
-- [ ] **Wi-Fi-инструменты на iOS**: показывают заглушку «доступно на Mac», не пустой/битый экран.
-- [ ] После включения entitlement (следующая сборка): те же фичи становятся доступны и реально
-      работают на устройстве (SSID читается после разрешения геопозиции; iCloud подхватывает хосты
-      со второго устройства; time-sensitive приходит как time-sensitive).
+- [ ] **iCloud host sync** (`CloudHostSync.isAvailable=false`): in Settings it's either hidden or
+      shown as "unavailable", the toggle doesn't pretend to work. Doesn't crash.
+- [ ] **Wi-Fi SSID on iOS** (`CurrentNetwork.isSSIDReadable=false`): the "check current network" action
+      is hidden/marked unavailable; the app does NOT ask for location for a lookup that wouldn't work
+      anyway.
+- [ ] **Wi-Fi tools on iOS**: show a "available on Mac" placeholder, not an empty/broken screen.
+- [ ] After the entitlement is enabled (the next build): the same features become available and
+      actually work on-device (SSID reads after location permission; iCloud picks up hosts from the
+      second device; time-sensitive arrives as time-sensitive).
 
-## Как ставить сборку на устройство
+## How to install a build on a device
 
-- Через Xcode (Run на подключённом устройстве) или TestFlight-сборку (#106).
-- Для автоматической подписи нужен вход в твой Apple ID в Xcode и Team ID в проекте — см.
-  `README.md` (раздел про Team ID) и #92.
+- Via Xcode (Run on a connected device) or a TestFlight build (#106).
+- Automatic signing needs your Apple ID signed into Xcode and the Team ID in the project — see
+  `README.md` (the Team ID section) and #92.

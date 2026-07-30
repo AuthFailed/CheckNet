@@ -1,67 +1,67 @@
-# App Store: подготовка к подаче
+# App Store: submission preparation
 
-Рабочий индекс по вехе M8. Здесь два слоя:
+Working index for milestone M8. There are two layers here:
 
-- **Что уже сделано в коде/конфиге** — можно проверять в репозитории.
-- **Что делаешь ты руками** — в Apple Developer / App Store Connect (ASC) / на GitHub Pages.
-  Для каждого такого пункта ниже есть отдельный файл-черновик и пошаговый список «что нажать».
+- **What is already done in code/config** — verifiable in the repository.
+- **What you do by hand** — in Apple Developer / App Store Connect (ASC) / on GitHub Pages.
+  Each such item below has its own draft file and a step-by-step "what to click" list.
 
-Черновики намеренно лежат в репозитории как обычные проектные документы. Публичными становятся
-только `docs/legal/*` (политика и поддержка) — их публикуем через GitHub Pages.
+The drafts intentionally live in the repository as ordinary project documents. Only `docs/legal/*`
+(policy and support) become public — those we publish via GitHub Pages.
 
-## Всплывшие блокеры (важно)
+## Surfaced blockers (important)
 
-- **CI был сломан.** С момента подключения libXray сборки iOS/macOS/CodeQL падали в CI (framework
-  не фетчился). Исправлено на ветке `feat/m7-vpn-operator-tools` (шаг `Fetch libXray core`). После
-  зелёного прогона PR #112 мержится в `main` (локализационный джоб остаётся красным → M10, по
-  решению).
-- **Иконки приложения нет вообще** (#100). Нет asset catalog, нет `AppIcon`, нет 1024 — hard-блокер
-  подачи. Это дизайн-задача → готовый дизайн-бриф в `store-metadata.md`. Как получим
-  иконку — завожу asset catalog и прописываю в `project.yml`.
-- **`ITSAppUsesNonExemptEncryption=false`** может быть некорректным при крипте Happ/Incy — решение
-  в `export-compliance.md`.
+- **CI was broken.** Since libXray was added, the iOS/macOS/CodeQL builds had been failing in CI (the
+  framework wasn't being fetched). Fixed on branch `feat/m7-vpn-operator-tools` (the `Fetch libXray
+  core` step). After a green run, PR #112 is merged into `main` (the localization job stays red → M10,
+  by decision).
+- **There is no app icon at all** (#100). No asset catalog, no `AppIcon`, no 1024 — a hard submission
+  blocker. This is a design task → the design brief is in `store-metadata.md`. Once we have the
+  icon, I create the asset catalog and wire it into `project.yml`.
+- **`ITSAppUsesNonExemptEncryption=false`** may be incorrect given the Happ/Incy crypto — the decision
+  is in `export-compliance.md`.
 
-## Что нужно от тебя, чтобы снять оставшиеся блокеры
+## What I need from you to clear the remaining blockers
 
-| Нужно | Зачем | Где взять |
+| Needed | Why | Where to get it |
 |---|---|---|
-| ~~Apple Team ID~~ **`A63H349525`** ✅ получен | Подпись релизного архива, capabilities App ID | — |
-| Подтвердить bundle ID | Уже стоит `com.chrsnv.checknet` (виджеты `.widgets`, группа `group.com.chrsnv.checknet`) | — |
-| Apple ID в Xcode (Settings → Accounts) **или** ASC API key | Автоподпись сама регистрирует capabilities на App ID при архиве (портал вручную не нужен) — см. `audit-findings.md` #92 | Xcode / App Store Connect → Users and Access → Integrations |
-| Разрешить локальные сборки | `xcodebuild archive` / `nm`-аудит iOS-бинаря (#88, #92) | подтвердить в сессии |
+| ~~Apple Team ID~~ **`A63H349525`** ✅ obtained | Signing the release archive, App ID capabilities | — |
+| Confirm bundle ID | Already set to `com.chrsnv.checknet` (widgets `.widgets`, group `group.com.chrsnv.checknet`) | — |
+| Apple ID in Xcode (Settings → Accounts) **or** ASC API key | Automatic signing itself registers capabilities on the App ID at archive time (no manual portal work needed) — see `audit-findings.md` #92 | Xcode / App Store Connect → Users and Access → Integrations |
+| Allow local builds | `xcodebuild archive` / `nm` audit of the iOS binary (#88, #92) | confirm in the session |
 
-## Статус по задачам M8
+## M8 task status
 
-### A — код/конфиг (я)
-| # | Что | Статус |
+### A — code/config (me)
+| # | What | Status |
 |---|---|---|
-| 1 · iCloud sync | флаг `CloudHostSync.isAvailable`, тесты `SavedHostMerge.union` | код-половина готова, тесты есть; **ждёт entitlement (Team ID + capability)** |
-| 1 · Wi-Fi SSID | флаг `CurrentNetwork.isSSIDReadable`, iOS-путь | код-половина готова; **ждёт entitlement** |
-| 1 · Time-sensitive | `HostNotifier` уже ставит `.timeSensitive` | код готов; **ждёт entitlement** |
-| #94 privacy manifest | required-reason API | Swift-код чист (только UserDefaults `CA92.1`, уже задекларировано). **Открыт libXray** — нужен `nm` по бинарю |
-| #93 entitlements audit | привести capabilities к App ID | текущие файлы собираются; дормантные — добавляю вместе с Team ID |
-| #97 Info.plist sanity | usage-строки, ориентации, background modes | в порядке; см. `audit-findings.md` |
-| #88 приватные API | raw sockets, `rt_msghdr2`, CoreWLAN | статически чисто (всё под `#if os(macOS)` / `canImport(CoreWLAN)`); **`nm` по iOS-бинарю pending** |
-| #95 версия/логи/dSYM | debug-логи, тест-хосты | чисто: нет `#if DEBUG`, нет debug-`print`, хосты — это UI-плейсхолдеры. Версия 1.0/build 1 ок для первой подачи. dSYM — на этапе архива |
-| #92 релизный архив | подпись Team ID, `xcodebuild archive` | **ждёт Team ID** |
+| 1 · iCloud sync | flag `CloudHostSync.isAvailable`, tests `SavedHostMerge.union` | code half done, tests present; **waiting on entitlement (Team ID + capability)** |
+| 1 · Wi-Fi SSID | flag `CurrentNetwork.isSSIDReadable`, iOS path | code half done; **waiting on entitlement** |
+| 1 · Time-sensitive | `HostNotifier` already sets `.timeSensitive` | code ready; **waiting on entitlement** |
+| #94 privacy manifest | required-reason API | Swift code is clean (only UserDefaults `CA92.1`, already declared). **libXray is open** — needs an `nm` pass over the binary |
+| #93 entitlements audit | bring capabilities in line with the App ID | current files build; dormant ones — I add them together with the Team ID |
+| #97 Info.plist sanity | usage strings, orientations, background modes | fine; see `audit-findings.md` |
+| #88 private APIs | raw sockets, `rt_msghdr2`, CoreWLAN | statically clean (all under `#if os(macOS)` / `canImport(CoreWLAN)`); **`nm` pass over the iOS binary pending** |
+| #95 version/logs/dSYM | debug logs, test hosts | clean: no `#if DEBUG`, no debug `print`, hosts are UI placeholders. Version 1.0/build 1 is fine for the first submission. dSYM — at the archive stage |
+| #92 release archive | signing with Team ID, `xcodebuild archive` | **waiting on Team ID** |
 
-### B — твои действия (черновики готовлю я)
-| # | Что | Файл-черновик |
+### B — your actions (I prepare the drafts)
+| # | What | Draft file |
 |---|---|---|
-| #82 | Политика конфиденциальности + Support | `../legal/privacy-policy.md`, `../legal/support.md` |
-| #83 | Экспортный контроль шифрования | `export-compliance.md` |
-| #85/#86/#87 | Заметки ревьюеру, граница 5.4 VPN, крипта/сканеры, демо-данные | `review-notes.md` |
-| #89 | App Privacy («Data Not Collected») | `app-privacy.md` |
-| #90 | Возрастной рейтинг | `age-rating.md` |
-| #98–#101 | Метаданные стора, скриншоты, иконка | `store-metadata.md` |
-| #102–#105 | QA на устройстве | `device-qa-checklist.md` |
+| #82 | Privacy Policy + Support | `../legal/privacy-policy.md`, `../legal/support.md` |
+| #83 | Encryption export compliance | `export-compliance.md` |
+| #85/#86/#87 | Reviewer notes, the 5.4 VPN boundary, crypto/scanners, demo data | `review-notes.md` |
+| #89 | App Privacy ("Data Not Collected") | `app-privacy.md` |
+| #90 | Age rating | `age-rating.md` |
+| #98–#101 | Store metadata, screenshots, icon | `store-metadata.md` |
+| #102–#105 | On-device QA | `device-qa-checklist.md` |
 
-## Порядок
+## Order
 
-1. **Блокеры подачи (A группа + технический билд):** аккаунт/соглашения (#80/#81, ты), экспортный
-   статус (#83), дистрибуционная подпись (#92/#93), privacy-манифест (#94), App-Privacy-метки (#89).
-2. **Юридический слой параллельно:** политика + support на Pages (#82/#111).
-3. **Ревью-риски (B):** заметки ревьюеру и граница 5.4 (#85/#86/#87) — из-за чего именно наше
-   приложение могут развернуть.
-4. **Витрина + QA:** метаданные/скриншоты (#98–#101) и прогон на устройстве (#102–#105).
-5. **Бета:** TestFlight (#106/#107). **Автоматизация:** fastlane/CI (#108–#111), по мере надобности.
+1. **Submission blockers (group A + a technical build):** account/agreements (#80/#81, you), export
+   status (#83), distribution signing (#92/#93), privacy manifest (#94), App Privacy labels (#89).
+2. **Legal layer in parallel:** policy + support on Pages (#82/#111).
+3. **Review risks (B):** reviewer notes and the 5.4 boundary (#85/#86/#87) — the exact reasons our
+   app could get rejected.
+4. **Storefront + QA:** metadata/screenshots (#98–#101) and an on-device run (#102–#105).
+5. **Beta:** TestFlight (#106/#107). **Automation:** fastlane/CI (#108–#111), as needed.

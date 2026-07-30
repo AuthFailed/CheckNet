@@ -1,33 +1,33 @@
-# App Privacy — «nutrition labels» (#89)
+# App Privacy — "nutrition labels" (#89)
 
-Точные ответы для App Store Connect → твоё приложение → **App Privacy**. Основано на аудите кода:
-приложение **ничего не собирает**, серверов/аккаунтов/аналитики/трекинга нет (см.
-`../legal/privacy-policy.md` и `PrivacyInfo.xcprivacy`).
+Exact answers for App Store Connect → your app → **App Privacy**. Based on a code audit: the app
+**collects nothing** — there are no servers/accounts/analytics/tracking (see
+`../legal/privacy-policy.md` and `PrivacyInfo.xcprivacy`).
 
-## Что нажать в ASC
+## What to click in ASC
 
-1. **Data Collection**: «Do you or your third-party partners collect data from this app?»
+1. **Data Collection**: "Do you or your third-party partners collect data from this app?"
    → **No, we do not collect data from this app.**
-   - Обоснование: диагностика идёт на устройстве; результаты не покидают устройство, кроме запросов,
-     которые пользователь сам инициирует к указанным им хостам/сервисам, и опционального вебхука на
-     **его собственный** сервер. Мы (издатель) не получаем и не храним ничего.
-2. Появится подтверждение, что метка будет «**Data Not Collected**» — подтвердить.
-3. **Tracking** (ATT): трекинга нет, `NSPrivacyTracking=false`, домены трекинга не заявлены. Никаких
-   SDK рекламы/аналитики. → ничего дополнительно включать не нужно.
+   - Rationale: diagnostics run on-device; results don't leave the device, except the requests the
+     user themselves initiates to the hosts/services they specify, and an optional webhook to
+     **their own** server. We (the publisher) receive and store nothing.
+2. A confirmation appears that the label will be "**Data Not Collected**" — confirm it.
+3. **Tracking** (ATT): there is no tracking, `NSPrivacyTracking=false`, no tracking domains declared.
+   No advertising/analytics SDKs. → nothing additional needs to be enabled.
 
-## Почему «Not Collected», хотя есть сетевые запросы
+## Why "Not Collected" even though there are network requests
 
-Apple различает «сбор данных» (передача издателю/партнёрам для хранения/анализа) и запросы,
-инициированные пользователем к третьим сторонам:
+Apple distinguishes "data collection" (transmission to the publisher/partners for storage/analysis)
+from requests the user initiates to third parties:
 
-- Геолокация IP, world-ping, списки серверов скорости, DoH-резолверы, проверка версий на GitHub —
-  это **действия инструмента по команде пользователя**, к сервисам, которые пользователь выбирает
-  запустить; мы не получаем ответ и не привязываем идентификатор.
-- Вебхук — пользователь сам указывает URL своего сервера; данные идут ему, не нам.
-- Настройки/история/сохранённые хосты — только на устройстве (и в личном iCloud, если включит).
+- IP geolocation, world ping, speed-test server lists, DoH resolvers, version checks on GitHub —
+  these are **tool actions on the user's command**, to services the user chooses to run; we don't
+  receive the response and don't attach any identifier.
+- Webhook — the user themselves specifies their own server's URL; the data goes to them, not to us.
+- Settings/history/saved hosts — on-device only (and in the user's personal iCloud, if enabled).
 
-Это укладывается в исключение Apple «data not collected»: данные не уходят издателю и не
-используются для трекинга. Если добавим стороннюю аналитику/крэш-репортер — метку придётся менять.
+This fits Apple's "data not collected" exception: the data doesn't go to the publisher and isn't
+used for tracking. If we add third-party analytics/a crash reporter, the label would have to change.
 
-> ⚠️ Держать в голове при будущих правках: любой сторонний SDK с телеметрией (даже «безобидный»
-> крэш-репортер) ломает «Data Not Collected». Сейчас таких нет.
+> ⚠️ Keep in mind for future changes: any third-party SDK with telemetry (even a "harmless" crash
+> reporter) breaks "Data Not Collected". There are none right now.

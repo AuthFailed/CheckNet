@@ -1,63 +1,63 @@
-# Метаданные стора, скриншоты, иконка (#98–#101)
+# Store metadata, screenshots, icon (#98–#101)
 
-Черновики текстов витрины + план скриншотов/иконки. Основной язык — русский; английский приложен.
-Тон — сдержанный, без «обхода блокировок» и без слова «VPN» без «диагностика/инструменты» (см.
-`review-notes.md`, граница 5.4).
+Draft storefront copy + the screenshot/icon plan. The primary language is Russian; English is
+attached. The tone is measured — no "circumventing blocks" and no use of the word "VPN" without
+"diagnostics/tools" (see `review-notes.md`, the 5.4 boundary).
 
-## #98 · Тексты
+## #98 · Texts
 
-**Название (30):** `CheckNet — сетевая диагностика`
-**Подзаголовок (30):** `Пинг, DNS, TLS, порты и др.`
-**Категория:** Утилиты (Primary). Вторичная — Developer Tools.
+**Name (30):** `CheckNet — Network Diagnostics`
+**Subtitle (30):** `Ping, DNS, TLS, ports & more`
+**Category:** Utilities (Primary). Secondary — Developer Tools.
 
-**Промо-текст (170):**
-`Сетевой комбайн для iPhone, iPad и Mac: пинг, трассировка, DNS, TLS, сканеры портов, проверки блокировок и инструменты для владельцев VPN-серверов. Всё на устройстве, без сбора данных.`
+**Promotional text (170):**
+`A network multitool for iPhone, iPad, and Mac: ping, traceroute, DNS, TLS, port scanners, censorship checks, and tools for VPN-server owners. All on-device, no data collection.`
 
-**Описание:**
+**Description:**
 ```
-CheckNet — набор сетевых проверок в одном приложении, с системным видом iOS и Mac.
+CheckNet is a set of network checks in a single app, with a native iOS and Mac look.
 
-Диагностика:
-• Пинг, трассировка, MTR, MTU
-• DNS: запросы, сравнение резолверов, обнаружение подмены
-• TLS-инспектор сертификатов, проверка Reality-SNI
-• Сканер портов и IP-диапазона (с явным согласием перед запуском)
-• Bonjour/mDNS, обзор сети, интерфейсы, whois, DNSBL, Wake-on-LAN
-• Тест скорости (iperf3) и геолокация IP
+Diagnostics:
+• Ping, traceroute, MTR, MTU
+• DNS: lookups, resolver comparison, tamper detection
+• TLS certificate inspector, Reality-SNI check
+• Port and IP-range scanner (with explicit consent before running)
+• Bonjour/mDNS, network browser, interfaces, whois, DNSBL, Wake-on-LAN
+• Speed test (iperf3) and IP geolocation
 
-Блокировки (только детект):
-• Проверка, что именно ограничивает ваша сеть — подмена DNS, блок по IP, разрыв по SNI,
-  страница-заглушка. Это прозрачность, а не обход: CheckNet ничего не обходит.
+Censorship checks (detection only):
+• See exactly what your network restricts — DNS spoofing, IP blocking, SNI-based resets,
+  block pages. This is transparency, not circumvention: CheckNet circumvents nothing.
 
-Инструменты для владельцев VPN-серверов:
-• Доступность inbound, проверка заголовков клиента, разбор ссылок-подписок, просмотр правил
-  geosite/geoip и mihomo. Диагностика вашего собственного сервера.
+Tools for VPN-server owners:
+• Inbound reachability, client-header checks, subscription-link parsing, viewing
+  geosite/geoip and mihomo rules. Diagnostics for your own server.
 
-Приватность:
-• Ничего не собираем. Результаты остаются на устройстве. Ни аккаунтов, ни рекламы, ни трекинга.
+Privacy:
+• We collect nothing. Results stay on your device. No accounts, no ads, no tracking.
 
-CheckNet не является VPN, не маршрутизирует трафик и не обходит блокировки — это диагностика.
+CheckNet is not a VPN, it does not route traffic and does not circumvent blocks — it's diagnostics.
 ```
 
-**Keywords (100, через запятую, без пробелов):**
-`ping,traceroute,dns,tls,ssl,порт,сканер,сеть,диагностика,mtr,whois,ip,bonjour,iperf,скорость,dnsbl`
+**Keywords (100, comma-separated, no spaces):**
+`ping,traceroute,dns,tls,ssl,port,scanner,network,diagnostics,mtr,whois,ip,bonjour,iperf,speed,dnsbl`
 
-**What's New (для 1.0):**
-`Первый релиз CheckNet.`
+**What's New (for 1.0):**
+`First release of CheckNet.`
 
-## #99 · Скриншоты
+## #99 · Screenshots
 
-Обязательные размеры (актуальные требования Apple):
-- **iPhone 6.9″** (iPhone 16 Pro Max, 1320×2868) — обязательно.
-- **iPad 13″** (2064×2752) — обязательно, т.к. поддерживаем iPad.
-- 6.5″ — опционально (можно переиспользовать 6.9″ через масштаб, но лучше снять отдельно).
-- Mac — не нужен (первая подача только iOS, см. #96).
+Required sizes (Apple's current requirements):
+- **iPhone 6.9″** (iPhone 16 Pro Max, 1320×2868) — mandatory.
+- **iPad 13″** (2064×2752) — mandatory, since we support iPad.
+- 6.5″ — optional (can be reused from 6.9″ via scaling, but better to shoot separately).
+- Mac — not needed (the first submission is iOS-only, see #96).
 
-**Харнесс через deep-link** (уже встроен: `-openTool <tool> [-host <h>] [-run]`). План — снимать
-детерминированные экраны на симуляторе:
+**Harness via deep-link** (already built in: `-openTool <tool> [-host <h>] [-run]`). The plan is to
+shoot deterministic screens on the simulator:
 ```sh
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-SIM=<UDID iPhone 16 Pro Max>   # boot заранее: xcrun simctl boot "$SIM"
+SIM=<UDID iPhone 16 Pro Max>   # boot in advance: xcrun simctl boot "$SIM"
 xcrun simctl install "$SIM" <path>/CheckNet.app
 shoot() { xcrun simctl launch "$SIM" com.chrsnv.checknet -openTool "$1" -host "$2" -run 1; sleep 3; \
           xcrun simctl io "$SIM" screenshot "screens/$1.png"; }
@@ -67,55 +67,57 @@ shoot tls  cloudflare.com
 shoot portscan 1.1.1.1
 shoot traceroute 8.8.8.8
 ```
-Отобрать 5–8 самых показательных (пинг с графиком, TLS-серт, DNS-сравнение, сканер портов с
-согласием, раздел Блокировки, VPN-инструменты). Тексты на скриншотах — на языке локали витрины.
+Pick the 5–8 most illustrative (ping with the chart, TLS cert, DNS comparison, port scanner with
+consent, the Censorship section, VPN tools). The text on the screenshots — in the language of the
+storefront locale.
 
-> Автоматизация (#109, P2): fastlane `snapshot` поверх этого же deep-link-механизма — на будущее.
+> Automation (#109, P2): fastlane `snapshot` on top of the same deep-link mechanism — for the future.
 
-## #100 · Иконка 1024 — ✅ ГОТОВО (концепт «Эхо»)
+## #100 · 1024 icon — ✅ DONE (the "Echo" concept)
 
-Иконка вставлена: `App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png` (1024×1024, без
-альфы, PNG), векторный исходник — `docs/appstore/appicon-echo.svg`. Концепт «Эхо» — концентрические
-волны + узел (метафора пинга), синий из системного `.blue` приложения. Проверено `sips`
-(`hasAlpha: no`, 1024×1024). Ниже — исходный контекст задачи (как выбирали).
+The icon is in place: `App/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png` (1024×1024, no
+alpha, PNG), the vector source — `docs/appstore/appicon-echo.svg`. The "Echo" concept — concentric
+waves + a node (a ping metaphor), the blue from the app's system `.blue`. Verified with `sips`
+(`hasAlpha: no`, 1024×1024). Below is the original task context (how it was chosen).
 
 
 
-**Факт (проверено):** в репозитории **нет ни иконки, ни asset catalog** — ни `*.xcassets`, ни
-`AppIcon.appiconset`, ни ссылки на иконку в `project.yml`/`Info.plist`, ни картинок в git. Сейчас
-приложение собирается с пустой системной иконкой. Для App Store это hard-блокер (нужна 1024 + набор).
+**Fact (verified):** the repository has **neither an icon nor an asset catalog** — no `*.xcassets`,
+no `AppIcon.appiconset`, no reference to an icon in `project.yml`/`Info.plist`, no images in git.
+Right now the app builds with an empty system icon. For the App Store this is a hard blocker (a 1024 +
+the set are required).
 
-Иконка — это **дизайн-задача** (иконки не рисуем ad-hoc в коде — это отдельная дизайн-работа). Порядок:
+The icon is a **design task** (icons aren't drawn ad-hoc in code — it's separate design work). Order:
 
-1. Отдать бриф ниже дизайн-инструменту, получить 1024×1024 (лучше — с исходником/вектором).
-2. Я заведу `App/Resources/Assets.xcassets/AppIcon.appiconset` (single-size 1024, iOS/macOS),
-   пропишу `ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon` в `project.yml`, перегенерирую и соберу.
-3. Проверю: без альфы, без скруглений, 1024×1024:
+1. Give the brief below to a design tool, get back a 1024×1024 (ideally with a source/vector).
+2. I'll create `App/Resources/Assets.xcassets/AppIcon.appiconset` (single-size 1024, iOS/macOS),
+   set `ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon` in `project.yml`, regenerate and build.
+3. I'll verify: no alpha, no rounding, 1024×1024:
    ```sh
    sips -g hasAlpha -g pixelWidth -g pixelHeight <path>/1024.png   # hasAlpha: no; 1024×1024
    ```
 
-**Готовый дизайн-бриф (вставить как есть):**
+**Ready design brief (paste as-is):**
 ```
-Нарисуй иконку приложения для CheckNet — нативного приложения сетевой диагностики под
-iOS 26 / iPadOS 26 / macOS 26 (тот же системный визуальный язык, что у иконок Apple: Liquid Glass,
-мягкая глубина, читаемость в маленьком размере).
+Draw an app icon for CheckNet — a native network-diagnostics app for
+iOS 26 / iPadOS 26 / macOS 26 (the same system visual language as Apple's icons: Liquid Glass,
+soft depth, legibility at a small size).
 
-Что за приложение: «сетевой комбайн» — пинг, DNS, TLS, сканеры портов, проверки блокировок,
-инструменты для владельцев VPN-серверов. Аудитория — технически грамотные пользователи. Тон —
-спокойный, инженерный, не «хакерский», без черепов и молний.
+What the app is: a "network multitool" — ping, DNS, TLS, port scanners, censorship checks,
+tools for VPN-server owners. The audience is technically literate users. The tone is
+calm, engineering-minded, not "hacker" — no skulls or lightning bolts.
 
-Нужна метафора сети/диагностики, узнаваемая в 40 pt: например пульс/сигнал, узел графа, радар,
-концентрические волны — на выбор, но одна ясная идея, не коллаж. Плоскостей минимум, силуэт
-читается. Работает на светлом и тёмном фоне сетки иконок.
+It needs a network/diagnostics metaphor recognizable at 40 pt: e.g. a pulse/signal, a graph node,
+a radar, concentric waves — your choice, but one clear idea, not a collage. Minimal planes, a
+legible silhouette. Works on a light and a dark icon-grid background.
 
-Формат: квадрат 1024×1024 без альфа-канала и без скруглённых углов (система скругляет сама),
-без текста и без обводки-«наклейки». Дай финальный PNG 1024×1024 и, если можно, векторный исходник
-и превью на сетке домашнего экрана (светлая и тёмная тема).
+Format: a 1024×1024 square with no alpha channel and no rounded corners (the system rounds them
+itself), no text and no sticker-style outline. Deliver a final 1024×1024 PNG and, if possible, a
+vector source and a preview on the home-screen grid (light and dark themes).
 ```
 
-## #101 · Локализация метаданных
+## #101 · Metadata localization
 
-- Полностью — основной (ru). Английский — из блоков выше.
-- Топ-языки стора (de/es/fr/ja/zh-Hans/…): по мере сил; в приложении уже 13 языков, метаданные
-  можно доперевести позже (P2). Не блокер первой подачи.
+- Fully — the primary language (ru). English — from the blocks above.
+- Top store languages (de/es/fr/ja/zh-Hans/…): as capacity allows; the app already has 13 languages,
+  the metadata can be translated later (P2). Not a blocker for the first submission.
