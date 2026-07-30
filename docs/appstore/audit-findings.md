@@ -90,9 +90,23 @@ nm "$APP/CheckNet" | grep -iE 'rt_msghdr2|CWWiFiClient|CoreWLAN'   # ожида�
 
 ## #92 · Релизный архив — Team ID `A63H349525`
 
-**Capabilities включить на App ID** (developer.apple.com → Identifiers → `com.chrsnv.checknet`):
-App Groups (`group.com.chrsnv.checknet`), iCloud → **Key-Value storage**, **Access Wi-Fi Information**,
-**Time Sensitive Notifications**. Без них автоподпись дормантных фич не создаст профиль.
+**Про capabilities (из документации Apple, Adding capabilities / Configuring iCloud services):**
+при **автоматической подписи** Xcode сам включает capability на App ID в аккаунте разработчика.
+Мы пишем entitlements через XcodeGen, поэтому регистрацию делает автоподпись при архиве с флагом
+`-allowProvisioningUpdates`. Значит **ручное включение в портале для этих четырёх, как правило, не
+нужно** — они авто-провижнятся: App Groups (`group.com.chrsnv.checknet`), iCloud **Key-Value storage**
+(контейнер НЕ нужен — контейнеры только у Documents/CloudKit), **Access Wi-Fi Information**,
+**Time Sensitive Notifications**.
+
+**Что нужно для авторизации автоподписи (одно из):**
+- Apple ID с командой `A63H349525` добавлен в Xcode (Settings → Accounts), **или**
+- App Store Connect API key (`-authenticationKeyPath *.p8 -authenticationKeyID <id>
+  -authenticationKeyIssuerID <issuer>`).
+
+**Порядок (один координированный шаг):** добавляю 3 entitlements + флипаю 2 флага → `xcodebuild
+archive` c автоподписью (регистрирует capabilities на App ID) → проверяю на устройстве, что фичи
+реально работают. Флаги НЕ флипаю раньше архива: иначе в подписанной сборке покажется контрол,
+который ещё не может подписаться (ровно то, против чего сделаны `isAvailable`/`isSSIDReadable`).
 
 **Готовый патч дормантных фич** (применяю в одном коммите после включения capabilities) —
 в `App/CheckNet.entitlements`:

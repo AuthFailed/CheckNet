@@ -27,7 +27,7 @@
 |---|---|---|
 | ~~Apple Team ID~~ **`A63H349525`** ✅ получен | Подпись релизного архива, capabilities App ID | — |
 | Подтвердить bundle ID | Уже стоит `com.chrsnv.checknet` (виджеты `.widgets`, группа `group.com.chrsnv.checknet`) | — |
-| Включить capabilities на App ID | Дормантные фичи (iCloud KVS, Wi-Fi Info, Time-Sensitive) физически не подпишутся без этого | developer.apple.com → Identifiers |
+| Apple ID в Xcode (Settings → Accounts) **или** ASC API key | Автоподпись сама регистрирует capabilities на App ID при архиве (портал вручную не нужен) — см. `audit-findings.md` #92 | Xcode / App Store Connect → Users and Access → Integrations |
 | Разрешить локальные сборки | `xcodebuild archive` / `nm`-аудит iOS-бинаря (#88, #92) | подтвердить в сессии |
 
 ## Статус по задачам M8
