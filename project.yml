@@ -42,6 +42,10 @@ targets:
       properties:
         CFBundleDisplayName: CheckNet
         CFBundleDevelopmentRegion: ru
+        # Track the build settings so bumping CURRENT_PROJECT_VERSION / MARKETING_VERSION
+        # actually changes the shipped version (XcodeGen otherwise writes literal defaults).
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleLocalizations:
           - ru
           - en
@@ -137,7 +141,7 @@ targets:
         # dropping icon-1024.png in clears it.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
@@ -210,7 +214,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet.widgets
         PRODUCT_NAME: CheckNetWidgets
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
         TARGETED_DEVICE_FAMILY: "1,2"

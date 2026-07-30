@@ -87,7 +87,7 @@ struct CheckReachabilityIntent: AppIntent {
 struct CheckPushDeliveryIntent: AppIntent {
     static let title: LocalizedStringResource = "Проверить push-уведомления"
     static let description = IntentDescription(
-        "Проверяет, доступны ли серверы push-уведомлений Apple и Google.",
+        "Проверяет доступность серверов push-уведомлений (APNs и FCM).",
         categoryName: "Блокировки"
     )
     static let openAppWhenRun = false
@@ -105,7 +105,7 @@ struct CheckPushDeliveryIntent: AppIntent {
             ? "Push-серверы доступны"
             : "Недоступно \(blocked.count) из \(results.count)"
         outcome.detail = blocked.isEmpty
-            ? "Apple APNs и Google FCM отвечают — сеть доставку уведомлений не блокирует."
+            ? "Серверы APNs и FCM отвечают — сеть доставку уведомлений не блокирует."
             : "Не отвечают: \(blocked.map(\.target.host).joined(separator: ", "))"
 
         return .result(value: outcome, dialog: IntentDialog("\(outcome.headline). \(outcome.detail)"))
