@@ -14,7 +14,7 @@ import Foundation
 final class CloudHostSync {
     /// Flip together with the `com.apple.developer.ubiquity-kvstore-identifier`
     /// entitlement. See the type comment.
-    static let isAvailable = false
+    static let isAvailable = true
 
     private static let key = "checknet.savedHosts.cloud"
 

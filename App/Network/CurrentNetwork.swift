@@ -26,7 +26,7 @@ enum CurrentNetwork {
     /// Without it `NEHotspotNetwork.fetchCurrent` always reports no network, so
     /// the app must not pretend otherwise — and must not ask for location, which
     /// is only a prerequisite for a lookup that cannot succeed.
-    static let isSSIDReadable = false
+    static let isSSIDReadable = true
 
     enum Result: Sendable, Equatable {
         case ssid(String)
