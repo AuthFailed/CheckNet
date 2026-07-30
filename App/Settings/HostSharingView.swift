@@ -315,7 +315,7 @@ struct ImportHostsSheet: View {
                     }
                 }
             }
-            // Short title: "Импорт хостов" is truncated between the two toolbar buttons.
+            // Short title: "Import hosts" is truncated between the two toolbar buttons.
             .navigationTitle("Импорт")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)

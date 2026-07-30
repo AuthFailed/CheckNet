@@ -114,7 +114,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     }
 
     /// Search synonyms — the names people actually type, in both languages, so
-    /// "latency", "nslookup", "dig", "пинг", "порты", "сертификат" all land on
+    /// "latency", "nslookup", "dig", "ping", "ports", "certificate" all land on
     /// the right tool even though none of them is in its title.
     var keywords: [String] {
         switch self {
@@ -223,7 +223,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Tools that now live in the Блокировки tab and must not appear in the
+    /// Tools that now live in the Blocking tab and must not appear in the
     /// main catalog or search (kept routable for deep links).
     var isCensorshipCheck: Bool { self == .dnsTamper }
 
@@ -249,7 +249,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         }
     }
 
-    /// Why an unimplemented tool is not here — the honest version, not "скоро".
+    /// Why an unimplemented tool is not here — the honest version, not "soon".
     enum Unavailable {
         /// The engine is planned; it will arrive in a build.
         case inDevelopment(String)

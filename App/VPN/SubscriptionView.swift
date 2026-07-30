@@ -1,14 +1,14 @@
 import SwiftUI
 import NetworkKit
 
-/// Парсинг подписки → список серверов (issue #72). Вставить URL / содержимое /
-/// `happ://` / `incy://`, выбрать User-Agent (по умолчанию Авто), получить узлы
-/// с флагом страны, ремарком, бейджами и пингом. Поиск по любому параметру,
-/// фильтр по протоколу, проверка доступности (TCP) и блокировки SNI по каждому
-/// серверу или массово.
+/// Subscription parsing → server list (issue #72). Paste a URL / raw content /
+/// `happ://` / `incy://`, pick a User-Agent (Auto by default), and get nodes
+/// with a country flag, remark, badges and ping. Search by any parameter,
+/// filter by protocol, and check reachability (TCP) and SNI blocking per server
+/// or in bulk.
 ///
-/// Пинг здесь — TCP-доступность самого сервера. Проверка «через прокси до
-/// gstatic» требует клиента прокси и живёт в инструменте «Доступность Xray» (#71).
+/// Ping here is the TCP reachability of the server itself. The "through proxy to
+/// gstatic" check needs a proxy client and lives in the "Xray reachability" tool (#71).
 /// A dimension the server list can be filtered by. Only the ones that actually
 /// vary in the parsed subscription are shown.
 enum ServerFacet: String, CaseIterable, Identifiable {
@@ -95,7 +95,7 @@ final class SubscriptionModel {
 
     /// Native TLS/Reality handshake reachability (all platforms): sends a real
     /// TLS 1.3 ClientHello with the node's dest SNI and reports the reaction +
-    /// latency. Not a full tunnel — see the macOS "через прокси" check for that.
+    /// latency. Not a full tunnel — see the macOS "through proxy" check for that.
     struct Handshake: Equatable { let ms: Double; let reaction: JA3ProbeResult.Reaction }
     var handshakes: [UUID: Handshake] = [:]
     var handshakeInFlight: Set<UUID> = []
@@ -222,8 +222,8 @@ final class SubscriptionModel {
             apply(SubscriptionParser.parse(text)); rawContent = text; usedUA = nil; sourceURL = nil
         }
 
-        // Автопроверка SNI сразу после успешного разбора — оператору почти
-        // всегда нужно знать, не режется ли dest, ещё до ручных действий.
+        // Auto-check SNI right after a successful parse — the operator almost
+        // always needs to know whether dest is being cut before doing anything manual.
         if !nodes.isEmpty { await checkAllSNI() }
     }
 
@@ -449,7 +449,7 @@ struct SubscriptionView: View {
     }
 
     /// Sort control + a filter menu per facet that actually varies. Only the
-    /// selected value narrows the list; picking "Все" clears that facet.
+    /// selected value narrows the list; picking "All" clears that facet.
     private var filterSection: some View {
         Section {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -671,8 +671,8 @@ private struct ServerRow: View {
     }
 }
 
-/// Полная информация о сервере: все разобранные поля, исходный блок конфига
-/// (JSON или ссылка), проверка валидности JSON и копирование в буфер.
+/// Full server details: every parsed field, the raw config block (JSON or link),
+/// a JSON-validity check and copy-to-clipboard.
 private struct ServerDetailView: View {
     let node: ProxyNode
     @Bindable var model: SubscriptionModel
@@ -686,7 +686,7 @@ private struct ServerDetailView: View {
         let t = node.raw.trimmingCharacters(in: .whitespacesAndNewlines)
         return t.hasPrefix("{") || t.hasPrefix("[")
     }
-    /// Валидность исходного блока — проверяем сразу, а не по запросу.
+    /// Validity of the raw block — checked eagerly, not on demand.
     private var jsonValid: Bool? {
         guard rawIsJSON, let data = node.raw.data(using: .utf8) else { return nil }
         return (try? JSONSerialization.jsonObject(with: data)) != nil
@@ -694,7 +694,7 @@ private struct ServerDetailView: View {
 
     var body: some View {
         List {
-            // Мультихост: список вложенных серверов, каждый открывается отдельно.
+            // Multihost: list of nested servers, each opens separately.
             if node.isMultihost {
                 Section {
                     ForEach(node.children) { child in
@@ -720,7 +720,7 @@ private struct ServerDetailView: View {
                 }
             }
 
-            // Порядок: адрес → как подключаемся → детали TLS.
+            // Order: address → how we connect → TLS details.
             Section {
                 Button { ipOverviewHost = node.host } label: {
                     HStack {
@@ -763,7 +763,7 @@ private struct ServerDetailView: View {
             }
 
             Section {
-                // Пинг (TCP)
+                // Ping (TCP)
                 checkRow("Пинг", systemImage: "bolt.horizontal.circle",
                          running: model.pingInFlight.contains(node.id),
                          hasResult: model.pings[node.id] != nil,
@@ -774,7 +774,7 @@ private struct ServerDetailView: View {
                     case nil: EmptyView()
                     }
                 }
-                // Блокировка SNI
+                // SNI blocking
                 if !node.sni.isEmpty {
                     checkRow("SNI", systemImage: "checkmark.shield",
                              running: model.sniInFlight.contains(node.id),
@@ -785,7 +785,7 @@ private struct ServerDetailView: View {
                         }
                     }
                 }
-                // Нативное рукопожатие TLS/Reality
+                // Native TLS/Reality handshake
                 checkRow("Рукопожатие", systemImage: "hand.wave",
                          running: model.handshakeInFlight.contains(node.id),
                          hasResult: model.handshakes[node.id] != nil,
@@ -795,7 +795,7 @@ private struct ServerDetailView: View {
                             .foregroundStyle(handshakeColor(h.reaction))
                     }
                 }
-                // Через прокси (macOS)
+                // Through proxy (macOS)
                 proxyCheckRow
             } header: {
                 Text("Проверки")
@@ -810,8 +810,8 @@ private struct ServerDetailView: View {
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                // Полный Xray-конфиг, который приходит клиенту именно для этого
-                // хоста (dns + routing + outbounds), а не только его outbound.
+                // The full Xray config the client receives for this specific host
+                // (dns + routing + outbounds), not just its outbound.
                 if let full = node.fullConfig {
                     DisclosureGroup("Полный Xray JSON этого хоста") {
                         Text(full)
@@ -831,9 +831,9 @@ private struct ServerDetailView: View {
                         Label("Скопировать всю подписку", systemImage: "doc.on.clipboard")
                     }
                 }
-                // QR имеет смысл только для настоящей ссылки: JSON-блок
-                // сканировать в клиент бесполезно. Подписку целиком отсюда не
-                // шарим — для этого есть действие в общем списке.
+                // QR only makes sense for a real link: scanning a JSON block into
+                // a client is useless. We don't share the whole subscription from
+                // here — the main list has an action for that.
                 if node.raw.contains("://") {
                     Button { qr = QRPayload(title: "Сервер", text: node.raw) } label: {
                         Label("Поделиться сервером (QR)", systemImage: "qrcode")
@@ -963,15 +963,15 @@ private struct ServerDetailView: View {
     }
 }
 
-/// Что показать в QR — подписку целиком или ссылку конкретного сервера.
+/// What to show in the QR — the whole subscription or a specific server's link.
 struct QRPayload: Identifiable {
     let id = UUID()
     let title: String
     let text: String
 }
 
-/// Общий лист с QR-кодом и копированием — используется и для подписки,
-/// и для ссылки отдельного сервера.
+/// Shared sheet with a QR code and copy — used both for a subscription
+/// and for an individual server's link.
 struct QRShareSheet: View {
     let payload: QRPayload
     @Environment(\.dismiss) private var dismiss

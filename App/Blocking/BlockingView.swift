@@ -13,7 +13,7 @@ enum BlockingSection: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        // Not "Блокировки" — that's the tab title, and the repeat reads as a bug.
+        // Not "Blocking" — that's the tab title, and the repeat reads as a bug.
         case .restrictions: "Фильтрация"
         case .availability: "Недоступность"
         case .degradation: "Деградация"
@@ -40,7 +40,7 @@ enum BlockingSection: String, CaseIterable, Identifiable {
     }
 }
 
-/// The "Блокировки" tab — checks that reveal local ISP restrictions the user's
+/// The "Blocking" tab — checks that reveal local ISP restrictions the user's
 /// own connection is subject to (transparency/diagnostics).
 struct BlockingView: View {
     @State private var path: [BlockingRoute] = []

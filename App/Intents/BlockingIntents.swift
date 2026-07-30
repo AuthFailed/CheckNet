@@ -81,7 +81,7 @@ struct CheckReachabilityIntent: AppIntent {
 
 /// Dedicated push-delivery check.
 ///
-/// "Уведомления не приходят" is a common complaint that users almost never
+/// "Notifications aren't arriving" is a common complaint that users almost never
 /// connect to network filtering, so it gets its own phrase rather than hiding
 /// behind a parameter.
 struct CheckPushDeliveryIntent: AppIntent {

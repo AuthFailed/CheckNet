@@ -35,7 +35,7 @@ public struct IperfServer: Sendable, Hashable, Codable, Identifiable {
     }
 
     /// Advertised link capacity, number only (e.g. "1", "10"). Nil when unknown.
-    /// Display it as `Text("\(bandwidthValue) Гбит/с")` so the unit localizes.
+    /// Display it as `Text("\(bandwidthValue) Gbit/s")` so the unit localizes.
     public var bandwidthValue: String? {
         let g = gbps.trimmingCharacters(in: .whitespaces)
         guard !g.isEmpty, g != "0" else { return nil }
@@ -44,7 +44,7 @@ public struct IperfServer: Sendable, Hashable, Codable, Identifiable {
         return number.isEmpty ? g : number
     }
 
-    /// Advertised link capacity as a display string, e.g. "1 Гбит/с". Nil when unknown.
+    /// Advertised link capacity as a display string, e.g. "1 Gbit/s". Nil when unknown.
     public var bandwidthLabel: String? {
         bandwidthValue.map { "\($0) Гбит/с" }
     }
@@ -57,7 +57,7 @@ public struct IperfServerList: Sendable {
 
     public static let endpoint = "https://export.iperf3serverlist.net/listed_iperf3_servers.json"
 
-    /// Curated iperf3 endpoints of the Russian operator «ЭР-Телеком» (Дом.ру),
+    /// Curated iperf3 endpoints of the Russian operator ER-Telecom (Dom.ru),
     /// which are usually not present in the international public list. Named
     /// `st.<city>.ertelecom.ru`. Unreachable entries simply fail the ping probe
     /// and show no latency, so a stale hostname degrades gracefully.

@@ -6,7 +6,7 @@ enum VPNRoute: Hashable {
 }
 
 /// The **VPN** tab — operator tooling for the Xray / Reality / mihomo / Happ
-/// ecosystem. Mirrors the Блокировки tab: a system list of tools, each with an
+/// ecosystem. Mirrors the Blocking tab: a system list of tools, each with an
 /// ⓘ description; unbuilt tools push a plain placeholder rather than a
 /// half-working screen.
 struct VPNView: View {

@@ -1,10 +1,10 @@
 import SwiftUI
 import NetworkKit
 
-/// Разбор существующего профиля роутинга Happ: вставить `happ://routing/add/…`
-/// (или `…/onadd/…`) → подробный читаемый разбор — DNS, geo-источники,
-/// DNS-хосты и все правила Direct/Proxy/Block по категориям. Полноценный
-/// визуальный конструктор — отдельная дизайн-задача (issue #76).
+/// Parses an existing Happ routing profile: paste `happ://routing/add/…`
+/// (or `…/onadd/…`) → a detailed, readable breakdown — DNS, geo sources,
+/// DNS hosts and all Direct/Proxy/Block rules by category. A full visual
+/// builder is a separate design task (issue #76).
 struct HappRoutingView: View {
     @State private var input = ""
     @State private var profile: HappRoutingProfile?

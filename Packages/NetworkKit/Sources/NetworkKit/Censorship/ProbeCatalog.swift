@@ -56,7 +56,7 @@ public struct ProbeTarget: Sendable, Codable, Hashable, Identifiable {
 ///
 /// These hostnames go stale — sites move providers and disappear. Every probe
 /// therefore reports liveness separately from interference, so a dead host reads
-/// as "не проверено", never as "заблокировано".
+/// as "not checked", never as "blocked".
 public enum ProbeCatalog {
     /// When this list was last reconciled with upstream. Surfaced in the UI so a
     /// stale catalogue is visible rather than silently misleading.
@@ -142,7 +142,7 @@ public enum ProbeCatalog {
 
     // MARK: - Push notification endpoints
 
-    /// Users report "уведомления не приходят" constantly and almost never link it
+    /// Users report "notifications aren't arriving" constantly and almost never link it
     /// to network filtering. On iOS the APNs endpoints are the ones that matter.
     static let push: [ProbeTarget] = [
         .init(id: "PUSH.APNS", provider: "Apple APNs", country: nil, host: "api.push.apple.com", category: .pushNotification),

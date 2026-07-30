@@ -94,7 +94,7 @@ struct CheckActivityAttributes: ActivityAttributes {
     }
 
     var kind: CheckActivityKind
-    /// Host, or a tool name like "Мониторинг сети".
+    /// Host, or a tool name like "Network monitoring".
     var title: String
     /// IP, or a host count.
     var subtitle: String

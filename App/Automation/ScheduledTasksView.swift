@@ -71,7 +71,7 @@ struct ScheduledTasksView: View {
     }
 }
 
-/// A reusable "Расписание" section for a test card. Independent of webhooks — it
+/// A reusable "Schedule" section for a test card. Independent of webhooks — it
 /// just schedules the test to run and record to the scheduled history.
 struct SchedulingSection: View {
     /// Builds the task kind from the card's current target.

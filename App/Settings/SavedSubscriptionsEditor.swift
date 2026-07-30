@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Управление сохранёнными подписками VPN — тот же принцип, что у сохранённых
-/// доменов и IP, но отдельным списком: подписка не является целью для пинга.
+/// Manages saved VPN subscriptions — same idea as saved domains and IPs, but as
+/// a separate list: a subscription is not a ping target.
 struct SavedSubscriptionsEditor: View {
     @Environment(SavedSubscriptionsStore.self) private var store
     @State private var name = ""

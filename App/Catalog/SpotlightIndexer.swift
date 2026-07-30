@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 import os
 
 /// Indexes the tool catalogue into Spotlight so a search for "ping", "DNS",
-/// "скорость" etc. surfaces the tool and opens straight to it. The identifier
+/// "speed" etc. surfaces the tool and opens straight to it. The identifier
 /// is the tool's raw value, which `ToolNavigator` turns back into a route.
 enum SpotlightIndexer {
     static let domain = "com.chrsnv.checknet.tools"

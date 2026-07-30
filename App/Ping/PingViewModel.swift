@@ -47,7 +47,7 @@ final class PingViewModel {
 
     private var runTask: Task<Void, Never>?
     /// Snapshot of the Live Activity stop-generation at run start; a later bump
-    /// (the "Стоп" button) ends the run.
+    /// (the "Stop" button) ends the run.
     private var stopBaseline = 0
     private var startDate: Date?
     private let liveActivity = CheckActivityController()
@@ -95,7 +95,7 @@ final class PingViewModel {
         runTask = nil
     }
 
-    /// The Live Activity "Стоп" button fires in the app process and bumps a
+    /// The Live Activity "Stop" button fires in the app process and bumps a
     /// shared generation; the run loop ends the moment it sees a later value.
     private var stopSignalled: Bool { LiveActivitySignal.stopRequested(since: stopBaseline) }
 

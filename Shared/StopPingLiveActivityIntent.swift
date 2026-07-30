@@ -1,7 +1,7 @@
 #if os(iOS)
 import AppIntents
 
-/// The "Стоп" button on the ping Live Activity. A `LiveActivityIntent` runs in
+/// The "Stop" button on the ping Live Activity. A `LiveActivityIntent` runs in
 /// the app's process, so it just raises the shared stop signal; the running
 /// ping loop sees it on its next tick and finishes the run (which ends the
 /// activity). Lives in `Shared/` so both the app and the widget extension —

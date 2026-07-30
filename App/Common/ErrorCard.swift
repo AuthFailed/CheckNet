@@ -7,7 +7,7 @@ import SwiftUI
 /// looking idle. A check that fails silently is the one users report as a
 /// button that does nothing.
 ///
-/// The status is never carried by colour alone: an icon and the word "Ошибка"
+/// The status is never carried by colour alone: an icon and the word "Error"
 /// say it too, so it survives dark mode, colour blindness and a screenshot.
 struct ErrorCard: View {
     let message: String

@@ -1,7 +1,7 @@
 import SwiftUI
 import NetworkKit
 
-/// The censorship / local-restriction checks shown in the Блокировки tab.
+/// The censorship / local-restriction checks shown in the Blocking tab.
 enum BlockingCheck: String, CaseIterable, Identifiable {
     case dnsSpoofing, httpBlock, sniBlocking, ipBlocking, whitelist, siberian, transferCutoff
 
