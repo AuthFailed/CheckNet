@@ -1,39 +1,39 @@
-# Вебхуки CheckNet
+# CheckNet Webhooks
 
-CheckNet может отправлять результаты проверок на ваш сервер. Выключено по умолчанию: отправка — это раскрытие данных, поэтому она включается вручную в **Настройки → Интеграции → Вебхуки**.
+CheckNet can send check results to your server. Disabled by default: sending data means disclosing it, so it is enabled manually in **Settings → Integrations → Webhooks**.
 
-## Запрос
+## Request
 
 ```
-POST <ваш адрес>
+POST <your address>
 Content-Type: application/json
 User-Agent: CheckNet/1.0
 X-CheckNet-Event: blocking.transferCutoff
 X-CheckNet-Version: 1
-X-CheckNet-Signature: sha256=<hex>   # только если задан секрет
+X-CheckNet-Signature: sha256=<hex>   # only if a secret is set
 ```
 
-Адрес должен быть `https`. Исключение — `localhost` / `127.0.0.1`, чтобы можно было отладить приём локально; на любой другой хост по `http` отправка не разрешается, иначе результаты ушли бы в открытом виде.
+The address must be `https`. The exception is `localhost` / `127.0.0.1`, so that you can debug reception locally; sending to any other host over `http` is not allowed, otherwise results would go out in the clear.
 
-`Content-Type` зависит от выбранного формата (см. ниже).
+`Content-Type` depends on the selected format (see below).
 
-## Формат
+## Format
 
-В настройках выбирается один из трёх форматов тела:
+In the settings you choose one of three body formats:
 
-| Формат | Content-Type | Вид |
+| Format | Content-Type | Description |
 |---|---|---|
-| JSON (вложенный) | `application/json` | по умолчанию; вложенные списки остаются массивами объектов |
-| JSON (плоский) | `application/json` | списки разворачиваются в ключи `samples.0.rttMillis` |
-| Form URL-encoded | `application/x-www-form-urlencoded` | `key=value&…`, элементы списка как `samples[0][rttMillis]` |
+| JSON (nested) | `application/json` | default; nested lists remain arrays of objects |
+| JSON (flat) | `application/json` | lists are expanded into keys `samples.0.rttMillis` |
+| Form URL-encoded | `application/x-www-form-urlencoded` | `key=value&…`, list elements as `samples[0][rttMillis]` |
 
-Типы сохраняются: числа — числами, булевы — булевыми, даты — ISO-8601 UTC.
+Types are preserved: numbers as numbers, booleans as booleans, dates as ISO-8601 UTC.
 
-## Выбор полей
+## Field selection
 
-По умолчанию отправляются **все** поля, которые инструмент умеет отдавать. В настройках любое поле можно отключить, а для промежуточных результатов (например ping-сэмплов) — отключить как весь список, так и отдельные подполя в каждом элементе. Отключённое поле в payload не попадает.
+By default **all** fields the tool can provide are sent. In the settings any field can be disabled, and for intermediate results (for example ping samples) you can disable either the whole list or individual subfields in each element. A disabled field does not appear in the payload.
 
-## Тело
+## Body
 
 ```json
 {
@@ -43,58 +43,58 @@ X-CheckNet-Signature: sha256=<hex>   # только если задан секр
   "host": "cloudflare.com",
   "succeeded": false,
   "verdict": "restricted",
-  "headline": "Соединение обрывают по числу пакетов",
-  "detail": "Мелкий запрос прошёл одним пакетом, но замер, когда те же байты отправлены 33 пакетами.",
+  "headline": "Connection is cut off by packet count",
+  "detail": "A small request went through in a single packet, but stalled when the same bytes were sent as 33 packets.",
   "latencyMillis": 12.5,
   "lossPercent": 0,
   "metadata": { "source": "settings" }
 }
 ```
 
-| Поле | Тип | Всегда | Значение |
+| Field | Type | Always | Meaning |
 |---|---|---|---|
-| `version` | int | да | Версия формата. Сейчас `1`. |
-| `event` | string | да | Тип события, см. ниже. |
-| `timestamp` | string | да | ISO-8601, UTC. |
-| `host` | string | да | Цель проверки. |
-| `succeeded` | bool | да | `false`, если проверка нашла проблему. |
-| `verdict` | string? | нет | `clean` / `restricted` / `inconclusive`. |
-| `headline` | string? | нет | Краткий вывод. |
-| `detail` | string? | нет | Развёрнутое объяснение. |
-| `latencyMillis` | number? | нет | Задержка, если измерялась. |
-| `lossPercent` | number? | нет | Потери, если измерялись. |
-| `metadata` | object? | нет | Дополнительные поля. Верхний уровень остаётся стабильным, всё нестандартное живёт здесь. |
+| `version` | int | yes | Format version. Currently `1`. |
+| `event` | string | yes | Event type, see below. |
+| `timestamp` | string | yes | ISO-8601, UTC. |
+| `host` | string | yes | The check target. |
+| `succeeded` | bool | yes | `false` if the check found a problem. |
+| `verdict` | string? | no | `clean` / `restricted` / `inconclusive`. |
+| `headline` | string? | no | Brief conclusion. |
+| `detail` | string? | no | Detailed explanation. |
+| `latencyMillis` | number? | no | Latency, if measured. |
+| `lossPercent` | number? | no | Loss, if measured. |
+| `metadata` | object? | no | Additional fields. The top level stays stable; anything non-standard lives here. |
 
-Поля верхнего уровня — публичный контракт. Их переименование сломает чужие интеграции, поэтому оно потребует роста `version`.
+The top-level fields are a public contract. Renaming them would break third-party integrations, so it would require a bump of `version`.
 
-## Типы событий
+## Event types
 
-| `event` | Когда |
+| `event` | When |
 |---|---|
-| `check.ping` | Завершился ping |
-| `blocking.dnsSpoofing` | Проверка подмены DNS |
-| `blocking.httpBlock` | Проверка страницы-заглушки |
-| `blocking.sniBlocking` | Проверка блокировки по SNI |
-| `blocking.ipBlocking` | Проверка блокировки по IP |
-| `blocking.whitelist` | Проверка белых списков |
-| `blocking.siberian` | «Сибирская» блокировка |
-| `blocking.transferCutoff` | Обрыв на 16–20 КБ |
-| `test.ping` | Тестовое событие из настроек |
+| `check.ping` | A ping finished |
+| `blocking.dnsSpoofing` | DNS spoofing check |
+| `blocking.httpBlock` | Block-page check |
+| `blocking.sniBlocking` | SNI blocking check |
+| `blocking.ipBlocking` | IP blocking check |
+| `blocking.whitelist` | Whitelist check |
+| `blocking.siberian` | "Siberian" blocking |
+| `blocking.transferCutoff` | Cutoff at 16–20 KB |
+| `test.ping` | Test event from settings |
 
-Фильтр в настройках: **все проверки**, **только проблемы** (`succeeded == false`) или **только блокировки** (`event` начинается с `blocking.`).
+Filter in the settings: **all checks**, **problems only** (`succeeded == false`), or **blocking only** (`event` starts with `blocking.`).
 
-## Проверка подписи
+## Signature verification
 
-Если задан секрет, заголовок `X-CheckNet-Signature` содержит `sha256=` и HMAC-SHA256 от **тела запроса в том виде, в котором оно пришло**, в нижнем регистре hex.
+If a secret is set, the `X-CheckNet-Signature` header contains `sha256=` and the HMAC-SHA256 of **the request body exactly as it arrived**, in lowercase hex.
 
-Считайте HMAC от сырых байт тела, а не от переразобранного JSON — порядок ключей и пробелы должны совпасть.
+Compute the HMAC over the raw body bytes, not over re-parsed JSON — the key order and whitespace must match.
 
 ```python
 import hmac, hashlib
 
 def verify(raw_body: bytes, header: str, secret: str) -> bool:
     expected = "sha256=" + hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, header)   # сравнение за постоянное время
+    return hmac.compare_digest(expected, header)   # constant-time comparison
 ```
 
 ```js
@@ -107,20 +107,20 @@ function verify(rawBody, header, secret) {
 }
 ```
 
-## Ответы и повторы
+## Responses and retries
 
-| Ответ | Поведение |
+| Response | Behavior |
 |---|---|
-| `2xx` | Доставлено. |
-| `4xx` | Считается отказом получателя. **Повторов нет** — payload не изменится, а повторы только умножат шум. |
-| `5xx`, таймаут, обрыв | До 3 попыток с растущей паузой (0,3 с → 1,2 с). |
+| `2xx` | Delivered. |
+| `4xx` | Treated as a rejection by the receiver. **No retries** — the payload won't change, and retries would only multiply the noise. |
+| `5xx`, timeout, drop | Up to 3 attempts with a growing pause (0.3 s → 1.2 s). |
 
-Таймаут запроса — 10 с. Отправка идёт в фоне и никогда не блокирует интерфейс, поэтому медленный или мёртвый приёмник не подвешивает приложение.
+The request timeout is 10 s. Sending happens in the background and never blocks the interface, so a slow or dead receiver won't hang the app.
 
-## Локальная отладка
+## Local debugging
 
 ```sh
 python3 -m http.server 8080
 ```
 
-Укажите `http://localhost:8080/hook` и нажмите «Отправить тестовое событие». Простой `http.server` ответит `501` на POST — этого достаточно, чтобы увидеть сам запрос в логе; для проверки подписи нужен приёмник, отвечающий `200`.
+Point it at `http://localhost:8080/hook` and press "Send test event". A simple `http.server` will respond `501` to a POST — that's enough to see the request itself in the log; to verify the signature you need a receiver that responds `200`.
