@@ -132,9 +132,23 @@ xcodebuild -project CheckNet.xcodeproj -scheme CheckNet \
 (2) capabilities включены; (3) разрешить локальную сборку в сессии. После архива — `nm`-аудит
 (#88/#94-libXray) и проверка dSYM (#95).
 
-## Pending — что докручивается на сборке/Team ID
+## ✅ Проверено на подписанном архиве (Release, dev-signed, `-allowProvisioningUpdates`)
 
-1. `nm`-скан iOS-бинаря → финал #88 и libXray-часть #94.
-2. Добавление дормантных entitlements (#93 + задача 1) — после Team ID + capabilities на App ID.
-3. `xcodebuild archive` c Team ID (#92), проверка dSYM (#95).
-4. Решение по `ITSAppUsesNonExemptEncryption` (#83) → правка одного поля.
+`ARCHIVE SUCCEEDED`. Автоподпись зарегистрировала App ID + capabilities без ручного портала.
+
+- **#93 — entitlements подписаны** (проверено `codesign -d --entitlements`): `wifi-info`,
+  `usernotifications.time-sensitive`, `ubiquity-kvstore-identifier`
+  (`A63H349525.com.chrsnv.checknet`), `application-groups`. Три дормантные фичи включены.
+- **#88 — чисто**: `nm` по iOS-бинарю не показал `rt_msghdr2`/`CWWiFiClient`/CoreWLAN.
+- **#94 — libXray**: бинарь импортирует `_stat`/`_fstat`/`_lstat` (file-timestamp) и
+  `_mach_absolute_time` (boot-time). Добавлены reason-коды `DDA9.1` и `35F9.1` в
+  `App/Resources/PrivacyInfo.xcprivacy`. Disk-space (`statfs`) не найден — не декларируем.
+- **#100 — иконка** компилируется в архив (`AppIcon60x60@2x.png`, `AppIcon76x76@2x~ipad.png`,
+  `Assets.car`).
+
+**Остаётся:**
+1. **Дистрибуционный архив** для загрузки в App Store: сейчас архив dev-signed (проверка + регистрация
+   capabilities). Для аплоада — `-exportArchive` с `method: app-store-connect` (пере-подпишет
+   Apple Distribution) либо архив с distribution-подписью. #92 в части «реально собирается и
+   подписывается» — закрыт.
+2. dSYM (#95) — присутствует в архиве (Release `dwarf-with-dsym`), проверить при экспорте.
