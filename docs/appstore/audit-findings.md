@@ -87,6 +87,36 @@ nm "$APP/CheckNet" | grep -iE 'rt_msghdr2|CWWiFiClient|CoreWLAN'   # ожида�
 - **Вывод:** текущий набор собирается. Приведение к App ID (включение дормантных) — шаг с Team ID,
   автоматическая подпись Xcode до-создаст профиль.
 
+## #92 · Релизный архив — Team ID `A63H349525`
+
+**Capabilities включить на App ID** (developer.apple.com → Identifiers → `com.chrsnv.checknet`):
+App Groups (`group.com.chrsnv.checknet`), iCloud → **Key-Value storage**, **Access Wi-Fi Information**,
+**Time Sensitive Notifications**. Без них автоподпись дормантных фич не создаст профиль.
+
+**Готовый патч дормантных фич** (применяю в одном коммите после включения capabilities) —
+в `App/CheckNet.entitlements`:
+```xml
+<key>com.apple.developer.networking.wifi-info</key><true/>
+<key>com.apple.developer.usernotifications.time-sensitive</key><true/>
+<key>com.apple.developer.ubiquity-kvstore-identifier</key>
+<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
+```
++ `CloudHostSync.isAvailable = true`, `CurrentNetwork.isSSIDReadable = true` (HostNotifier уже готов).
+
+**Команда архива:**
+```sh
+export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+xcodegen generate
+xcodebuild -project CheckNet.xcodeproj -scheme CheckNet \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -archivePath build/CheckNet.xcarchive \
+  DEVELOPMENT_TEAM=A63H349525 CODE_SIGN_STYLE=Automatic \
+  -allowProvisioningUpdates archive
+```
+Нужно от тебя для прогона: (1) Apple ID с этим Team залогинен в Xcode **или** ASC API key в среде;
+(2) capabilities включены; (3) разрешить локальную сборку в сессии. После архива — `nm`-аудит
+(#88/#94-libXray) и проверка dSYM (#95).
+
 ## Pending — что докручивается на сборке/Team ID
 
 1. `nm`-скан iOS-бинаря → финал #88 и libXray-часть #94.

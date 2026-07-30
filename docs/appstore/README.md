@@ -25,7 +25,7 @@
 
 | Нужно | Зачем | Где взять |
 |---|---|---|
-| **Apple Team ID** (10 символов) | Подпись релизного архива, capabilities App ID | developer.apple.com → Membership |
+| ~~Apple Team ID~~ **`A63H349525`** ✅ получен | Подпись релизного архива, capabilities App ID | — |
 | Подтвердить bundle ID | Уже стоит `com.chrsnv.checknet` (виджеты `.widgets`, группа `group.com.chrsnv.checknet`) | — |
 | Включить capabilities на App ID | Дормантные фичи (iCloud KVS, Wi-Fi Info, Time-Sensitive) физически не подпишутся без этого | developer.apple.com → Identifiers |
 | Разрешить локальные сборки | `xcodebuild archive` / `nm`-аудит iOS-бинаря (#88, #92) | подтвердить в сессии |
