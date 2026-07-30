@@ -16,7 +16,7 @@
   зелёного прогона PR #112 мержится в `main` (локализационный джоб остаётся красным → M10, по
   решению).
 - **Иконки приложения нет вообще** (#100). Нет asset catalog, нет `AppIcon`, нет 1024 — hard-блокер
-  подачи. Это дизайн-задача → готовый промпт для Claude Design в `store-metadata.md`. Как получим
+  подачи. Это дизайн-задача → готовый дизайн-бриф в `store-metadata.md`. Как получим
   иконку — завожу asset catalog и прописываю в `project.yml`.
 - **`ITSAppUsesNonExemptEncryption=false`** может быть некорректным при крипте Happ/Incy — решение
   в `export-compliance.md`.
