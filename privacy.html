@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Политика конфиденциальности — CheckNet</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1a1a1a; background: #fff; }
+  @media (prefers-color-scheme: dark) { body { color: #e7e7ea; background: #16171a; } a { color: #4aa3ff; } }
+  h1 { font-size: 1.7em; margin: 0 0 4px; }
+  h2 { font-size: 1.2em; margin: 1.8em 0 .4em; }
+  .meta { color: #888; font-size: .9em; margin-bottom: 1.5em; }
+  a { color: #0a6de0; }
+  hr { border: none; border-top: 1px solid rgba(128,128,128,.25); margin: 2.5em 0; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size: .9em; }
+</style>
+</head>
+<body>
+<h1>Политика конфиденциальности CheckNet</h1>
+<p class="meta">Дата вступления в силу: 30 июля 2026 г. · Контакт: <a href="mailto:roman@chrsnv.ru">roman@chrsnv.ru</a></p>
+
+<p>CheckNet — приложение сетевой диагностики. Оно спроектировано так, чтобы <strong>не собирать о вас никаких данных</strong>.</p>
+
+<h2>Что мы собираем</h2>
+<p><strong>Ничего.</strong> У CheckNet нет серверов, аккаунтов, аналитики, рекламы и трекинга. Мы не собираем, не храним и не передаём ваши персональные данные. Результаты проверок остаются на вашем устройстве.</p>
+
+<h2>Данные на устройстве</h2>
+<p>Настройки, сохранённые хосты и история проверок хранятся <strong>локально</strong> на устройстве (и, если вы включите синхронизацию iCloud, в вашем личном хранилище iCloud — оно принадлежит вам, не нам). Историю можно очистить в настройках приложения в любой момент.</p>
+
+<h2>Сетевые запросы, которые вы инициируете</h2>
+<p>CheckNet — инструмент диагностики: по вашей команде он обращается к хостам и сервисам, которые <strong>вы указываете</strong>. Отдельные проверки отправляют запросы к сторонним сервисам — например: геолокация IP (отправляется только проверяемый публичный IP), «World Ping» и списки серверов скорости, проверка версий инструментов (публичные релизы на GitHub), DNS-over-HTTPS резолверы. Эти запросы идут напрямую с вашего устройства; мы не добавляем идентификаторов и не получаем их результаты.</p>
+<p>Если вы <strong>сами</strong> настроите вебхук, CheckNet отправит результат проверки на <strong>ваш</strong> сервер по указанному вами адресу. По умолчанию это выключено.</p>
+
+<h2>Разрешения</h2>
+<ul>
+<li><strong>Локальная сеть</strong> — для обнаружения устройств и Bonjour-сервисов в вашей сети.</li>
+<li><strong>Геопозиция</strong> (только iOS, если включена соответствующая функция) — исключительно чтобы iOS отдала имя текущей Wi-Fi-сети; координаты не используются и никуда не отправляются.</li>
+<li><strong>Камера</strong> — только для сканирования QR-кода со списком сохранённых хостов; изображения никуда не отправляются.</li>
+<li><strong>Уведомления</strong> — для оповещений мониторинга хостов, если вы его включите.</li>
+</ul>
+
+<h2>Дети</h2>
+<p>Приложение не предназначено для сбора данных о ком-либо, включая детей, и не собирает их.</p>
+
+<h2>Изменения</h2>
+<p>Актуальная версия политики публикуется на этой странице; дата вступления в силу указана вверху.</p>
+
+<h2>Контакт</h2>
+<p>Вопросы по конфиденциальности: <a href="mailto:roman@chrsnv.ru">roman@chrsnv.ru</a>.</p>
+
+<hr>
+
+<h1 lang="en">CheckNet Privacy Policy</h1>
+<p class="meta" lang="en">Effective date: July 30, 2026 · Contact: <a href="mailto:roman@chrsnv.ru">roman@chrsnv.ru</a></p>
+<div lang="en">
+<p>CheckNet is a network-diagnostics app designed to <strong>collect no data about you</strong>.</p>
+<p><strong>What we collect:</strong> nothing. CheckNet has no servers, accounts, analytics, ads, or tracking. Results stay on your device.</p>
+<p><strong>On-device data:</strong> settings, saved hosts, and check history are stored locally (and, if you turn on iCloud sync, in your own iCloud — which belongs to you, not us). You can clear history anytime.</p>
+<p><strong>Requests you start:</strong> CheckNet is a diagnostic tool — on your command it contacts hosts and services you specify. Some checks send requests to third parties (IP geolocation, world-ping and speed-test server lists, GitHub Releases for version checks, DNS-over-HTTPS resolvers). These go directly from your device; we attach no identifiers and receive no results. If you configure a webhook yourself, CheckNet posts a result to your own server (off by default).</p>
+<p><strong>Permissions:</strong> Local Network (device/Bonjour discovery); Location (iOS, only to let iOS return the current Wi-Fi SSID — coordinates are never used or sent); Camera (only to scan a QR code of saved hosts); Notifications (host-monitoring alerts, if enabled).</p>
+<p><strong>Children:</strong> the app collects no data from anyone, including children.</p>
+<p><strong>Contact:</strong> <a href="mailto:roman@chrsnv.ru">roman@chrsnv.ru</a>.</p>
+</div>
+
+<hr>
+<p><a href="./">← CheckNet</a> · <a href="support.html">Поддержка / Support</a></p>
+</body>
+</html>
