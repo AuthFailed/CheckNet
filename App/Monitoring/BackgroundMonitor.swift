@@ -59,7 +59,7 @@ enum BackgroundMonitor {
     }
 
     /// One check pass over every monitored host, posting on any state change.
-    /// Also used by the "Проверить снова" notification action.
+    /// Also used by the "Recheck" notification action.
     static func runPass() async {
         var entries = MonitorStore.load()
         guard !entries.isEmpty else { return }

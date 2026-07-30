@@ -1,12 +1,12 @@
 import SwiftUI
 import NetworkKit
 
-/// Управление ядрами Xray для проверки «через прокси».
+/// Manages Xray cores for the "through proxy" check.
 ///
-/// На macOS: скачивание выбранной версии с прогрессом, хранение нескольких
-/// версий, удаление по одной или всех. На iOS ядро скачать/запустить нельзя
-/// (App Store 2.5.2), поэтому показываем последнюю доступную версию и
-/// объясняем, что проверка через прокси там использует нативную Reality-пробу.
+/// On macOS: download a chosen version with progress, keep several versions,
+/// delete one or all. On iOS a core cannot be downloaded/run
+/// (App Store 2.5.2), so we show the latest available version and explain that
+/// the through-proxy check there uses the native Reality probe.
 struct XrayCoresEditor: View {
     @Environment(XrayCoreStore.self) private var store
     @State private var confirmDeleteAll = false

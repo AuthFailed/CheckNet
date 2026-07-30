@@ -3,7 +3,7 @@ import XCTest
 
 final class TLSFingerprintTests: XCTestCase {
     /// Every profile must complete a handshake against a normal host. A profile
-    /// that can't connect anywhere would report "обрыв" on every network and be
+    /// that can't connect anywhere would report a "cutoff" on every network and be
     /// worse than useless.
     func testEveryFingerprintCompletesHandshake() async throws {
         try requiresInternet()

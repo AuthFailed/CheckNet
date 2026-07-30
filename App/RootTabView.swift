@@ -61,7 +61,7 @@ struct RootTabView: View {
                 switch target {
                 case let .tool(raw, host, run):
                     if let tool = Tool(rawValue: raw) {
-                        selection = 0                       // controls live under Тесты
+                        selection = 0                       // controls live under Tests
                         navigator.open(tool, autostart: run, host: host)
                     }
                 case let .tab(name):

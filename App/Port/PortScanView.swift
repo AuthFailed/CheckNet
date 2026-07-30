@@ -45,7 +45,7 @@ final class PortScanModel {
         task = Task { [weak self] in
             guard let self else { return }
             // Resolved once, up front. Every port of a name that does not
-            // resolve comes back closed, and "0 открытых портов" reads as a
+            // resolve comes back closed, and "0 open ports" reads as a
             // locked-down host rather than as a host that was never reached.
             // No family restriction: the scan connects over IPv6 too, so on a
             // NAT64/IPv6-only network (where forcing IPv4 would find nothing)

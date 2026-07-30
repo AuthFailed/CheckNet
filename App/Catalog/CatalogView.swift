@@ -175,7 +175,7 @@ struct CatalogView: View {
     #if os(iOS)
     /// Shown after the local-network prompt came back denied: scanning, the
     /// device browser and Bonjour cannot work, and the way back is in Settings.
-    /// Status is carried by an icon and words, not colour, and "Скрыть" leaves
+    /// Status is carried by an icon and words, not colour, and "Hide" leaves
     /// an equal way out.
     @ViewBuilder
     private var localNetworkDeniedBanner: some View {

@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A small ⓘ button that reveals a short "what & why" description of a check.
-/// Used in the catalog rows, the Блокировки rows, and inside each tool screen.
+/// Used in the catalog rows, the Blocking rows, and inside each tool screen.
 struct InfoButton: View {
     let title: String
     let systemImage: String

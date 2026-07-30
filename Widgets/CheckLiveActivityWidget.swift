@@ -7,7 +7,7 @@ import AppIntents
 /// Screen banner + Dynamic Island in every form. The content is tool-agnostic —
 /// a status, a big headline, a caption and up to three stat chips — so ping,
 /// monitoring and future tools share one surface. `kind` only picks the icon
-/// and whether the interactive "Стоп" button appears.
+/// and whether the interactive "Stop" button appears.
 struct CheckLiveActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: CheckActivityAttributes.self) { context in
@@ -114,7 +114,7 @@ struct CheckLiveActivityWidget: Widget {
         }
     }
 
-    /// Interactive "Стоп" — a `LiveActivityIntent` runs in the app and ends the
+    /// Interactive "Stop" — a `LiveActivityIntent` runs in the app and ends the
     /// ping.
     private func stopButton(fill: Bool) -> some View {
         Button(intent: StopPingLiveActivityIntent()) {

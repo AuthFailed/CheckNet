@@ -7,7 +7,7 @@ import SwiftUI
 /// gets denied, and then Bonjour and scanning are dead for good with no way
 /// back that the user understands. Here the ask happens the first time a tool
 /// that needs the permission is opened, the reason is stated in plain words,
-/// and "Не сейчас" is an equal path — the tool simply does not run.
+/// and "Not now" is an equal path — the tool simply does not run.
 struct PrePermissionSheet: View {
     enum Kind {
         /// Bonjour, the network browser, the range scanner.

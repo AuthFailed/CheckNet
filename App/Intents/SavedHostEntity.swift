@@ -4,7 +4,7 @@ import AppIntents
 ///
 /// Exposing saved hosts as an `AppEntity` (rather than a bare `String`
 /// parameter) means the Shortcuts picker offers the user's own favorites by
-/// name — "Дом-роутер", "Cloudflare" — and Siri can resolve a spoken favorite,
+/// name — "Home router", "Cloudflare" — and Siri can resolve a spoken favorite,
 /// while still letting anyone type a raw address.
 struct SavedHostEntity: AppEntity {
     static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Хост")

@@ -34,7 +34,7 @@ public struct CutoffProbe: Sendable, Codable, Hashable {
     public let detail: String
 }
 
-/// The "16–20 КБ" check.
+/// The "16–20 KB" check.
 ///
 /// The user-facing name describes the symptom — connections to foreign hosts die
 /// once a transfer gets going, historically around 16–20 KB. The measured cause

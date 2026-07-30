@@ -9,7 +9,7 @@ private func L(_ key: String) -> String {
     Bundle.main.localizedString(forKey: key, value: key, table: nil)
 }
 
-/// `L` for a format key with arguments, e.g. `Lf("раунд %lld", round)`.
+/// `L` for a format key with arguments, e.g. `Lf("round %lld", round)`.
 private func Lf(_ key: String, _ args: CVarArg...) -> String {
     String(format: L(key), locale: .current, arguments: args)
 }
@@ -39,9 +39,9 @@ struct CheckStat: Codable, Hashable, Sendable {
 /// on macOS, where Live Activities do not exist.
 struct CheckActivityView: Equatable, Sendable {
     var status: PingSnapshot.Status
-    /// The big value, e.g. "12 мс" or "3/4".
+    /// The big value, e.g. "12 ms" or "3/4".
     var headline: String
-    /// A short line under the title, e.g. "идёт проверка" or "не отвечают: 2".
+    /// A short line under the title, e.g. "check in progress" or "not responding: 2".
     var caption: String
     var stats: [CheckStat] = []
     var isRunning: Bool

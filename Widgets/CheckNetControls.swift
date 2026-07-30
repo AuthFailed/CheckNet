@@ -56,7 +56,7 @@ struct LastPingProvider: ControlValueProvider {
     }
 }
 
-/// Opens the Блокировки tab to check what the current network restricts.
+/// Opens the Blocking tab to check what the current network restricts.
 struct BlockingControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "com.chrsnv.checknet.control.blocking") {

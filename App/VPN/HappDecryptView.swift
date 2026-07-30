@@ -1,8 +1,8 @@
 import SwiftUI
 import NetworkKit
 
-/// Расшифровка `happ://crypt…`-ссылок в читаемый вид (обычно URL подписки или
-/// конфиг). Всё считается на устройстве (issue #77).
+/// Decrypts `happ://crypt…` links into a readable form (usually a subscription
+/// URL or a config). Everything runs on the device (issue #77).
 struct HappDecryptView: View {
     @State private var input = ""
     @State private var result: String?

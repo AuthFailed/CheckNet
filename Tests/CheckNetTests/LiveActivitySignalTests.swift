@@ -1,6 +1,6 @@
 import XCTest
 
-/// The Live Activity "Стоп" button and the Focus filter both talk to the ping
+/// The Live Activity "Stop" button and the Focus filter both talk to the ping
 /// loop / notifier through these shared flags, so the semantics are pinned here.
 final class LiveActivitySignalTests: XCTestCase {
 

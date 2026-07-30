@@ -309,7 +309,7 @@ struct HistoryView: View {
         regroup()
     }
 
-    /// Section header for a day. "Сегодня"/"Вчера" go through the string
+    /// Section header for a day. "Today"/"Yesterday" go through the string
     /// catalog, and every other date is formatted with the locale the user
     /// selected in Settings rather than a hardcoded `ru_RU`.
     private func dayTitle(_ day: Date) -> Text {

@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Tools in the **VPN** tab — utilities for people who *run* a VPN
 /// (Xray / Reality / mihomo / Happ ecosystem), as opposed to the end-user
-/// diagnostics in the Тесты tab. Kept as its own type, like `BlockingCheck`,
+/// diagnostics in the Tests tab. Kept as its own type, like `BlockingCheck`,
 /// so the main catalog stays about network diagnostics.
 ///
 /// Scope is diagnostics and config management — inspect, parse, build, check.

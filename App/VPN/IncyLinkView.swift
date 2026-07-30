@@ -1,9 +1,9 @@
 import SwiftUI
 import NetworkKit
 
-/// Incy deep-link: разбор `incy://crypt1/…` в URL подписки и генерация такой
-/// ссылки (+ QR) из своего URL — чтобы отдавать пользователям ссылку вместо
-/// «голого» адреса (issue #78).
+/// Incy deep-link: decode `incy://crypt1/…` into a subscription URL and generate
+/// such a link (+ QR) from your own URL — so you can hand users a link instead of
+/// a "bare" address (issue #78).
 struct IncyLinkView: View {
     private enum Mode: String, CaseIterable, Identifiable {
         case decode, encode

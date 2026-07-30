@@ -15,7 +15,7 @@ final class BufferbloatModel {
 
     var isRunning: Bool { if case .running = phase { true } else { false } }
 
-    /// The phase currently under way, for the "Измеряем отдачу…" label.
+    /// The phase currently under way, for the "Measuring upload…" label.
     var activePhase: BufferbloatPhase? {
         if case .running(let p) = phase { return p }
         return nil
