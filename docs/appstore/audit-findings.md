@@ -62,8 +62,9 @@ nm "$APP/CheckNet" | grep -iE 'rt_msghdr2|CWWiFiClient|CoreWLAN'   # ожида�
 - Deep links (`checknet`), Live Activities, Handoff (`NSUserActivityTypes`) объявлены. ✅
 - Min deployment iOS 26 / macOS 26. ✅
 - ATS: единственное исключение — `ip-api.com` (HTTP-only геосервис), обосновано комментарием. ✅
-- ⚠️ `ITSAppUsesNonExemptEncryption=false` — **см. `export-compliance.md`**: с учётом крипты
-  Happ/Incy это значение под вопросом, вероятно `true` + exemption. Решение за тобой.
+- ✅ `ITSAppUsesNonExemptEncryption=true` (решено) — крипта Happ/Incy декларируется, exemption
+  740.17 в ASC + годовой self-classification. Выставлено в `project.yml` и `App/Info.plist`.
+  См. `export-compliance.md`.
 
 ## #95 · Версия / debug-логи / тестовые хосты / dSYM
 

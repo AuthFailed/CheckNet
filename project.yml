@@ -56,7 +56,13 @@ targets:
           - tr
           - ar
           - hi
-        ITSAppUsesNonExemptEncryption: false
+        # The app uses standard published algorithms beyond TLS (config-link
+        # decoding: RSA/ChaCha20-Poly1305/AES-GCM via Apple frameworks), so it
+        # declares encryption and qualifies for the mass-market exemption
+        # (15 CFR 740.17). Export compliance is answered in App Store Connect;
+        # an annual self-classification report goes to BIS/ENC. See
+        # docs/appstore/export-compliance.md.
+        ITSAppUsesNonExemptEncryption: true
         # Expose the app's Documents folder in Files ("On My iPhone/CheckNet") and
         # let it open documents in place — so users can open geosite/geoip .dat and
         # mihomo .mrs files, and get at exported lists.
