@@ -23,6 +23,11 @@ struct ToolIdleHint: View {
     var current: String = ""
     var useExample: (() -> Void)?
 
+    // The user's real Dynamic Type setting, read before this view caps its own
+    // text below — so it still reflects when the reader is at an accessibility
+    // size even though the hint itself stops growing there.
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     private var showsExample: Bool {
         guard let example, useExample != nil else { return false }
         return current.trimmingCharacters(in: .whitespaces).caseInsensitiveCompare(example) != .orderedSame
@@ -30,11 +35,16 @@ struct ToolIdleHint: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            Image(systemName: icon)
-                // Scales with Dynamic Type instead of sitting at a fixed 40 pt.
-                .font(.system(.largeTitle))
-                .foregroundStyle(.tint)
-                .padding(.top, 40)
+            // Decorative only. At accessibility sizes the vertical budget is
+            // spent on the title and message instead, so the glyph steps aside
+            // rather than pushing the last line of the message under the run
+            // button.
+            if !typeSize.isAccessibilitySize {
+                Image(systemName: icon)
+                    // Scales with Dynamic Type instead of sitting at a fixed 40 pt.
+                    .font(.system(.largeTitle))
+                    .foregroundStyle(.tint)
+            }
 
             Text(title)
                 .font(.headline)
@@ -44,7 +54,7 @@ struct ToolIdleHint: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 16)
 
             if showsExample, let example, let useExample {
                 Button {
@@ -62,7 +72,16 @@ struct ToolIdleHint: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 20)
+        // Only a small breather from the card above: the scaffold already spaces
+        // the leading section and this block apart, and a large fixed inset here
+        // pushed the hint under the pinned run button at accessibility type sizes.
+        .padding(.top, 12)
+        // This is supplementary orientation text, not a result. Past the first
+        // accessibility step it would grow until the run button clipped it mid
+        // sentence — the tool still works, so a hint you can't read is the worse
+        // outcome. Cap its growth here so it stays large but whole; the input and
+        // the results keep scaling to the user's full setting.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         // One announcement rather than three fragments; the example stays a
         // separate control.
         .accessibilityElement(children: .contain)

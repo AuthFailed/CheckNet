@@ -119,6 +119,10 @@ struct CurrentWiFiView: View {
                 Text("Подключитесь к сети Wi-Fi и нажмите «Обновить». Инструмент читает только текущее подключение.")
             }
             .padding(.top, 24)
+            // Orientation text, like ToolIdleHint: past the first accessibility
+            // step it would grow until the pinned «Обновить» button clipped its
+            // last line. Cap the growth so the empty state stays whole.
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         case .noAccess:
             #if os(iOS)
             accessCard
