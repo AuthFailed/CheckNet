@@ -1,372 +1,370 @@
-# CheckNet — план развития
+# CheckNet — development plan
 
-Цель: **лучшее приложение для диагностики сети на Apple-платформах** — нативное на iPhone, iPad и Mac,
-честное в объяснениях, с проверками, которых нет у конкурентов (Speedtest, Network Analyzer, iNetTools).
+Goal: **the best network-diagnostics app on Apple platforms** — native on iPhone, iPad and Mac,
+honest in its explanations, with checks the competition lacks (Speedtest, Network Analyzer, iNetTools).
 
-Задачи живут в [Issues](https://github.com/AuthFailed/CheckNet/issues) и сгруппированы по вехам.
-Этот файл — про **порядок и зависимости**: почему M2 идёт раньше M3, а M4 — раньше M6.
-
----
-
-## Где мы сейчас
-
-Обновлено 2026-07-23. **M1–M4 и M6 закрыты; остаётся M5 (платформенные интеграции).** Ниже
-фактическое состояние; таблицы вех ниже отмечают каждую задачу отдельно колонкой «Статус».
-
-- **27 инструментов** реализованы; **заглушек «скоро» не осталось**. Два Wi-Fi-инструмента
-  работают только на macOS (CoreWLAN); на iOS они показывают заглушку «доступно на Mac».
-  Добавлены за эту веху: bufferbloat (#46), геолокация IP и World Ping (#47), Wi-Fi на macOS (#48).
-- **Ядро** `Packages/NetworkKit` — **207 XCTest-тестов** против реальных хостов и парсеров
-  (парсеры DNS/X.509/MMDB и геолокация покрыты детерминированно). В CI: детерминированные —
-  блокирующим гейтом, сетевые — информационно (см. «Как тесты гоняются в CI»).
-- **App + Shared** — ~11 000 строк; появился таргет **`CheckNetTests` (119 тестов)** на логику
-  App/Shared (M4 #37). Чистые куски (`HostSharing`, `IPAddress`, `LaunchArguments`,
-  `ScheduleRule`, `HistoryCSV`, фабрики `CheckRecord`, `ToolRunModel`) вынесены в `Shared/`.
-- **Локализация** — string catalog, 13 языков. Осталась вторая категория: строки движков,
-  которые ищутся через `LocalizedStringKey(переменная)` и в любой локали остаются русскими
-  (issue #60).
-- **iPad/macOS** — адаптивная раскладка есть: `NavigationSplitView` + `.sidebarAdaptable`,
-  единый `ToolScaffold` с ограничением ширины, `MenuBarExtra` / команды / сцена Settings на Mac,
-  landscape на iPhone (M2 #14–#19 закрыты).
-- **Haptics** есть (`App/Common/Haptics.swift` + тумблер в настройках); доступность улучшена —
-  статус передаётся формой и словом, а не только цветом, иконкам добавлены лейблы (#20, #21);
-  Dynamic Type, reduce-motion и `numericText` доведены (M3 закрыта).
-- Виджет главного экрана **удалён сознательно**: расширение публикует Live Activity и
-  пользовательские контролы (#41), но в галерею домашнего экрана — ничего; после установки
-  приложение ничего не навязывает.
+Work items live in [Issues](https://github.com/AuthFailed/CheckNet/issues) and are grouped by milestone.
+This file is about **order and dependencies**: why M2 comes before M3, and M4 before M6.
 
 ---
 
-## Логика порядка
+## Where we are now
+
+Updated 2026-07-23. **M1–M4 and M6 are closed; M5 (platform integrations) remains.** Below is the
+actual state; the milestone tables further down mark each task individually in a "Status" column.
+
+- **27 tools** implemented; **no "coming soon" placeholders left**. Two Wi-Fi tools work only on
+  macOS (CoreWLAN); on iOS they show an "available on Mac" placeholder.
+  Added in this milestone: bufferbloat (#46), IP geolocation and World Ping (#47), Wi-Fi on macOS (#48).
+- **Core** `Packages/NetworkKit` — **207 XCTest tests** against real hosts and parsers
+  (the DNS/X.509/MMDB parsers and geolocation are covered deterministically). In CI: deterministic
+  tests are a blocking gate, network tests are informational (see "How tests run in CI").
+- **App + Shared** — ~11,000 lines; a **`CheckNetTests` target (119 tests)** was added for App/Shared
+  logic (M4 #37). Pure pieces (`HostSharing`, `IPAddress`, `LaunchArguments`,
+  `ScheduleRule`, `HistoryCSV`, the `CheckRecord` and `ToolRunModel` factories) were extracted into `Shared/`.
+- **Localization** — string catalog, 13 languages. The second category remains: engine strings that
+  are looked up via `LocalizedStringKey(variable)` and stay in English (the source language) in every
+  locale (issue #60).
+- **iPad/macOS** — adaptive layout is in place: `NavigationSplitView` + `.sidebarAdaptable`,
+  a single `ToolScaffold` with a width limit, `MenuBarExtra` / commands / a Settings scene on Mac,
+  landscape on iPhone (M2 #14–#19 closed).
+- **Haptics** are in (`App/Common/Haptics.swift` + a toggle in Settings); accessibility improved —
+  status is conveyed by shape and word, not just color, and icons have labels (#20, #21);
+  Dynamic Type, reduce-motion and `numericText` are finished (M3 closed).
+- The Home Screen widget was **removed on purpose**: the extension publishes the Live Activity and
+  user-added controls (#41), but nothing goes into the Home Screen gallery; after install the app
+  imposes nothing.
+
+---
+
+## Ordering logic
 
 ```
-M1 Стабилизация ──┬─→ M2 Адаптивный UI ──→ M3 UX-полировка
-                  │            │                 │
-                  └─→ M4 Архитектура и тесты ────┘
-                               │
-                               ├─→ M5 Платформенные интеграции
-                               └─→ M6 Новые инструменты
+M1 Stabilization ──┬─→ M2 Adaptive UI ──→ M3 UX polish
+                   │            │                 │
+                   └─→ M4 Architecture & tests ───┘
+                                │
+                                ├─→ M5 Platform integrations
+                                └─→ M6 New tools
 ```
 
-**Статус вех:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 почти закрыта (#39–#44 ✅, остаётся P3 #45) · M6 ✅ (инструменты сделаны; #49 — живой бэклог идей) · **M7 📋 запланирована** (раздел для владельцев VPN, #69–#77).
+**Milestone status:** M1 ✅ · M2 ✅ · M3 ✅ · M4 ✅ · M5 nearly closed (#39–#44 ✅, P3 #45 remains) · M6 ✅ (tools done; #49 is a living backlog of ideas) · **M7 📋 planned** (a section for VPN operators, #69–#77).
 
-- **M1 первым** — там блокеры релиза (privacy manifest), потеря данных (гонка в истории) и
-  неработающий CI. Строить новое на нестабильном фундаменте дороже.
-- **M2 раньше M3** — `ToolScaffold` и `NavigationSplitView` переписывают каркас всех 22 экранов.
-  Полировать пустые состояния и анимации до этого — переделывать дважды.
-- **M4 параллельно M2/M3** — `ToolRunModel` и `ToolScaffold` это две половины одного рефакторинга;
-  вынос логики в NetworkKit делает её тестируемой.
-- **M5 и M6 после M4** — новые инструменты и фоновые сценарии садятся на `CheckRunner`,
-  единую обработку ошибок и `ToolScaffold`, иначе каждый новый экран снова копирует 200 строк.
+- **M1 first** — that's where the release blockers live (privacy manifest), data loss (a race in
+  history) and a broken CI. Building new things on an unstable foundation costs more.
+- **M2 before M3** — `ToolScaffold` and `NavigationSplitView` rewrite the shell of all 22 screens.
+  Polishing empty states and animations before that means redoing it twice.
+- **M4 in parallel with M2/M3** — `ToolRunModel` and `ToolScaffold` are two halves of one refactor;
+  moving logic into NetworkKit makes it testable.
+- **M5 and M6 after M4** — new tools and background scenarios sit on `CheckRunner`, unified error
+  handling and `ToolScaffold`, otherwise every new screen copies 200 lines again.
 
 ---
 
-## M1 · Стабилизация и релиз ✅
+## M1 · Stabilization & release ✅
 
-Без этого приложение нельзя выпускать: блокеры App Store, потеря данных, нелокализованный UI.
+Without this the app can't ship: App Store blockers, data loss, an unlocalized UI.
 
-**Статус: завершена ✅** (все задачи закрыты).
+**Status: complete ✅** (all tasks closed).
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
-| [#5](https://github.com/AuthFailed/CheckNet/issues/5) | `PrivacyInfo.xcprivacy` — блокер ревью App Store | P0 | ✅ |
-| [#6](https://github.com/AuthFailed/CheckNet/issues/6) | CI: гонять `swift test` и собирать macOS | P0 | ✅ |
-| [#7](https://github.com/AuthFailed/CheckNet/issues/7) | Починить сборку macOS-таргета | P0 | ✅ |
-| [#8](https://github.com/AuthFailed/CheckNet/issues/8) | История: экспорт CSV/JSON выполняется в `body` | P0 | ✅ |
-| [#9](https://github.com/AuthFailed/CheckNet/issues/9) | История: захардкоженная `ru_RU`-локаль | P0 | ✅ |
-| [#10](https://github.com/AuthFailed/CheckNet/issues/10) | 46 непереведённых ключей в каталоге строк | P0 | ✅ |
-| [#11](https://github.com/AuthFailed/CheckNet/issues/11) | `SharedStore`: гонка при записи истории | P0 | ✅ |
-| [#13](https://github.com/AuthFailed/CheckNet/issues/13) | Профили сети не работают без Wi-Fi-entitlement | P1 | ✅ |
+| [#5](https://github.com/AuthFailed/CheckNet/issues/5) | `PrivacyInfo.xcprivacy` — App Store review blocker | P0 | ✅ |
+| [#6](https://github.com/AuthFailed/CheckNet/issues/6) | CI: run `swift test` and build macOS | P0 | ✅ |
+| [#7](https://github.com/AuthFailed/CheckNet/issues/7) | Fix the macOS target build | P0 | ✅ |
+| [#8](https://github.com/AuthFailed/CheckNet/issues/8) | History: CSV/JSON export runs in `body` | P0 | ✅ |
+| [#9](https://github.com/AuthFailed/CheckNet/issues/9) | History: hardcoded `ru_RU` locale | P0 | ✅ |
+| [#10](https://github.com/AuthFailed/CheckNet/issues/10) | 46 untranslated keys in the string catalog | P0 | ✅ |
+| [#11](https://github.com/AuthFailed/CheckNet/issues/11) | `SharedStore`: race when writing history | P0 | ✅ |
+| [#13](https://github.com/AuthFailed/CheckNet/issues/13) | Network profiles don't work without the Wi-Fi entitlement | P1 | ✅ |
 
-**Порядок внутри вехи:** #7 → #6 (CI не может собирать сломанный таргет) → остальное параллельно.
+**Order within the milestone:** #7 → #6 (CI can't build a broken target) → the rest in parallel.
 
 ---
 
-## M2 · Адаптивный UI (iPad + macOS) ✅
+## M2 · Adaptive UI (iPad + macOS) ✅
 
-Главный визуальный долг. Сейчас это «растянутый айфон» на всех широких экранах.
+The main visual debt. Right now it's a "stretched iPhone" on every wide screen.
 
-**Статус: завершена ✅** (все задачи закрыты).
+**Status: complete ✅** (all tasks closed).
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
 | [#14](https://github.com/AuthFailed/CheckNet/issues/14) | `NavigationSplitView` + `.tabViewStyle(.sidebarAdaptable)` | P1 | ✅ |
-| [#15](https://github.com/AuthFailed/CheckNet/issues/15) | `ToolScaffold` — единый контейнер с ограничением ширины | P1 | ✅ |
-| [#16](https://github.com/AuthFailed/CheckNet/issues/16) | Фиксированные ширины/высоты, ломающие Dynamic Type | P1 | ✅ |
-| [#17](https://github.com/AuthFailed/CheckNet/issues/17) | Sheets без `presentationDetents` | P2 | ✅ |
-| [#18](https://github.com/AuthFailed/CheckNet/issues/18) | macOS: `MenuBarExtra`, `.commands`, сцена `Settings` | P1 | ✅ |
-| [#19](https://github.com/AuthFailed/CheckNet/issues/19) | Landscape на iPhone | P2 | ✅ |
+| [#15](https://github.com/AuthFailed/CheckNet/issues/15) | `ToolScaffold` — a single container with a width limit | P1 | ✅ |
+| [#16](https://github.com/AuthFailed/CheckNet/issues/16) | Fixed widths/heights that break Dynamic Type | P1 | ✅ |
+| [#17](https://github.com/AuthFailed/CheckNet/issues/17) | Sheets without `presentationDetents` | P2 | ✅ |
+| [#18](https://github.com/AuthFailed/CheckNet/issues/18) | macOS: `MenuBarExtra`, `.commands`, a `Settings` scene | P1 | ✅ |
+| [#19](https://github.com/AuthFailed/CheckNet/issues/19) | Landscape on iPhone | P2 | ✅ |
 
-**Порядок:** #15 (каркас) → #14 (навигация поверх него) → #16 → #17/#19 → #18 (зависит от #7).
+**Order:** #15 (the shell) → #14 (navigation on top of it) → #16 → #17/#19 → #18 (depends on #7).
 
 ---
 
-## M3 · UX-полировка ✅
+## M3 · UX polish ✅
 
-То, что отличает «работает» от «приятно пользоваться».
+What separates "it works" from "it's pleasant to use".
 
-**Статус: завершена ✅** (все задачи закрыты). Большая часть закрыта ранними PR; последним доделан
-Dynamic Type (#22) — единственный оставшийся хардкод размера шрифта.
+**Status: complete ✅** (all tasks closed). Most were closed by early PRs; Dynamic Type (#22) was the
+last one finished — the only remaining hardcoded font size.
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
-| [#20](https://github.com/AuthFailed/CheckNet/issues/20) | Haptics — сейчас 0 вызовов на весь проект | P1 | ✅ |
-| [#21](https://github.com/AuthFailed/CheckNet/issues/21) | Доступность: статус только цветом, иконки без лейблов | P1 | ✅ |
-| [#22](https://github.com/AuthFailed/CheckNet/issues/22) | Dynamic Type: 39 хардкодов `.font(.system(size:))` | P1 | ✅ |
-| [#23](https://github.com/AuthFailed/CheckNet/issues/23) | Единая обработка ошибок + «Повторить» | P1 | ✅ |
-| [#24](https://github.com/AuthFailed/CheckNet/issues/24) | Idle-состояния на 12 экранах | P2 | ✅ |
-| [#25](https://github.com/AuthFailed/CheckNet/issues/25) | Поиск: синонимы в каталоге, поиск в истории | P2 | ✅ |
-| [#26](https://github.com/AuthFailed/CheckNet/issues/26) | Reduce motion и `numericText` | P2 | ✅ |
-| [#27](https://github.com/AuthFailed/CheckNet/issues/27) | Pull-to-refresh на списках | P3 | ✅ |
-| [#28](https://github.com/AuthFailed/CheckNet/issues/28) | Экраны без ⓘ и асимметрия в Блокировках | P2 | ✅ |
-| [#29](https://github.com/AuthFailed/CheckNet/issues/29) | Заглушка не объясняет, почему инструмент недоступен | P2 | ✅ |
-| [#30](https://github.com/AuthFailed/CheckNet/issues/30) | Онбординг и pre-permission для локальной сети | P2 | ✅ |
-| [#31](https://github.com/AuthFailed/CheckNet/issues/31) | `onTapGesture` вместо `NavigationLink` | P2 | ✅ |
+| [#20](https://github.com/AuthFailed/CheckNet/issues/20) | Haptics — currently 0 calls across the whole project | P1 | ✅ |
+| [#21](https://github.com/AuthFailed/CheckNet/issues/21) | Accessibility: status by color only, icons without labels | P1 | ✅ |
+| [#22](https://github.com/AuthFailed/CheckNet/issues/22) | Dynamic Type: 39 hardcoded `.font(.system(size:))` | P1 | ✅ |
+| [#23](https://github.com/AuthFailed/CheckNet/issues/23) | Unified error handling + "Retry" | P1 | ✅ |
+| [#24](https://github.com/AuthFailed/CheckNet/issues/24) | Idle states on 12 screens | P2 | ✅ |
+| [#25](https://github.com/AuthFailed/CheckNet/issues/25) | Search: synonyms in the catalog, search in history | P2 | ✅ |
+| [#26](https://github.com/AuthFailed/CheckNet/issues/26) | Reduce motion and `numericText` | P2 | ✅ |
+| [#27](https://github.com/AuthFailed/CheckNet/issues/27) | Pull-to-refresh on lists | P3 | ✅ |
+| [#28](https://github.com/AuthFailed/CheckNet/issues/28) | Screens without ⓘ and asymmetry in Blocking | P2 | ✅ |
+| [#29](https://github.com/AuthFailed/CheckNet/issues/29) | The placeholder doesn't explain why a tool is unavailable | P2 | ✅ |
+| [#30](https://github.com/AuthFailed/CheckNet/issues/30) | Onboarding and pre-permission for the local network | P2 | ✅ |
+| [#31](https://github.com/AuthFailed/CheckNet/issues/31) | `onTapGesture` instead of `NavigationLink` | P2 | ✅ |
 
-**Порядок:** #23 (единая фаза/ошибка) → #20 и #24 садятся на неё → #21/#22 → остальное.
+**Order:** #23 (unified phase/error) → #20 and #24 sit on it → #21/#22 → the rest.
 
 ---
 
-## M4 · Архитектура и тесты ✅
+## M4 · Architecture & tests ✅
 
-Убирает дублирование и закрывает самый рискованный непокрытый код.
+Removes duplication and closes the riskiest uncovered code.
 
-**Статус: завершена ✅** (6 из 7 закрыто; у #32 внедрён строительный блок, миграция — отдельным
-шагом, см. ниже).
+**Status: complete ✅** (6 of 7 closed; for #32 the building block landed, the migration is a separate
+step, see below).
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
-| [#35](https://github.com/AuthFailed/CheckNet/issues/35) | Тесты на `X509Parser` (рукописный DER) | P1 | ✅ |
-| [#36](https://github.com/AuthFailed/CheckNet/issues/36) | Тесты на `DNSMessage`, включая pointer loop | P1 | ✅ |
-| [#37](https://github.com/AuthFailed/CheckNet/issues/37) | Таргет `CheckNetTests` для `App/` и `Shared/` | P1 | ✅ |
-| [#33](https://github.com/AuthFailed/CheckNet/issues/33) | Вынести `BlockingCheck.run` в NetworkKit | P1 | ✅ |
-| [#34](https://github.com/AuthFailed/CheckNet/issues/34) | Дублирование: `CheckRecord`, `PingConfig`, персистенс | P2 | ✅ |
-| [#38](https://github.com/AuthFailed/CheckNet/issues/38) | Непокрытые движки NetworkKit | P2 | ✅ |
-| [#32](https://github.com/AuthFailed/CheckNet/issues/32) | `ToolRunModel<T>` — схлопнуть ~15 моделей | P2 | 🔨 частично |
+| [#35](https://github.com/AuthFailed/CheckNet/issues/35) | Tests for `X509Parser` (hand-written DER) | P1 | ✅ |
+| [#36](https://github.com/AuthFailed/CheckNet/issues/36) | Tests for `DNSMessage`, including the pointer loop | P1 | ✅ |
+| [#37](https://github.com/AuthFailed/CheckNet/issues/37) | `CheckNetTests` target for `App/` and `Shared/` | P1 | ✅ |
+| [#33](https://github.com/AuthFailed/CheckNet/issues/33) | Move `BlockingCheck.run` into NetworkKit | P1 | ✅ |
+| [#34](https://github.com/AuthFailed/CheckNet/issues/34) | Duplication: `CheckRecord`, `PingConfig`, persistence | P2 | ✅ |
+| [#38](https://github.com/AuthFailed/CheckNet/issues/38) | Uncovered NetworkKit engines | P2 | ✅ |
+| [#32](https://github.com/AuthFailed/CheckNet/issues/32) | `ToolRunModel<T>` — collapse ~15 models | P2 | 🔨 partial |
 
-**Что сделано (в `main`):**
-- #36 — `DNSMessage.readName` отклоняет указатели сжатия не «строго назад» (циклы/вперёд/на себя),
-  ограничивает имя 255 байтами, запрещает зарезервированные длины меток; +15 тестов.
-- #35 — разбор строк по тегу (BMPString/Teletex), UTCTime по правилу века RFC 5280, разбор SAN
-  (показан на листовом сертификате); +17 тестов с реальными RSA/EC-фикстурами и фаззингом.
-- #37 — чистая логика App вынесена в `Shared/` и покрыта таргетом `CheckNetTests` (51 тест);
-  экранирование CSV теперь RFC 4180 по всем колонкам.
-- #33 — диспетчеризация проверок в `CensorshipCheckKind` (NetworkKit); Intents/планировщик
-  больше не зависят от UI.
-- #34 — пресеты `PingConfig`, фабрики `CheckRecord`, `UserDefaults.json/setJSON`.
-- #38 — контрольная сумма ICMP (вектор RFC 1071) и разбор пакетов; +19 тестов.
-- #32 — **строительный блок** `RunPhase` + `ToolRunModel<Value>` в `Shared/` (с тестами).
+**What's done (in `main`):**
+- #36 — `DNSMessage.readName` rejects compression pointers that don't point "strictly backward"
+  (loops/forward/self), caps the name at 255 bytes, forbids reserved label lengths; +15 tests.
+- #35 — string parsing by tag (BMPString/Teletex), UTCTime by the RFC 5280 century rule, SAN parsing
+  (shown on a leaf certificate); +17 tests with real RSA/EC fixtures and fuzzing.
+- #37 — pure App logic extracted into `Shared/` and covered by the `CheckNetTests` target (51 tests);
+  CSV escaping is now RFC 4180 across all columns.
+- #33 — check dispatch in `CensorshipCheckKind` (NetworkKit); Intents/scheduler no longer depend on the UI.
+- #34 — `PingConfig` presets, `CheckRecord` factories, `UserDefaults.json/setJSON`.
+- #38 — the ICMP checksum (RFC 1071 vector) and packet parsing; +19 tests.
+- #32 — the **building block** `RunPhase` + `ToolRunModel<Value>` in `Shared/` (with tests).
 
-**Осталось по #32:** миграция ~15 моделей на `ToolRunModel`. Задумывалась совместно с #15
-(`ToolScaffold`), но #15 уже закрыта, поэтому это отдельный механический шаг: экраны уже используют
-`ToolScaffold`, миграция сводится к замене внутренностей каждой модели. Модели неоднородны —
-~8 одноразовых (`run() async throws`) и ~7 потоковых (`start()/stop()` с прогрессом).
+**Remaining for #32:** migrating ~15 models to `ToolRunModel`. It was meant to be done together with
+#15 (`ToolScaffold`), but #15 is already closed, so this is a separate mechanical step: the screens
+already use `ToolScaffold`, and the migration comes down to swapping out the internals of each model.
+The models are heterogeneous — ~8 one-shot (`run() async throws`) and ~7 streaming (`start()/stop()`
+with progress).
 
-**Порядок (как делалось):** #35/#36 (риск безопасности и зависаний) → #37 → #33 → #34 → #38 → #32.
+**Order (as done):** #35/#36 (security and hang risk) → #37 → #33 → #34 → #38 → #32.
 
 ---
 
-## M5 · Платформенные интеграции — в работе
+## M5 · Platform integrations — in progress
 
-Здесь приложение перестаёт быть «утилитой, которую открывают руками».
+Here the app stops being "a utility you open by hand".
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
-| [#39](https://github.com/AuthFailed/CheckNet/issues/39) | Фоновый мониторинг через `BGTask` | P1 | ✅ |
-| [#40](https://github.com/AuthFailed/CheckNet/issues/40) | Уведомления: actions, time-sensitive, foreground | P2 | ✅ |
-| [#41](https://github.com/AuthFailed/CheckNet/issues/41) | Control Center + Lock Screen виджеты | P2 | ✅ |
-| [#42](https://github.com/AuthFailed/CheckNet/issues/42) | Siri: донат интентов, `AppEntity` хостов | P2 | ✅ |
-| [#43](https://github.com/AuthFailed/CheckNet/issues/43) | iCloud-синхронизация, Handoff, Spotlight | P2 | ✅ |
-| [#44](https://github.com/AuthFailed/CheckNet/issues/44) | Focus filters, интерактивная Live Activity | P3 | ✅ |
-| [#45](https://github.com/AuthFailed/CheckNet/issues/45) | watchOS и visionOS — исследование | P3 | |
+| [#39](https://github.com/AuthFailed/CheckNet/issues/39) | Background monitoring via `BGTask` | P1 | ✅ |
+| [#40](https://github.com/AuthFailed/CheckNet/issues/40) | Notifications: actions, time-sensitive, foreground | P2 | ✅ |
+| [#41](https://github.com/AuthFailed/CheckNet/issues/41) | Control Center + Lock Screen widgets | P2 | ✅ |
+| [#42](https://github.com/AuthFailed/CheckNet/issues/42) | Siri: intent donation, host `AppEntity` | P2 | ✅ |
+| [#43](https://github.com/AuthFailed/CheckNet/issues/43) | iCloud sync, Handoff, Spotlight | P2 | ✅ |
+| [#44](https://github.com/AuthFailed/CheckNet/issues/44) | Focus filters, interactive Live Activity | P3 | ✅ |
+| [#45](https://github.com/AuthFailed/CheckNet/issues/45) | watchOS and visionOS — research | P3 | |
 
-**Порядок:** #39 → #40 (уведомления осмысленны только при работающем фоне) → #41/#42 → #43 → #44/#45.
-Порядок мягкий: #42 взят раньше фоновых задач как чисто кодовый и юнит-тестируемый — он
-не требует on-device-проверки, в отличие от `BGTask`/уведомлений.
+**Order:** #39 → #40 (notifications only make sense once the background works) → #41/#42 → #43 → #44/#45.
+The order is soft: #42 was taken before the background tasks as pure, unit-testable code — it doesn't
+require on-device verification, unlike `BGTask`/notifications.
 
-**#42 сделан:** сохранённые хосты стали `SavedHostEntity` (`EntityStringQuery`) — в Shortcuts и
-Siri пользователь выбирает свои избранные по имени, а любой адрес можно ввести вручную;
-ручной пинг донатит `PingHostIntent` в `IntentDonationManager`, чтобы система предлагала его на
-локскрине и в Spotlight. Матчинг и codec вынесены в `Shared/SavedHostsPersistence.swift`
-(единый ключ хранилища для стора и запроса) и покрыты юнит-тестами в `CheckNetTests`.
+**#42 done:** saved hosts became `SavedHostEntity` (`EntityStringQuery`) — in Shortcuts and Siri the
+user picks their favorites by name, and any address can be entered manually; a manual ping donates
+`PingHostIntent` to `IntentDonationManager` so the system offers it on the lock screen and in Spotlight.
+Matching and the codec were extracted into `Shared/SavedHostsPersistence.swift` (a single store key for
+both the store and the query) and covered by unit tests in `CheckNetTests`.
 
-**#44 сделан:** **интерактивная Live Activity** — на пинг-активности (Lock Screen + развёрнутый
-Dynamic Island) появилась кнопка «Стоп» (`StopPingLiveActivityIntent: LiveActivityIntent`,
-`#if os(iOS)`), которая через shared-генерацию (`LiveActivitySignal`, app-group) сигналит циклу
-пинга завершиться; baseline снимается на старте, поэтому старое нажатие не гасит новый прогон.
-**Focus filter** — `MonitorFocusFilter: SetFocusFilterIntent` (кросс-платформенный) заглушает
-оповещения мониторинга в выбранном фокусе, персистя выбор в `FocusMonitorState`, который читает
-`HostNotifier.post` (и foreground, и фон). Оба флага чистые и покрыты тестами; реальное
-переключение фокусов проверяется только на устройстве.
+**#44 done:** an **interactive Live Activity** — the ping activity (Lock Screen + expanded Dynamic
+Island) gained a "Stop" button (`StopPingLiveActivityIntent: LiveActivityIntent`, `#if os(iOS)`) that,
+via a shared generation counter (`LiveActivitySignal`, app-group), signals the ping loop to finish; a
+baseline is captured at start, so an old tap doesn't kill a new run. The **Focus filter** —
+`MonitorFocusFilter: SetFocusFilterIntent` (cross-platform) mutes monitoring alerts in the chosen focus,
+persisting the choice in `FocusMonitorState`, which `HostNotifier.post` reads (both foreground and
+background). Both flags are pure and covered by tests; actual focus switching is only verified on device.
 
-**Live Activity обобщена (сверх #44).** Была только пинг-активность; теперь один
-`CheckActivityAttributes` (статус + заголовок + подпись + до трёх чипов, `kind` → иконка и
-кнопка) обслуживает любую длящуюся проверку. Контроллер и виджет переименованы в
-`CheckActivityController` / `CheckLiveActivityWidget`, форматирование вынесено в чистые
-`PingActivityContent` / `MonitorActivityContent` (юнит-тесты). **Мониторинг** теперь показывает
-живую активность (агрегат «N/M онлайн», худший статус — цвет, чипы Онлайн/Не отвечают/Хостов),
-обновляется из foreground-цикла и из `BackgroundMonitor` (перечислением активностей). Заодно
-`MonitoringManager` поднят на уровень приложения (`@Environment`) — раньше мониторинг умирал при
-уходе с экрана; теперь идёт всю сессию, а осиротевшие активности гасятся на старте.
+**Live Activity generalized (beyond #44).** There was only the ping activity; now a single
+`CheckActivityAttributes` (status + title + subtitle + up to three chips, `kind` → icon and button)
+serves any ongoing check. The controller and widget were renamed to `CheckActivityController` /
+`CheckLiveActivityWidget`, and formatting was moved into pure `PingActivityContent` /
+`MonitorActivityContent` (unit tests). **Monitoring** now shows a Live Activity (an "N/M online"
+aggregate, worst status as the color, Online/Not responding/Hosts chips), updated from the foreground
+loop and from `BackgroundMonitor` (by enumerating activities). At the same time `MonitoringManager` was
+lifted to app level (`@Environment`) — monitoring used to die when leaving the screen; now it runs for
+the whole session, and orphaned activities are killed at start.
 
-**Live Activity доведена до всех запускаемых инструментов — 22 шт.**
-- *Длящиеся* (живой Dynamic Island): пинг, мониторинг, тест скорости (Мбит/с + фаза),
-  bufferbloat (фаза/RTT → оценка A–F с цветом), MTR (задержка цели/потери/раунд), трассировка,
-  скан портов и IP (прогресс «X/Y» + найдено), World Ping и обзор сети (прогресс), Bonjour
-  (счётчик сервисов), MTU (размер пробы → path MTU).
-- *Одноразовые* (результат держится 90с на локскране): host→IP, обратный DNS, DNS lookup/compare/
-  tamper, whois, TLS, чёрные списки, CGNAT, IP-геолокация.
+**Live Activity brought to all runnable tools — 22 of them.**
+- *Ongoing* (a live Dynamic Island): ping, monitoring, speed test (Mbit/s + phase),
+  bufferbloat (phase/RTT → an A–F grade with color), MTR (target latency/loss/round), traceroute,
+  port and IP scan (an "X/Y" progress + found count), World Ping and network overview (progress), Bonjour
+  (service counter), MTU (probe size → path MTU).
+- *One-shot* (the result holds for 90s on the lock screen): host→IP, reverse DNS, DNS lookup/compare/
+  tamper, whois, TLS, blacklists, CGNAT, IP geolocation.
 
-Масштабируемость: активность подключена к самому `ToolRunModel` (seam для ~10 одноразовых
-инструментов — задают короткий `ActivityDescriptor` + маппер фазы→вид; `LookupActivityContent`
-рисует «выполняется / результат / ошибка», статус per-result красит истёкший серт / листинг /
-подмену в красный). Прогресс-сканы делят `ScanActivityContent`. Контент вынесен в чистые билдеры
-в `Shared/` и покрыт юнит-тестами; `kind` → иконка в виджете. Найден и починен race: `start()`
-моделей первым делом зовёт `stop()`, а асинхронный конец из `stop()` гасил только что созданную
-активность — перешли на **отдельный контроллер на прогон**. Осознанно без активности: Wake-on-LAN
-(синхронная мгновенная отправка — нечего показывать), список интерфейсов и iOS-заглушки Wi-Fi.
-Проверено на симуляторе: MTR-активность в Dynamic Island (компакт «30 хопов» + развёрнутый вид),
-создание lookup-активности подтверждено логом.
+Scalability: the activity is wired to `ToolRunModel` itself (a seam for the ~10 one-shot tools — they
+supply a short `ActivityDescriptor` + a phase→view mapper; `LookupActivityContent` renders
+"running / result / error", and a per-result status colors an expired cert / a listing / a tamper red).
+Progress scans share `ScanActivityContent`. The content was moved into pure builders in `Shared/` and
+covered by unit tests; `kind` → icon in the widget. A race was found and fixed: the models' `start()`
+calls `stop()` first, and the async end from `stop()` was killing the just-created activity — so we
+moved to a **separate controller per run**. Deliberately without an activity: Wake-on-LAN (a synchronous
+instant send — nothing to show), the interface list and the iOS Wi-Fi placeholders. Verified on the
+simulator: the MTR activity in the Dynamic Island (compact "30 hops" + expanded view), and lookup
+activity creation confirmed by log.
 
-**#39 + #40 сделаны:** **фон** — `BackgroundMonitor` (`BGAppRefreshTask`, id
-`com.chrsnv.checknet.monitor.refresh` в `BGTaskSchedulerPermittedIdentifiers`, `UIBackgroundModes:
-fetch`) переоткрывает те же проверки, что foreground-мониторинг, пока приложение выгружено;
-регистрируется в `init`, планируется при уходе в background и при включении мониторинга. **Уведомления**
-— `HostNotifier` даёт категорию `HOST_STATUS` с действиями «Открыть» / «Проверить снова»,
-foreground-показ баннера (делегат) и time-sensitive-уровень для падений (мягко деградирует до
-`.active` без платного entitlement). Решение «слать ли и что» вынесено в чистый
-`Shared/MonitorNotification.swift` (матрица переходов: первый замер молчит, флаппинг ok↔degraded
-молчит, алертят только down/recovery), записи хостов — в общий `Shared/MonitorStore.swift`; всё
-покрыто юнит-тестами. iOS-only (`BGTaskScheduler` нет на macOS — там остаётся foreground-цикл).
-Реальное пробуждение системой и доставка проверяются только на устройстве; здесь — сборка,
-тесты логики и чистый старт с зарегистрированной задачей на симуляторе.
+**#39 + #40 done:** **background** — `BackgroundMonitor` (`BGAppRefreshTask`, id
+`com.chrsnv.checknet.monitor.refresh` in `BGTaskSchedulerPermittedIdentifiers`, `UIBackgroundModes:
+fetch`) reruns the same checks as foreground monitoring while the app is unloaded; it registers in
+`init`, and is scheduled on going to background and when monitoring is enabled. **Notifications** —
+`HostNotifier` provides a `HOST_STATUS` category with "Open" / "Check again" actions, a foreground
+banner (delegate) and a time-sensitive level for outages (degrades gracefully to `.active` without the
+paid entitlement). The "whether and what to send" decision was moved into a pure
+`Shared/MonitorNotification.swift` (a transition matrix: the first measurement is silent, ok↔degraded
+flapping is silent, only down/recovery alert), and host records into a shared `Shared/MonitorStore.swift`;
+all covered by unit tests. iOS-only (`BGTaskScheduler` isn't on macOS — a foreground loop stays there).
+Real wake-up by the system and delivery are only verified on device; here it's the build, the logic
+tests, and a clean start with the task registered on the simulator.
 
-**#43 сделан:** **Handoff** — открытый инструмент рекламируется как `NSUserActivity`
-(`com.chrsnv.checknet.tool`, `Shared/ToolActivity.swift`, объявлен в `NSUserActivityTypes`) с
-хостом; приём резолвится в корневой сцене через тот же `navigator.open`, что Spotlight и контролы.
-**iCloud-синхронизация хостов** написана (`App/Store/CloudHostSync.swift`, `NSUbiquitousKeyValueStore`
-+ чистое слияние `SavedHostMerge.union`, покрытое тестами), но **дормантна**: `isAvailable = false`,
-т.к. entitlement `ubiquity-kvstore-identifier` подписывает только платный аккаунт — тот же барьер,
-что у Wi-Fi (`CurrentNetwork.isSSIDReadable`); в настройках честно показано «Недоступна» с
-объяснением. Флаг и entitlement включаются одним коммитом. **Spotlight** был закрыт ранее
-(`acc7a6f`). Кросс-девайс Handoff/iCloud проверяются только на паре устройств; здесь — сборка,
-юнит-тесты codec/слияния и рендер настроек на симуляторе.
+**#43 done:** **Handoff** — the open tool is advertised as an `NSUserActivity`
+(`com.chrsnv.checknet.tool`, `Shared/ToolActivity.swift`, declared in `NSUserActivityTypes`) with the
+host; on the receiving side it resolves in the root scene through the same `navigator.open` as Spotlight
+and controls. **iCloud host sync** is written (`App/Store/CloudHostSync.swift`,
+`NSUbiquitousKeyValueStore` + a pure `SavedHostMerge.union` merge, covered by tests), but **dormant**:
+`isAvailable = false`, since the `ubiquity-kvstore-identifier` entitlement is only signed by a paid
+account — the same barrier as Wi-Fi (`CurrentNetwork.isSSIDReadable`); Settings honestly shows
+"Unavailable" with an explanation. The flag and the entitlement flip in a single commit. **Spotlight**
+was closed earlier (`acc7a6f`). Cross-device Handoff/iCloud are only verified on a pair of devices; here
+it's the build, the codec/merge unit tests, and the Settings render on the simulator.
 
-**#41 сделан:** два `ControlWidget` в расширении (`Widgets/CheckNetControls.swift`) — «Пинг
-хоста» (показывает последний результат из app-group-снапшота и по тапу переоткрывает проверку) и
-«Проверить блокировки» (открывает вкладку). Оба **только пользовательские** (Центр управления,
-локскрин, кнопка «Действие») — в галерею домашнего экрана по-прежнему ничего не публикуется. Тап
-шлёт deep-link `checknet://tool/<raw>?host=&run=1` / `checknet://tab/<name>`, который резолвит
-`onOpenURL`; грамматика ссылок и формат значения контрола вынесены в `Shared/ControlSupport.swift`
-и покрыты юнит-тестами. Маршрутизация проверена на симуляторе (Ping с автозапуском, вкладка
-«Блокировки»).
+**#41 done:** two `ControlWidget`s in the extension (`Widgets/CheckNetControls.swift`) — "Ping host"
+(shows the last result from an app-group snapshot and, on tap, reopens the check) and "Check blocks"
+(opens the tab). Both are **user-added only** (Control Center, lock screen, the Action button) — still
+nothing is published to the Home Screen gallery. A tap sends the deep link
+`checknet://tool/<raw>?host=&run=1` / `checknet://tab/<name>`, which `onOpenURL` resolves; the link
+grammar and the control's value format were moved into `Shared/ControlSupport.swift` and covered by unit
+tests. Routing verified on the simulator (Ping with auto-run, the Blocking tab).
 
-> Виджеты в #41 — **только те, что пользователь добавляет сам** (Control Center, локскрин).
-> Виджет главного экрана после установки не появляется и появляться не должен.
+> The widgets in #41 are **only those the user adds themselves** (Control Center, lock screen).
+> The Home Screen widget doesn't appear after install and must not.
 
 ---
 
-## M6 · Новые инструменты ✅
+## M6 · New tools ✅
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
-| [#46](https://github.com/AuthFailed/CheckNet/issues/46) | Bufferbloat — задержка под нагрузкой | P1 | ✅ |
-| [#47](https://github.com/AuthFailed/CheckNet/issues/47) | Геолокация IP и World Ping — выбрать источник | P2 | ✅ |
-| [#48](https://github.com/AuthFailed/CheckNet/issues/48) | Wi-Fi-анализ на macOS через CoreWLAN | P2 | ✅ |
-| [#49](https://github.com/AuthFailed/CheckNet/issues/49) | Пул идей для конкурентного отрыва | P3 | 📋 бэклог |
+| [#46](https://github.com/AuthFailed/CheckNet/issues/46) | Bufferbloat — latency under load | P1 | ✅ |
+| [#47](https://github.com/AuthFailed/CheckNet/issues/47) | IP geolocation and World Ping — pick a source | P2 | ✅ |
+| [#48](https://github.com/AuthFailed/CheckNet/issues/48) | Wi-Fi analysis on macOS via CoreWLAN | P2 | ✅ |
+| [#49](https://github.com/AuthFailed/CheckNet/issues/49) | Idea pool for a competitive edge | P3 | 📋 backlog |
 
-**#46 сделан первым** — движок нагрузки уже был (`IperfClient`, `CloudflareSpeedTest`), а сама
-проверка востребована больше остальных: именно bufferbloat объясняет «интернет быстрый, но звонки
-рвутся». `BufferbloatTest` (idle → down → up RTT, оценка A–F, ограничение фаз по времени) +
-`BufferbloatView` (оценка, график задержки по фазам, три числа); проверено на реальной сети.
+**#46 done first** — the load engine already existed (`IperfClient`, `CloudflareSpeedTest`), and the
+check itself is more in demand than the rest: bufferbloat is exactly what explains "the internet is
+fast, but calls drop". `BufferbloatTest` (idle → down → up RTT, an A–F grade, per-phase time limits) +
+`BufferbloatView` (the grade, a latency chart by phase, three numbers); verified on a real network.
 
-Из [#49](https://github.com/AuthFailed/CheckNet/issues/49) наиболее перспективны:
-**IPv6-готовность**, **QUIC/HTTP-3 доступность**, **дневник качества сети** и
-**автоотчёт для провайдера** — последнее потенциально killer-фича.
+The most promising from [#49](https://github.com/AuthFailed/CheckNet/issues/49):
+**IPv6 readiness**, **QUIC/HTTP-3 availability**, a **network-quality journal** and an
+**auto-report for the ISP** — the last a potential killer feature.
 
 ---
 
-## M7 · Инструменты для владельцев VPN — запланирована
+## M7 · Tools for VPN operators — planned
 
-Новый раздел не для конечного пользователя, а для **оператора VPN** (экосистема Xray / Reality /
-mihomo / sing-box / Happ). Сейчас приложение смотрит на сеть глазами клиента; операторам нужен
-другой набор — проверить домен под Reality, убедиться, что инбаунд жив, разобрать geosite/geoip и
-правила роутинга, распарсить подписку. В App Store эта ниша почти пустует — потенциальный отрыв.
+A new section not for the end user but for the **VPN operator** (the Xray / Reality / mihomo / sing-box /
+Happ ecosystem). Right now the app looks at the network through a client's eyes; operators need a
+different set — check a domain for Reality, confirm an inbound is alive, parse geosite/geoip and routing
+rules, parse a subscription. This niche is nearly empty on the App Store — a potential edge.
 
-**Граница.** Раздел остаётся диагностикой и управлением конфигами: проверить, разобрать, показать,
-собрать конфиг. Приложение **не выполняет DPI-обход** и не становится средством обхода — тот же
-принцип, что во вкладке «Блокировки» (детект, не обход). Не встраиваем фрагментацию SNI, поддельный
-ClientHello и подобное; помогаем оператору настроить и проверить **свой** сервер.
+**The boundary.** The section stays diagnostics and config management: check, parse, show, assemble a
+config. The app **does not perform DPI bypass** and doesn't become a circumvention tool — the same
+principle as the Blocking tab (detect, not bypass). We don't build in SNI fragmentation, a fake
+ClientHello and the like; we help the operator set up and verify **their own** server.
 
-| # | Задача | Приоритет | Статус |
+| # | Task | Priority | Status |
 |---|---|---|---|
-| [#69](https://github.com/AuthFailed/CheckNet/issues/69) | Эпик: раздел «VPN» — зонтичная задача | P2 | 📋 |
-| [#70](https://github.com/AuthFailed/CheckNet/issues/70) | Пригодность домена как SNI/dest для Reality | P2 | 📋 |
-| [#71](https://github.com/AuthFailed/CheckNet/issues/71) | Доступность Xray-инбаунда (VLESS/Trojan) — реальный handshake | P2 | 📋 |
-| [#72](https://github.com/AuthFailed/CheckNet/issues/72) | Парсинг подписки — хосты, роутинг, быстрые действия | P2 | 📋 |
-| [#73](https://github.com/AuthFailed/CheckNet/issues/73) | Просмотр geosite/geoip — загрузка, разбор, поиск тегов, фильтры | P3 | 📋 |
-| [#74](https://github.com/AuthFailed/CheckNet/issues/74) | Просмотр mihomo rule-set (`.mrs`) | P3 | 📋 |
-| [#75](https://github.com/AuthFailed/CheckNet/issues/75) | Ответ сервера подписки на заголовки разных клиентов | P3 | 📋 |
-| [#76](https://github.com/AuthFailed/CheckNet/issues/76) | Конфигуратор правил роутинга Happ + разбор | P3 | 📋 |
-| [#77](https://github.com/AuthFailed/CheckNet/issues/77) | Happ Decrypt — расшифровка конфигов/подписок Happ | P3 | 📋 |
-| [#78](https://github.com/AuthFailed/CheckNet/issues/78) | Incy deep-link — разбор и генерация `incy://crypt1` (+ QR) | P3 | 📋 |
+| [#69](https://github.com/AuthFailed/CheckNet/issues/69) | Epic: the "VPN" section — umbrella task | P2 | 📋 |
+| [#70](https://github.com/AuthFailed/CheckNet/issues/70) | Domain suitability as an SNI/dest for Reality | P2 | 📋 |
+| [#71](https://github.com/AuthFailed/CheckNet/issues/71) | Xray inbound availability (VLESS/Trojan) — a real handshake | P2 | 📋 |
+| [#72](https://github.com/AuthFailed/CheckNet/issues/72) | Subscription parsing — hosts, routing, quick actions | P2 | 📋 |
+| [#73](https://github.com/AuthFailed/CheckNet/issues/73) | geosite/geoip viewer — download, parse, tag search, filters | P3 | 📋 |
+| [#74](https://github.com/AuthFailed/CheckNet/issues/74) | mihomo rule-set viewer (`.mrs`) | P3 | 📋 |
+| [#75](https://github.com/AuthFailed/CheckNet/issues/75) | Subscription server's response to different clients' headers | P3 | 📋 |
+| [#76](https://github.com/AuthFailed/CheckNet/issues/76) | Happ routing-rule configurator + parsing | P3 | 📋 |
+| [#77](https://github.com/AuthFailed/CheckNet/issues/77) | Happ Decrypt — decrypting Happ configs/subscriptions | P3 | 📋 |
+| [#78](https://github.com/AuthFailed/CheckNet/issues/78) | Incy deep link — parse and generate `incy://crypt1` (+ QR) | P3 | 📋 |
 
-**Порядок:** сначала разборщики и клиенты в `NetworkKit` (движок → тест → экран), от которых
-зависит остальное: парсинг подписки (#72) и клиент VLESS/Trojan (#71) — фундамент; SNI-проверка
-(#70) переиспользует TLS inspector/`X509Parser`; просмотрщики (#73/#74) — независимы; конфигуратор
-роутинга (#76) и Happ Decrypt (#77) ждут спецификаций форматов (см. открытые вопросы в issue).
+**Order:** first the parsers and clients in `NetworkKit` (engine → test → screen), on which the rest
+depends: subscription parsing (#72) and the VLESS/Trojan client (#71) are the foundation; the SNI check
+(#70) reuses the TLS inspector/`X509Parser`; the viewers (#73/#74) are independent; the routing
+configurator (#76) and Happ Decrypt (#77) wait on format specs (see the open questions in the issue).
 
-**Форматы разобраны (спеки в issue):** Happ crypt/crypt5 (RSA PKCS#1 + ChaCha20-Poly1305,
-публичный материал ключей) — #77; Happ-роутинг (`happ://routing/add/<base64 JSON>`, точные поля) —
-#76; mihomo `.mrs` (zstd + magic `MRS\x01`, LOUDS domain-set / ipcidr) — #74; geosite/geoip `.dat`
-(protobuf v2fly, ручной wire-format) — #73. Из зависимостей: `.mrs` требует zstd на iOS/macOS
-(Apple `Compression` его не даёт).
+**Formats reverse-engineered (specs in the issue):** Happ crypt/crypt5 (RSA PKCS#1 + ChaCha20-Poly1305,
+public key material) — #77; Happ routing (`happ://routing/add/<base64 JSON>`, exact fields) — #76;
+mihomo `.mrs` (zstd + magic `MRS\x01`, LOUDS domain-set / ipcidr) — #74; geosite/geoip `.dat` (protobuf
+v2fly, hand-rolled wire format) — #73. Of the dependencies: `.mrs` requires zstd on iOS/macOS (Apple's
+`Compression` doesn't provide it).
 
-**Версии клиентов — автоматически.** Заголовки для #75 подставляют актуальную версию, подтягивая её
-с GitHub Releases по карте `клиент → репозиторий` (Happ, Incy, mihomo, sing-box, v2rayNG, Clash Verge
-Rev, Hiddify, Karing, FlClash), с кэшем и бандл-фоллбэком; фактические UA — из наблюдаемого трафика
-подписок. Точные форматы Incy/koala-clash/v2raytun/Happ подтверждены.
+**Client versions — automatically.** The headers for #75 fill in the current version, pulling it from
+GitHub Releases via a `client → repository` map (Happ, Incy, mihomo, sing-box, v2rayNG, Clash Verge Rev,
+Hiddify, Karing, FlClash), with a cache and a bundle fallback; the actual UAs come from observed
+subscription traffic. The exact Incy/koala-clash/v2raytun/Happ formats are confirmed.
 
-**Официальные референсы форматов подключены:** `Happ-proxy/routing_generator` (генератор роутинга,
-источник правды для #76) и `INCY-DEV/incy-link-encoder` (формат `incy://crypt1`, AES-256-GCM — для
-#78 и #72).
+**Official format references wired in:** `Happ-proxy/routing_generator` (the routing generator, the
+source of truth for #76) and `INCY-DEV/incy-link-encoder` (the `incy://crypt1` format, AES-256-GCM — for
+#78 and #72).
 
-**Дополнительные идеи (кандидаты в issue, из эпика #69):** валидатор/генератор ссылок
-`vless://`/`trojan://`/`ss://` с QR; проверка целостности Reality-конфига (SNI/dest, pbk/sid, flow,
-ALPN); «палевность» конфига (uTLS-fingerprint/ALPN vs браузер, steal-oneself); внешний
-аптайм/латентность инбаундов; проверка IP сервера по чёрным спискам/ASN (переиспользовать DNSBL).
-
----
-
-## Как тесты гоняются в CI
-
-Большая часть из 96 тестов ходит к живым хостам — это осознанно: проверка считается рабочей
-только после подтверждения на реальном хосте. Но раннер GitHub не является надёжной сетью:
-ICMP там обычно фильтруется, DNS и TLS к сторонним хостам флейкуют. Гонять такое как блокирующий
-гейт значит краснить каждый PR из-за чужого сбоя.
-
-Принятое решение — разделить прогон на два:
-
-- **`unit-tests` — блокирующий.** Запускается с `CHECKNET_SKIP_NETWORK_TESTS=1`; сетевые тесты
-  помечены вызовом `try requiresInternet()` и пропускаются. Остаются детерминированные:
-  парсеры, кодировщики, каталоги, доставка вебхука на локальный сервер. Этот job не имеет права
-  флейкать — красный крест здесь всегда означает регрессию.
-- **`network-tests` — информационный** (`continue-on-error: true`). Гоняет весь набор против
-  реальных хостов. Падение — повод посмотреть, а не повод блокировать PR.
-
-Локально переменная не выставлена, поэтому `swift test` по-прежнему гоняет всё. Настоящий гейт
-для сетевых проверок — локальный прогон перед тем, как включать инструмент.
+**Additional ideas (issue candidates, from epic #69):** a validator/generator for
+`vless://`/`trojan://`/`ss://` links with QR; a Reality config integrity check (SNI/dest, pbk/sid, flow,
+ALPN); config "detectability" (uTLS fingerprint/ALPN vs a browser, steal-oneself); external
+uptime/latency of inbounds; checking the server IP against blacklists/ASN (reusing DNSBL).
 
 ---
 
-## Принципы, которые не пересматриваются
+## How tests run in CI
 
-1. **Тест до экрана.** Движок в `NetworkKit` + тест против реального хоста → только потом UI и
-   `Tool.isImplemented = true`. Полуработающих проверок в сборке не бывает.
-2. **Только детект, не обход.** Блокировки диагностируются; SNI-фрагментация, поддельный ClientHello,
-   record-splitting и прочий DPI-байпас в приложение не добавляются — это вне задач диагностики.
-3. **Ничего не навязываем.** Никаких виджетов, разрешений и уведомлений «по умолчанию» —
-   всё включает пользователь, и каждая проверка объясняет себя через ⓘ.
-4. **Приватность.** Диагностика выполняется с устройства; наружу уходит только то, что пользователь
-   сам запросил. Внешние API подключаются только с явным объяснением в ⓘ.
-5. **HIG.** Системные компоненты вместо самописных, Dynamic Type и VoiceOver — не опция.
+Most of the 96 tests hit live hosts — that's deliberate: a check is considered working only after it's
+confirmed against a real host. But the GitHub runner isn't a reliable network: ICMP there is usually
+filtered, and DNS and TLS to third-party hosts flake. Running that as a blocking gate means reddening
+every PR over someone else's failure.
+
+The decision taken is to split the run in two:
+
+- **`unit-tests` — blocking.** Runs with `CHECKNET_SKIP_NETWORK_TESTS=1`; network tests are marked with
+  a `try requiresInternet()` call and skipped. What remains is deterministic: parsers, encoders,
+  catalogs, webhook delivery to a local server. This job has no right to flake — a red cross here always
+  means a regression.
+- **`network-tests` — informational** (`continue-on-error: true`). Runs the full set against real hosts.
+  A failure is a reason to look, not a reason to block the PR.
+
+Locally the variable isn't set, so `swift test` still runs everything. The real gate for network checks
+is a local run before wiring up a tool.
+
+---
+
+## Principles we don't revisit
+
+1. **Test before screen.** An engine in `NetworkKit` + a test against a real host → only then the UI and
+   `Tool.isImplemented = true`. Half-working checks never make it into a build.
+2. **Detect only, don't bypass.** Blocks are diagnosed; SNI fragmentation, a fake ClientHello,
+   record-splitting and other DPI bypass are not added to the app — that's outside the scope of diagnostics.
+3. **We impose nothing.** No widgets, permissions or notifications "by default" — the user enables
+   everything, and each check explains itself via ⓘ.
+4. **Privacy.** Diagnostics run from the device; only what the user explicitly requested leaves it.
+   External APIs are wired in only with an explicit explanation in ⓘ.
+5. **HIG.** System components over homemade ones; Dynamic Type and VoiceOver aren't optional.
