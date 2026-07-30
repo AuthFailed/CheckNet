@@ -50,22 +50,41 @@ public struct EgressResource: Sendable {
 /// `ProxyConfiguration` (iOS 17+), so TLS, redirects and JSON all ride the tunnel
 /// end-to-end — that is what lets us include Cloudflare's own view over HTTPS.
 public enum EgressIPProbe {
-    /// Runs every resource concurrently through the proxy, yielding each answer
-    /// as it arrives. Cancelling the consuming task tears the requests down.
+    /// Runs the resources through the proxy in a **staggered sliding window** —
+    /// at most `maxInFlight` requests share the tunnel at once, and the initial
+    /// burst is spaced by `staggerMillis` — yielding each answer as it arrives.
+    /// Bounding concurrency keeps one request from queuing behind eighteen others
+    /// (which is what made every latency read the same ~timeout value); each
+    /// request is timed from its own launch. Cancelling the consumer tears down.
     public static func stream(
         socksPort: Int,
         resources: [EgressResource] = EgressResource.catalog,
-        timeout: TimeInterval = 12
+        timeout: TimeInterval = 12,
+        maxInFlight: Int = 5,
+        staggerMillis: UInt64 = 100
     ) -> AsyncStream<EgressResult> {
         AsyncStream { continuation in
             let work = Task {
                 let session = makeSession(socksPort: socksPort, timeout: timeout)
                 defer { session.invalidateAndCancel() }
                 await withTaskGroup(of: EgressResult.self) { group in
-                    for res in resources { group.addTask { await fetch(res, session: session) } }
-                    for await r in group {
-                        if Task.isCancelled { break }
+                    var next = 0
+                    let window = max(1, min(maxInFlight, resources.count))
+                    // Prime the window, spacing launches so they don't hit as a burst.
+                    while next < window {
+                        let res = resources[next]; next += 1
+                        group.addTask { await fetch(res, session: session) }
+                        if next < window { try? await Task.sleep(nanoseconds: staggerMillis * 1_000_000) }
+                    }
+                    // Drain: each finished slot launches the next resource, holding the
+                    // window at `maxInFlight` and naturally spacing the remaining starts.
+                    while let r = await group.next() {
+                        if Task.isCancelled { group.cancelAll(); break }
                         continuation.yield(r)
+                        if next < resources.count {
+                            let res = resources[next]; next += 1
+                            group.addTask { await fetch(res, session: session) }
+                        }
                     }
                 }
                 continuation.finish()
@@ -93,27 +112,30 @@ public enum EgressIPProbe {
     }
 
     static func fetch(_ res: EgressResource, session: URLSession) async -> EgressResult {
-        let start = MonoClock.nanos()
-        func fail(_ msg: String) -> EgressResult {
-            EgressResult(name: res.name, category: res.category, url: res.url,
-                         info: nil, error: msg, millis: MonoClock.millisSince(start))
+        guard let url = URL(string: res.url) else {
+            return EgressResult(name: res.name, category: res.category, url: res.url,
+                                info: nil, error: "некорректный адрес", millis: 0)
         }
-        guard let url = URL(string: res.url) else { return fail("некорректный адрес") }
+        // Timed from here — the request's own round-trip, not the time it spent
+        // waiting for a free slot in the window.
+        let start = MonoClock.nanos()
+        func done(_ info: EgressInfo?, _ error: String?) -> EgressResult {
+            EgressResult(name: res.name, category: res.category, url: res.url,
+                         info: info, error: error, millis: MonoClock.millisSince(start))
+        }
         do {
             let (data, response) = try await session.data(from: url)
-            let ms = MonoClock.millisSince(start)
             if let http = response as? HTTPURLResponse, !(200..<400).contains(http.statusCode) {
-                return fail("HTTP \(http.statusCode)")
+                return done(nil, "HTTP \(http.statusCode)")
             }
-            guard let info = parse(res.kind, data: data) else { return fail("ответ не разобран") }
-            return EgressResult(name: res.name, category: res.category, url: res.url,
-                                info: info, error: nil, millis: ms)
+            guard let info = parse(res.kind, data: data) else { return done(nil, "ответ не разобран") }
+            return done(info, nil)
         } catch is CancellationError {
-            return fail("отменено")
+            return done(nil, "отменено")
         } catch let error as URLError {
-            return fail(reason(for: error))
+            return done(nil, reason(for: error))
         } catch {
-            return fail("\(error.localizedDescription)")
+            return done(nil, error.localizedDescription)
         }
     }
 
