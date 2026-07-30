@@ -207,6 +207,12 @@ targets:
       path: Widgets/Info.plist
       properties:
         CFBundleDisplayName: CheckNet
+        # Mirror the app target: track the build settings so the extension's
+        # version follows CURRENT_PROJECT_VERSION / MARKETING_VERSION instead of
+        # XcodeGen's literal 1.0/1 defaults. App Store ingest rejects an
+        # extension whose CFBundleVersion trails the containing app.
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
