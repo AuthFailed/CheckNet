@@ -21,3 +21,6 @@ screens/
 *.log
 build-mac/
 build-*/
+
+# Vendored Xray core (fetch with Scripts/fetch-libxray.sh)
+Frameworks/LibXray.xcframework/

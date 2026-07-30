@@ -31,6 +31,12 @@ targets:
       - target: CheckNetWidgets
         embed: true
         platformFilter: iOS
+      # Xray core for the "Xray inbound availability" tool (#71). Static xcframework
+      # (libXray.a) — linked, not embedded. Fetch with Scripts/fetch-libxray.sh.
+      - framework: Frameworks/LibXray.xcframework
+        embed: false
+      # The Go core resolves DNS via libresolv (res_9_ninit/nsearch/nclose).
+      - sdk: libresolv.tbd
     info:
       path: App/Info.plist
       properties:

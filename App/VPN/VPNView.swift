@@ -64,6 +64,8 @@ struct VPNView: View {
             ClientHeadersView()
         case .geoData:
             GeoDataView()
+        case .xrayCheck:
+            XrayCheckView()
         default:
             VPNPlaceholderView(tool: tool)
         }

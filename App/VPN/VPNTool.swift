@@ -102,9 +102,9 @@ enum VPNTool: String, CaseIterable, Identifiable {
     /// as a placeholder.
     var isImplemented: Bool {
         switch self {
-        case .happRouting, .happDecrypt, .incyLink, .subscription, .sniCheck, .realityScanner, .clientHeaders, .geoData:
+        case .happRouting, .happDecrypt, .incyLink, .subscription, .sniCheck, .realityScanner, .clientHeaders, .geoData, .xrayCheck:
             return true
-        case .xrayCheck, .mrsViewer:
+        case .mrsViewer:
             return false
         }
     }
