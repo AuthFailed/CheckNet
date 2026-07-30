@@ -57,26 +57,25 @@ enum XrayProxyRunner {
         #endif
     }
 
-    /// Brings up the core **in-process** via libXray (works on iOS and macOS),
-    /// probes gstatic through its local SOCKS inbound, then tears it down. This is
-    /// the iOS-viable path — no separate binary is downloaded or executed.
-    static func probeInProcess(node: ProxyNode, timeout: TimeInterval = 12) async throws -> Socks5Probe.Result {
+    /// Brings the core up in-process for `node` and returns the live local SOCKS
+    /// port, leaving it running. The caller owns teardown — call `XrayCore.stop()`
+    /// when finished (e.g. after streaming egress checks through the port).
+    static func startInProcess(node: ProxyNode) async throws -> Int {
         guard XrayCore.isAvailable else { throw RunError.noCore }
         let port = freePort()
         let config: String
         do { config = try XrayTestConfig.build(for: node, socksPort: port) }
         catch { throw RunError.buildFailed((error as? XrayTestConfig.BuildError).map(String.init(describing:)) ?? "\(error)") }
 
-        // A previous run leaves a global instance; clear it before starting.
-        XrayCore.stop()
+        XrayCore.stop()                                     // clear any previous global instance
         do { try XrayCore.run(configJSON: config) }
         catch { throw RunError.coreFailedToStart((error as? XrayCore.CoreError)?.message ?? "\(error)") }
-        defer { XrayCore.stop() }
 
         guard await waitForPort(port, deadline: 5) else {
+            XrayCore.stop()
             throw RunError.coreFailedToStart("SOCKS-порт \(port) не открылся")
         }
-        return try await Socks5Probe.probe(socksPort: port, timeout: timeout)
+        return port
     }
 
     // MARK: - helpers
