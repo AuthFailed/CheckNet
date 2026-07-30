@@ -124,6 +124,11 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet
         PRODUCT_NAME: CheckNet
+        # App icon lives in App/Resources/Assets.xcassets/AppIcon.appiconset.
+        # A single 1024×1024 (no alpha) drives every size on iOS 26. Until the
+        # designed PNG lands the set has an empty slot (builds with a warning);
+        # dropping icon-1024.png in clears it.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
