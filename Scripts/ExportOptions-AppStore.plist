@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App Store distribution export. The archive is re-signed here with the
+	     Apple Distribution identity, so the archive itself can be built with
+	     automatic development signing (SwiftPM package targets don't accept a
+	     forced distribution identity). -->
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>A63H349525</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<!-- Produce a local .ipa; flip to "upload" to send straight to App Store
+	     Connect (needs the app record to exist and valid credentials). -->
+	<key>destination</key>
+	<string>export</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>uploadSymbols</key>
+	<true/>
+</dict>
+</plist>

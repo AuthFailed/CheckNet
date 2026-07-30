@@ -146,9 +146,16 @@ xcodebuild -project CheckNet.xcodeproj -scheme CheckNet \
 - **#100 — иконка** компилируется в архив (`AppIcon60x60@2x.png`, `AppIcon76x76@2x~ipad.png`,
   `Assets.car`).
 
-**Остаётся:**
-1. **Дистрибуционный архив** для загрузки в App Store: сейчас архив dev-signed (проверка + регистрация
-   capabilities). Для аплоада — `-exportArchive` с `method: app-store-connect` (пере-подпишет
-   Apple Distribution) либо архив с distribution-подписью. #92 в части «реально собирается и
-   подписывается» — закрыт.
-2. dSYM (#95) — присутствует в архиве (Release `dwarf-with-dsym`), проверить при экспорте.
+**Дистрибуционный `.ipa` собран ✅.** `xcodebuild archive` (automatic) → `xcodebuild -exportArchive`
+с `Scripts/ExportOptions-AppStore.plist` (`method: app-store-connect`, `signingStyle: automatic`,
+`-allowProvisioningUpdates`). Результат: `build/export-store/CheckNet.ipa` (~19 МБ), подписан
+**Cloud Managed Apple Distribution** (Team A63H349525), автосозданы App Store профили для
+`com.chrsnv.checknet` и `.widgets`. #92 закрыт целиком.
+
+**Остаётся только загрузка (нужны твои действия):**
+1. Создать запись приложения в App Store Connect (bundle `com.chrsnv.checknet`, SKU `checknet-ios`) —
+   требует принятого Free Apps Agreement (#81).
+2. Аплоад: `xcodebuild -exportArchive` с `destination: upload` + ASC API key
+   (`-authenticationKeyPath/-ID/-IssuerID`), **или** Xcode Organizer / Transporter вручную.
+3. После аплоада — Export Compliance (#83, exemption 740.17) и заполнение метаданных из
+   `store-metadata.md` / App Privacy (`app-privacy.md`) / Age Rating (`age-rating.md`).
