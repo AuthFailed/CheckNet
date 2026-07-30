@@ -35,6 +35,13 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      # The Xray core (LibXray.xcframework) is vendored, not committed (see
+      # .gitignore + Scripts/fetch-libxray.sh). The app target links it, so the
+      # project must fetch it before generating/building — otherwise xcodebuild
+      # fails with "There is no XCFramework found at Frameworks/LibXray.xcframework".
+      - name: Fetch libXray core
+        run: Scripts/fetch-libxray.sh
+
       - name: Cache SwiftPM
         uses: actions/cache@v4
         with:
@@ -75,6 +82,13 @@ jobs:
 
       - name: Install XcodeGen
         run: brew install xcodegen
+
+      # The Xray core (LibXray.xcframework) is vendored, not committed (see
+      # .gitignore + Scripts/fetch-libxray.sh). The app target links it, so the
+      # project must fetch it before generating/building — otherwise xcodebuild
+      # fails with "There is no XCFramework found at Frameworks/LibXray.xcframework".
+      - name: Fetch libXray core
+        run: Scripts/fetch-libxray.sh
 
       - name: Generate Xcode project
         run: xcodegen generate
@@ -131,6 +145,13 @@ jobs:
 
       - name: Install XcodeGen
         run: brew install xcodegen
+
+      # The Xray core (LibXray.xcframework) is vendored, not committed (see
+      # .gitignore + Scripts/fetch-libxray.sh). The app target links it, so the
+      # project must fetch it before generating/building — otherwise xcodebuild
+      # fails with "There is no XCFramework found at Frameworks/LibXray.xcframework".
+      - name: Fetch libXray core
+        run: Scripts/fetch-libxray.sh
 
       - name: Generate Xcode project
         run: xcodegen generate
@@ -224,6 +245,13 @@ jobs:
 
       - name: Install XcodeGen
         run: brew install xcodegen
+
+      # The Xray core (LibXray.xcframework) is vendored, not committed (see
+      # .gitignore + Scripts/fetch-libxray.sh). The app target links it, so the
+      # project must fetch it before generating/building — otherwise xcodebuild
+      # fails with "There is no XCFramework found at Frameworks/LibXray.xcframework".
+      - name: Fetch libXray core
+        run: Scripts/fetch-libxray.sh
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
