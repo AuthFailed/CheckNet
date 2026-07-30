@@ -56,7 +56,9 @@ nm "$APP/CheckNet" | grep -iE 'rt_msghdr2|CWWiFiClient|CoreWLAN'   # ожида�
 - Usage-строки на месте: `NSLocalNetworkUsageDescription`, `NSLocationWhenInUseUsageDescription`
   (объясняет, что только для SSID), `NSCameraUsageDescription`. ✅
 - `NSBonjourServices` — полный список типов (иначе mDNS молча не работает). ✅
-- Ориентации: portrait + оба landscape; `TARGETED_DEVICE_FAMILY=1,2` (iPhone+iPad). ✅
+- Ориентации: iPhone — portrait + оба landscape; **iPad — все 4** (`UISupportedInterfaceOrientations~ipad`
+  с `PortraitUpsideDown`). Изначально было только 3 → App Store отбивал на ingest'е «iPad multitasking
+  requires all four». Исправлено. `TARGETED_DEVICE_FAMILY=1,2`.
 - Background: `UIBackgroundModes=[fetch]` + `BGTaskSchedulerPermittedIdentifiers` — обоснованно
   (мониторинг хостов). ✅ Обоснование для ревью — в `review-notes.md`.
 - Deep links (`checknet`), Live Activities, Handoff (`NSUserActivityTypes`) объявлены. ✅
@@ -152,10 +154,14 @@ xcodebuild -project CheckNet.xcodeproj -scheme CheckNet \
 **Cloud Managed Apple Distribution** (Team A63H349525), автосозданы App Store профили для
 `com.chrsnv.checknet` и `.widgets`. #92 закрыт целиком.
 
-**Остаётся только загрузка (нужны твои действия):**
-1. Создать запись приложения в App Store Connect (bundle `com.chrsnv.checknet`, SKU `checknet-ios`) —
-   требует принятого Free Apps Agreement (#81).
-2. Аплоад: `xcodebuild -exportArchive` с `destination: upload` + ASC API key
-   (`-authenticationKeyPath/-ID/-IssuerID`), **или** Xcode Organizer / Transporter вручную.
-3. После аплоада — Export Compliance (#83, exemption 740.17) и заполнение метаданных из
-   `store-metadata.md` / App Privacy (`app-privacy.md`) / Age Rating (`age-rating.md`).
+**✅ Билд загружен в App Store Connect (2026-07-30).** Запись приложения — `com.chrsnv.checknet`,
+SKU `checknet-ios`, app id 6796268067; загружен через `xcodebuild -exportArchive destination: upload`
++ ASC API key. `Upload succeeded`. Билд проходит обработку (~5–15 мин), затем появляется в TestFlight.
+
+Два блокера ingest'а по пути (оба исправлены и в бинаре):
+- iPad-ориентации (нужны все 4) — см. #97 выше.
+- `ITSAppUsesNonExemptEncryption` → `false` (exemption; `true` требует compliance-код из ASC) — #83.
+
+**Остаётся:** дождаться обработки билда → заполнить метаданные (`store-metadata.md`), App Privacy
+(`app-privacy.md`), Age Rating (`age-rating.md`), reviewer notes (`review-notes.md`), скриншоты
+(#99) → отправить на ревью. Годовой BIS self-classification (#83) — отдельно.
