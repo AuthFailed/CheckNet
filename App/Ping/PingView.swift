@@ -53,12 +53,12 @@ struct PingView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showSettings = true } label: {
-                    Image(systemName: "slider.horizontal.3").accessibilityLabel("Настройки теста")
+                    Image(systemName: "slider.horizontal.3").accessibilityLabel("Test settings")
                 }
             }
             ToolbarItem(placement: .primaryAction) {
                 Button { showSchedule = true } label: {
-                    Image(systemName: "clock.arrow.2.circlepath").accessibilityLabel("Расписание")
+                    Image(systemName: "clock.arrow.2.circlepath").accessibilityLabel("Schedule")
                 }
             }
             // Next to the settings button, only when webhooks are on: what this
@@ -66,7 +66,7 @@ struct PingView: View {
             if webhooks.isEnabled {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showWebhookFields = true } label: {
-                        Image(systemName: "paperplane").accessibilityLabel("Данные вебхука для этого теста")
+                        Image(systemName: "paperplane").accessibilityLabel("Webhook data for this test")
                     }
                 }
             }
@@ -95,18 +95,18 @@ struct PingView: View {
                         }
                     )
                 }
-                .navigationTitle("Расписание Ping")
+                .navigationTitle("Ping schedule")
                 #if os(iOS)
                 .toolbarTitleDisplayMode(.inline)
                 #endif
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showSchedule = false } } }
             }
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
-        .alert("Сохранить хост", isPresented: $showSavePrompt) {
-            Button("Сохранить") { savedHosts.add(name: model.host, value: model.host, tool: .ping) }
-            Button("Отмена", role: .cancel) {}
+        .alert("Save host", isPresented: $showSavePrompt) {
+            Button("Save") { savedHosts.add(name: model.host, value: model.host, tool: .ping) }
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text(model.host)
         }
@@ -125,7 +125,7 @@ struct PingView: View {
             Image(systemName: "globe")
                 .foregroundStyle(.secondary)
                 .font(.title3)
-            TextField("Хост или IP", text: $model.host)
+            TextField("Host or IP", text: $model.host)
                 .textFieldStyle(.plain)
                 .font(.body)
                 .focused($hostFieldFocused)
@@ -142,10 +142,10 @@ struct PingView: View {
                     Circle().fill(.green).frame(width: 8, height: 8)
                         .modifier(PulseModifier())
                         .accessibilityHidden(true)
-                    Text("Идёт").font(.caption.weight(.semibold)).foregroundStyle(.blue)
+                    Text("In progress").font(.caption.weight(.semibold)).foregroundStyle(.blue)
                 }
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("Проверка выполняется")
+                .accessibilityLabel("Check in progress")
             } else {
                 savedHostsMenu
             }
@@ -159,7 +159,7 @@ struct PingView: View {
         Menu {
             let hosts = savedHosts.hosts(for: .ping)
             if !hosts.isEmpty {
-                Section("Сохранённые") {
+                Section("Saved") {
                     ForEach(hosts) { h in
                         Button {
                             model.host = h.value
@@ -172,7 +172,7 @@ struct PingView: View {
             Button {
                 showSavePrompt = true
             } label: {
-                Label("Сохранить \(model.host)…", systemImage: "plus")
+                Label("Save \(model.host)…", systemImage: "plus")
             }
             .disabled(model.host.trimmingCharacters(in: .whitespaces).isEmpty)
         } label: {
@@ -188,8 +188,8 @@ struct PingView: View {
     private var idleHint: some View {
         ToolIdleHint(
             icon: "dot.radiowaves.left.and.right",
-            title: "Готово к проверке",
-            message: "Проверьте задержку, потери пакетов и джиттер до любого хоста.",
+            title: "Ready to check",
+            message: "Check latency, packet loss, and jitter to any host.",
             example: "1.1.1.1",
             current: model.host
         ) { model.host = "1.1.1.1" }
@@ -212,9 +212,9 @@ struct PingView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Group {
                         if let rtt = model.lastRTT {
-                            Text("Текущий отклик · \(fmt(rtt)) мс")
+                            Text("Current response · \(fmt(rtt)) ms")
                         } else {
-                            Text("Ожидание ответа…")
+                            Text("Waiting for response…")
                         }
                     }
                     .font(.subheadline.weight(.semibold))
@@ -231,12 +231,12 @@ struct PingView: View {
             }
             Divider()
             HStack {
-                statCell(value: "\(model.stats.received)/\(model.stats.transmitted)", label: "получено")
+                statCell(value: "\(model.stats.received)/\(model.stats.transmitted)", label: "received")
                 Divider().frame(height: statRule)
-                statCell(value: "\(fmt(model.stats.lossPercent))%", label: "потери",
+                statCell(value: "\(fmt(model.stats.lossPercent))%", label: "loss",
                          color: model.stats.lossPercent > 0 ? .orange : .green)
                 Divider().frame(height: statRule)
-                statCell(value: model.stats.avg.map { fmt($0) } ?? "—", label: "средн., мс")
+                statCell(value: model.stats.avg.map { fmt($0) } ?? "—", label: "avg, ms")
             }
         }
         .padding(16)
@@ -245,7 +245,7 @@ struct PingView: View {
 
     private var responsesCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("ОТВЕТЫ")
+            Text("RESPONSES")
                 .font(.caption).foregroundStyle(.secondary)
                 .padding(.bottom, 7).padding(.horizontal, 4)
             VStack(spacing: 0) {
@@ -270,10 +270,10 @@ struct PingView: View {
 
     private func replyLine(_ reply: PingReply) -> String {
         if model.probeType == .tcp {
-            return "tcp :\(model.tcpPort) · seq=\(reply.sequence) · \(fmt(reply.rttMillis)) мс"
+            return "tcp :\(model.tcpPort) · seq=\(reply.sequence) · \(fmt(reply.rttMillis)) ms"
         }
         let ttl = reply.ttl.map { "ttl=\($0) · " } ?? ""
-        return "\(reply.bytes) Б · seq=\(reply.sequence) · \(ttl)\(fmt(reply.rttMillis)) мс"
+        return "\(reply.bytes) B · seq=\(reply.sequence) · \(ttl)\(fmt(reply.rttMillis)) ms"
     }
 
     // MARK: Summary
@@ -306,9 +306,9 @@ struct PingView: View {
                     .frame(width: 38, height: 38)
                     .background(reachable ? Color.green : Color.red, in: Circle())
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(reachable ? LocalizedStringKey("Хост доступен") : LocalizedStringKey("Хост недоступен"))
+                    Text(reachable ? LocalizedStringKey("Host reachable") : LocalizedStringKey("Host unreachable"))
                         .font(.title3.weight(.bold))
-                    Text("\(model.stats.received) из \(model.stats.transmitted) · \(fmt(model.stats.lossPercent))% потерь · \(fmt(model.elapsedSeconds)) с")
+                    Text("\(model.stats.received) of \(model.stats.transmitted) · \(fmt(model.stats.lossPercent))% loss · \(fmt(model.elapsedSeconds)) s")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -322,13 +322,13 @@ struct PingView: View {
             }
             Divider()
             HStack {
-                statCell(value: model.stats.min.map { fmt($0) } ?? "—", label: "мин")
+                statCell(value: model.stats.min.map { fmt($0) } ?? "—", label: "min")
                 Divider().frame(height: smallRule)
-                statCell(value: model.stats.avg.map { fmt($0) } ?? "—", label: "средн.", color: .blue)
+                statCell(value: model.stats.avg.map { fmt($0) } ?? "—", label: "avg", color: .blue)
                 Divider().frame(height: smallRule)
-                statCell(value: model.stats.max.map { fmt($0) } ?? "—", label: "макс")
+                statCell(value: model.stats.max.map { fmt($0) } ?? "—", label: "max")
                 Divider().frame(height: smallRule)
-                statCell(value: model.stats.jitter.map { fmt($0) } ?? "—", label: "джиттер")
+                statCell(value: model.stats.jitter.map { fmt($0) } ?? "—", label: "jitter")
             }
         }
         .padding(16)
@@ -337,7 +337,7 @@ struct PingView: View {
 
     private var latencyChartCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("ЗАДЕРЖКА · МС")
+            Text("LATENCY · MS")
                 .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
             Chart(Array(model.rttSeries.enumerated()), id: \.offset) { idx, value in
                 LineMark(x: .value("seq", idx), y: .value("ms", value))
@@ -367,9 +367,9 @@ struct PingView: View {
         } label: {
             HStack {
                 Image(systemName: "list.bullet").foregroundStyle(.secondary)
-                Text("Промежуточные результаты").font(.body)
+                Text("Intermediate results").font(.body)
                 Spacer()
-                Text("\(model.replies.count) пакетов").font(.subheadline).foregroundStyle(.secondary)
+                Text("\(model.replies.count) packets").font(.subheadline).foregroundStyle(.secondary)
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 6)
@@ -405,7 +405,7 @@ struct PingView: View {
                 }
             } else {
                 Button { model.toggle() } label: {
-                    Label(model.isRunning ? LocalizedStringKey("Остановить") : LocalizedStringKey("Запустить проверку"),
+                    Label(model.isRunning ? LocalizedStringKey("Stop") : LocalizedStringKey("Run check"),
                           systemImage: model.isRunning ? "stop.fill" : "play.fill")
                         .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
                         .foregroundStyle(model.isRunning ? .red : .white)
@@ -424,8 +424,8 @@ struct PingView: View {
 
     private var shareText: String {
         var lines = ["Ping \(model.host) (\(model.resolvedIP))"]
-        lines.append("Получено \(model.stats.received)/\(model.stats.transmitted), потери \(fmt(model.stats.lossPercent))%")
-        if let avg = model.stats.avg { lines.append("min/avg/max/jitter = \(fmt(model.stats.min ?? 0))/\(fmt(avg))/\(fmt(model.stats.max ?? 0))/\(fmt(model.stats.jitter ?? 0)) мс") }
+        lines.append("Received \(model.stats.received)/\(model.stats.transmitted), loss \(fmt(model.stats.lossPercent))%")
+        if let avg = model.stats.avg { lines.append("min/avg/max/jitter = \(fmt(model.stats.min ?? 0))/\(fmt(avg))/\(fmt(model.stats.max ?? 0))/\(fmt(model.stats.jitter ?? 0)) ms") }
         return lines.joined(separator: "\n")
     }
 

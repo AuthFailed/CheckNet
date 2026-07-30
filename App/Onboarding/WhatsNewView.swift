@@ -13,12 +13,12 @@ struct WhatsNewView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     VStack(spacing: 10) {
-                        Text("Версия \(WhatsNew.version)")
+                        Text("Version \(WhatsNew.version)")
                             .font(.caption.weight(.semibold))
                             .textCase(.uppercase)
                             .kerning(1.1)
                             .foregroundStyle(.tint)
-                        Text("Что нового")
+                        Text("What's New")
                             .font(.largeTitle.weight(.bold))
                             .multilineTextAlignment(.center)
                     }
@@ -50,7 +50,7 @@ struct WhatsNewView: View {
 
             Divider()
             Button(action: onDone) {
-                Text("Понятно")
+                Text("Got it")
                     .font(.headline)
                     .frame(maxWidth: .infinity, minHeight: 52)
             }
@@ -80,13 +80,13 @@ enum WhatsNew {
     // so a stored [Item] would need main-actor isolation the call sites do not
     // want. Rebuilding the small list per read costs nothing.
     static var items: [Item] {[
-        Item(icon: "rectangle.connected.to.line.below", title: "Обзор сети",
-             body: "Новый экран со всеми устройствами в вашей локальной сети."),
-        Item(icon: "lock.shield", title: "Понятные разрешения",
-             body: "Объясняем доступ к сети и геопозиции до системного запроса."),
-        Item(icon: "gauge.with.dots.needle.67percent", title: "Быстрее тест скорости",
-             body: "Загрузка и отдача теперь измеряются параллельно."),
-        Item(icon: "clock.arrow.circlepath", title: "Расписания",
-             body: "Запускайте проверки по расписанию и ведите историю аптайма.")
+        Item(icon: "rectangle.connected.to.line.below", title: "Network overview",
+             body: "A new screen with every device on your local network."),
+        Item(icon: "lock.shield", title: "Clear permissions",
+             body: "We explain network and location access before the system asks."),
+        Item(icon: "gauge.with.dots.needle.67percent", title: "Faster speed test",
+             body: "Download and upload are now measured in parallel."),
+        Item(icon: "clock.arrow.circlepath", title: "Schedules",
+             body: "Run checks on a schedule and keep an uptime history.")
     ]}
 }

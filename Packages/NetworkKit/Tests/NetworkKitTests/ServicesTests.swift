@@ -10,7 +10,7 @@ final class ServicesTests: XCTestCase {
         XCTAssertFalse(result.raw.isEmpty)
         print("whois google.com via \(result.server); fields: \(result.fields.map { "\($0.key)=\($0.value)" })")
         // Verisign registry should identify the registrar.
-        let registrar = result.value(for: "Регистратор")
+        let registrar = result.value(for: "Registrar")
         XCTAssertNotNil(registrar, "no registrar parsed")
         XCTAssertTrue(result.raw.lowercased().contains("google"))
     }

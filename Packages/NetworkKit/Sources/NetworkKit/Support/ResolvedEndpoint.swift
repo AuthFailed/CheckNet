@@ -61,11 +61,11 @@ public enum HostResolver {
             }
             group.addTask {
                 try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
-                throw NetworkError.resolutionFailed(host: trimmed, reason: "истекло время DNS (\(Int(timeout)) с)")
+                throw NetworkError.resolutionFailed(host: trimmed, reason: "DNS timed out (\(Int(timeout)) s)")
             }
             defer { group.cancelAll() }
             guard let first = try await group.next() else {
-                throw NetworkError.resolutionFailed(host: trimmed, reason: "нет результата")
+                throw NetworkError.resolutionFailed(host: trimmed, reason: "no result")
             }
             return first
         }
@@ -80,7 +80,7 @@ public enum HostResolver {
     ) async throws -> ResolvedEndpoint {
         let all = try await resolve(host: host, port: port, family: family, timeout: timeout)
         guard let first = all.first else {
-            throw NetworkError.resolutionFailed(host: host, reason: "нет адресов")
+            throw NetworkError.resolutionFailed(host: host, reason: "no addresses")
         }
         return first
     }
@@ -138,7 +138,7 @@ public enum HostResolver {
         }
 
         guard !endpoints.isEmpty else {
-            throw NetworkError.resolutionFailed(host: host, reason: "нет адресов")
+            throw NetworkError.resolutionFailed(host: host, reason: "no addresses")
         }
         // IPv4 first for broad compatibility, then IPv6.
         return endpoints.sorted { ($0.family == .ipv4 ? 0 : 1) < ($1.family == .ipv4 ? 0 : 1) }

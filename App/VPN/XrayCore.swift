@@ -31,18 +31,18 @@ enum XrayCore {
         if !payload.isEmpty { request["payload"] = payload }
         let reqData = try JSONSerialization.data(withJSONObject: request)
         guard let cReq = strdup(String(decoding: reqData, as: UTF8.self)) else {
-            throw CoreError(message: "нет памяти")
+            throw CoreError(message: "out of memory")
         }
         defer { free(cReq) }
-        guard let cRes = CGoInvoke(cReq) else { throw CoreError(message: "ядро не ответило") }
+        guard let cRes = CGoInvoke(cReq) else { throw CoreError(message: "core didn't respond") }
         defer { CGoFree(cRes) }
 
         let obj = try JSONSerialization.jsonObject(with: Data(String(cString: cRes).utf8))
-        guard let dict = obj as? [String: Any] else { throw CoreError(message: "некорректный ответ ядра") }
+        guard let dict = obj as? [String: Any] else { throw CoreError(message: "invalid core response") }
         if dict["success"] as? Bool == true { return dict["data"] }
-        throw CoreError(message: (dict["error"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "ошибка ядра")
+        throw CoreError(message: (dict["error"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "core error")
         #else
-        throw CoreError(message: "Ядро Xray не подключено в этой сборке")
+        throw CoreError(message: "The Xray core isn't included in this build")
         #endif
     }
 

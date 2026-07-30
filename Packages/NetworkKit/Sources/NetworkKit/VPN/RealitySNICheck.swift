@@ -119,7 +119,7 @@ public final class RealitySNICheck: Sendable {
         criteria.append(RealityCriterion(
             key: "tls13", title: "TLS 1.3",
             grade: isTLS13 ? .pass : .fail,
-            detail: isTLS13 ? "Согласован TLS 1.3." : "Сервер использует \(info.negotiatedProtocol) — Reality требует TLS 1.3.",
+            detail: isTLS13 ? "TLS 1.3 negotiated." : "Server uses \(info.negotiatedProtocol) — Reality requires TLS 1.3.",
             isRequired: true
         ))
 
@@ -127,25 +127,25 @@ public final class RealitySNICheck: Sendable {
         criteria.append(RealityCriterion(
             key: "h2", title: "HTTP/2 (ALPN h2)",
             grade: isH2 ? .pass : .fail,
-            detail: isH2 ? "ALPN согласован в h2." : "Сервер не согласовал h2 (\(info.alpn ?? "нет ALPN")) — нужен HTTP/2.",
+            detail: isH2 ? "ALPN negotiated to h2." : "Server didn't negotiate h2 (\(info.alpn ?? "no ALPN")) — HTTP/2 is required.",
             isRequired: true
         ))
 
         let hasCert = !subject.isEmpty && !issuer.isEmpty
         criteria.append(RealityCriterion(
-            key: "cert", title: "Сертификат",
+            key: "cert", title: "Certificate",
             grade: hasCert ? .pass : .fail,
-            detail: hasCert ? "Лист: \(subject), издатель \(issuer)." : "Не удалось прочитать субъект/издателя листового сертификата.",
+            detail: hasCert ? "Leaf: \(subject), issuer \(issuer)." : "Couldn't read the leaf certificate's subject/issuer.",
             isRequired: true
         ))
 
         // --- Soft / bonus (REALITY README dest-selection guidance) ---
         criteria.append(RealityCriterion(
-            key: "x25519", title: "Обмен ключами X25519",
+            key: "x25519", title: "X25519 key exchange",
             grade: supportsX25519 ? .pass : .warn,
             detail: supportsX25519
-                ? "Рукопожатие проходит, когда предлагается только X25519."
-                : "Сервер не завершил рукопожатие на одном X25519 — Reality опирается на эту кривую.",
+                ? "The handshake succeeds when only X25519 is offered."
+                : "The server didn't complete the handshake on X25519 alone — Reality relies on this curve.",
             isRequired: false
         ))
 
@@ -153,32 +153,32 @@ public final class RealitySNICheck: Sendable {
         let redirectDetail: String
         if let loc = redirectLocation {
             redirectGrade = .warn
-            redirectDetail = "Главная страница перенаправляет на \(loc) — Reality предпочитает домены без внешнего редиректа."
+            redirectDetail = "The main page redirects to \(loc) — Reality prefers domains without an external redirect."
         } else {
             redirectGrade = .pass
-            redirectDetail = "Внешнего редиректа с главной страницы не замечено."
+            redirectDetail = "No external redirect detected from the main page."
         }
         criteria.append(RealityCriterion(
-            key: "redirect", title: "Без внешнего редиректа",
+            key: "redirect", title: "No external redirect",
             grade: redirectGrade, detail: redirectDetail, isRequired: false
         ))
 
         let expiryDays = leaf?.daysUntilExpiry
         criteria.append(RealityCriterion(
-            key: "valid", title: "Сертификат доверенный и не истёк",
+            key: "valid", title: "Certificate is trusted and not expired",
             grade: certValid ? .pass : .warn,
             detail: certValid
-                ? "Цепочка проходит проверку\(expiryDays.map { ", до истечения \($0) дн." } ?? ".")"
-                : "Цепочка не прошла системную проверку или срок вышел.",
+                ? "The chain passes validation\(expiryDays.map { ", \($0) days until expiry." } ?? ".")"
+                : "The chain failed system validation or has expired.",
             isRequired: false
         ))
 
         criteria.append(RealityCriterion(
-            key: "sni", title: "Сертификат покрывает домен",
+            key: "sni", title: "Certificate covers the domain",
             grade: sniCovered ? .pass : .warn,
             detail: sniCovered
-                ? "\(host) присутствует в SAN сертификата."
-                : "\(host) не найден в SAN — SNI отличается от имён сертификата.",
+                ? "\(host) is present in the certificate's SAN."
+                : "\(host) not found in the SAN — the SNI differs from the certificate names.",
             isRequired: false
         ))
 
@@ -194,9 +194,9 @@ public final class RealitySNICheck: Sendable {
 
         let summary: String
         switch verdict {
-        case .pass: summary = "Домен подходит как dest/SNI для Reality."
-        case .warn: summary = "Домен рабочий, но есть замечания — проверьте предупреждения."
-        case .fail: summary = "Домен не годится как dest/SNI для Reality."
+        case .pass: summary = "The domain works as dest/SNI for Reality."
+        case .warn: summary = "The domain works, but there are caveats — check the warnings."
+        case .fail: summary = "The domain doesn't work as dest/SNI for Reality."
         }
 
         return RealitySNIReport(
@@ -308,8 +308,8 @@ public final class RealitySNICheck: Sendable {
     static func unreachable(host: String, port: Int, error: Error) -> RealitySNIReport {
         let reason = (error as? NetworkError)?.errorDescription ?? error.localizedDescription
         let crit = RealityCriterion(
-            key: "reach", title: "Доступность",
-            grade: .fail, detail: "Не удалось установить TLS-соединение: \(reason)", isRequired: true
+            key: "reach", title: "Availability",
+            grade: .fail, detail: "Couldn't establish a TLS connection: \(reason)", isRequired: true
         )
         return RealitySNIReport(
             host: host, port: port, resolvedIP: "—",
@@ -317,7 +317,7 @@ public final class RealitySNICheck: Sendable {
             certSubject: "", certIssuer: "", certValid: false, certExpiryDays: nil,
             sniCoveredByCert: false, handshakeMillis: 0, redirectLocation: nil,
             criteria: [crit], verdict: .fail,
-            summary: "Домен недоступен по TLS — проверить его как dest нельзя."
+            summary: "The domain is unreachable over TLS — it can't be checked as a dest."
         )
     }
 }

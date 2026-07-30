@@ -29,8 +29,8 @@ public struct CensorshipChecks: Sendable {
     public static let blockedCanaries = ["rutracker.org", "x.com", "www.tor-project.org"]
     public static let whitelistAnchors = ["gosuslugi.ru", "yandex.ru", "vk.ru", "sberbank.ru", "mail.ru"]
     public static let foreignControls = ["example.com", "wikipedia.org", "www.google.com"]
-    static let blockPageMarkers = ["доступ ограничен", "ограничен доступ", "роскомнадзор",
-                                   "149-фз", "заблокирован", "запрещ", "единый реестр"]
+    static let blockPageMarkers = ["access restricted", "access restricted", "Roskomnadzor",
+                                   "Federal Law 149-FZ", "blocked", "banned", "unified registry"]
 
     // MARK: 1. DNS spoofing / substitution
 
@@ -40,28 +40,28 @@ public struct CensorshipChecks: Sendable {
         let systemIPs = (try? await HostResolver.resolve(host: domain, family: .ipv4).map(\.ipString)) ?? []
         let dohIPs = (try? await DoHClient().resolveA(domain)) ?? []
 
-        var evidence = ["Системный DNS: \(systemIPs.isEmpty ? "нет ответа" : systemIPs.joined(separator: ", "))",
-                        "DoH 1.1.1.1: \(dohIPs.isEmpty ? "нет ответа" : dohIPs.joined(separator: ", "))"]
+        var evidence = ["System DNS: \(systemIPs.isEmpty ? "no response" : systemIPs.joined(separator: ", "))",
+                        "DoH 1.1.1.1: \(dohIPs.isEmpty ? "no response" : dohIPs.joined(separator: ", "))"]
 
         if dohIPs.isEmpty {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Не удалось проверить",
-                                     detail: "Эталонный резолвер (DoH) недоступен.", evidence: evidence)
+            return CensorshipFinding(verdict: .inconclusive, headline: "Couldn't check",
+                                     detail: "The reference resolver (DoH) is unavailable.", evidence: evidence)
         }
         if systemIPs.isEmpty {
-            return CensorshipFinding(verdict: .restricted, headline: "Домен не резолвится провайдером",
-                                     detail: "Ваш DNS не вернул адрес, а эталонный вернул — вероятна блокировка на уровне DNS.",
+            return CensorshipFinding(verdict: .restricted, headline: "Domain doesn't resolve via provider",
+                                     detail: "Your DNS returned no address while the reference one did — a DNS-level block is likely.",
                                      evidence: evidence)
         }
         let systemSet = Set(systemIPs), dohSet = Set(dohIPs)
         if systemSet.isDisjoint(with: dohSet) {
             let privateInjected = systemIPs.contains { DNSClient.isPrivateOrLoopback($0) }
-            evidence.append(privateInjected ? "Системный ответ указывает в приватную сеть — инъекция." : "Ответы полностью различаются.")
-            return CensorshipFinding(verdict: .restricted, headline: "Похоже на подмену DNS",
-                                     detail: "Провайдерский резолвер вернул другой адрес, чем эталонный. Это типичный признак DNS-подмены.",
+            evidence.append(privateInjected ? "The system response points to a private network — injection." : "The responses differ completely.")
+            return CensorshipFinding(verdict: .restricted, headline: "Looks like DNS spoofing",
+                                     detail: "The provider's resolver returned a different address than the reference one. This is a typical sign of DNS spoofing.",
                                      evidence: evidence)
         }
-        return CensorshipFinding(verdict: .clean, headline: "Подмены DNS не обнаружено",
-                                 detail: "Ответы провайдера и эталона совпадают.", evidence: evidence)
+        return CensorshipFinding(verdict: .clean, headline: "No DNS spoofing detected",
+                                 detail: "The provider's and reference responses match.", evidence: evidence)
     }
 
     // MARK: 2. IP blocking
@@ -69,27 +69,27 @@ public struct CensorshipChecks: Sendable {
     public func checkIPBlocking(domain: String = "x.com") async -> CensorshipFinding {
         let dohIPs = (try? await DoHClient().resolveA(domain)) ?? []
         guard let targetIP = dohIPs.first else {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Не удалось проверить",
-                                     detail: "Не удалось получить реальный адрес домена.", evidence: [])
+            return CensorshipFinding(verdict: .inconclusive, headline: "Couldn't check",
+                                     detail: "Couldn't get the domain's real address.", evidence: [])
         }
         let scanner = PortScanner()
         let target = await scanner.check(host: targetIP, port: 443, timeout: 4)
         let control = await scanner.check(host: "1.1.1.1", port: 443, timeout: 4)
 
-        let evidence = ["Цель \(targetIP):443 — \(target.isOpen ? "доступен" : "недоступен")",
-                        "Контроль 1.1.1.1:443 — \(control.isOpen ? "доступен" : "недоступен")"]
+        let evidence = ["Target \(targetIP):443 — \(target.isOpen ? "reachable" : "unreachable")",
+                        "Control 1.1.1.1:443 — \(control.isOpen ? "reachable" : "unreachable")"]
 
         if !control.isOpen {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Нет связи",
-                                     detail: "Даже контрольный адрес недоступен — проверьте подключение.", evidence: evidence)
+            return CensorshipFinding(verdict: .inconclusive, headline: "No connection",
+                                     detail: "Even the control address is unreachable — check your connection.", evidence: evidence)
         }
         if !target.isOpen {
-            return CensorshipFinding(verdict: .restricted, headline: "IP-адрес заблокирован",
-                                     detail: "Прямое подключение к реальному адресу домена не проходит, хотя контрольный адрес доступен.",
+            return CensorshipFinding(verdict: .restricted, headline: "IP address is blocked",
+                                     detail: "A direct connection to the domain's real address doesn't go through, even though the control address is reachable.",
                                      evidence: evidence)
         }
-        return CensorshipFinding(verdict: .clean, headline: "IP-блокировки нет",
-                                 detail: "Реальный адрес домена доступен напрямую.", evidence: evidence)
+        return CensorshipFinding(verdict: .clean, headline: "No IP block",
+                                 detail: "The domain's real address is reachable directly.", evidence: evidence)
     }
 
     // MARK: 3. SNI / TLS blocking (RST injection or drop)
@@ -97,45 +97,45 @@ public struct CensorshipChecks: Sendable {
     public func checkSNIBlocking(blockedDomain: String = "www.tor-project.org") async -> CensorshipFinding {
         let dohIPs = (try? await DoHClient().resolveA(blockedDomain)) ?? []
         guard let ip = dohIPs.first else {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Не удалось проверить",
-                                     detail: "Не удалось получить адрес домена.", evidence: [])
+            return CensorshipFinding(verdict: .inconclusive, headline: "Couldn't check",
+                                     detail: "Couldn't get the domain's address.", evidence: [])
         }
         // Same IP, two SNIs: the blocked name vs a benign control name.
         let blocked = await tlsSucceeds(ip: ip, sni: blockedDomain)
         let control = await tlsSucceeds(ip: ip, sni: "example.com")
 
-        let evidence = ["TLS к \(ip) с SNI=\(blockedDomain): \(blocked ? "успех" : "сброс/таймаут")",
-                        "TLS к \(ip) с SNI=example.com: \(control ? "успех" : "сброс/таймаут")"]
+        let evidence = ["TLS to \(ip) with SNI=\(blockedDomain): \(blocked ? "success" : "reset/timeout")",
+                        "TLS to \(ip) with SNI=example.com: \(control ? "success" : "reset/timeout")"]
 
         if !blocked && control {
-            return CensorshipFinding(verdict: .restricted, headline: "Блокировка по SNI",
-                                     detail: "Соединение с тем же IP рвётся только при «запрещённом» имени в TLS — это DPI-фильтрация по SNI.",
+            return CensorshipFinding(verdict: .restricted, headline: "SNI-based block",
+                                     detail: "A connection to the same IP is cut off only when the TLS name is a “restricted” one — the network filters by SNI (DPI).",
                                      evidence: evidence)
         }
         if !blocked && !control {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Хост недоступен",
-                                     detail: "Оба соединения не прошли — вероятно, IP-блокировка или хост недоступен.", evidence: evidence)
+            return CensorshipFinding(verdict: .inconclusive, headline: "Host unreachable",
+                                     detail: "Both connections failed — likely an IP block or the host is unreachable.", evidence: evidence)
         }
-        return CensorshipFinding(verdict: .clean, headline: "SNI-блокировки нет",
-                                 detail: "TLS-соединение с «запрещённым» именем проходит нормально.", evidence: evidence)
+        return CensorshipFinding(verdict: .clean, headline: "No SNI block",
+                                 detail: "The TLS connection with the “restricted” name goes through normally.", evidence: evidence)
     }
 
     // MARK: 4. HTTP block page injection
 
     public func checkHTTPBlockPage(domain: String = "rutracker.org") async -> CensorshipFinding {
         guard let body = await httpBody(domain: domain) else {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Нет ответа",
-                                     detail: "HTTP-запрос не вернул тело.", evidence: ["GET http://\(domain)"])
+            return CensorshipFinding(verdict: .inconclusive, headline: "No response",
+                                     detail: "HTTP request returned no body.", evidence: ["GET http://\(domain)"])
         }
         let lower = body.lowercased()
         let hit = Self.blockPageMarkers.first { lower.contains($0) }
         if let hit {
-            return CensorshipFinding(verdict: .restricted, headline: "Страница-заглушка блокировки",
-                                     detail: "Провайдер подменил ответ страницей блокировки.",
-                                     evidence: ["Найден маркер: «\(hit)»", "GET http://\(domain)"])
+            return CensorshipFinding(verdict: .restricted, headline: "Block page",
+                                     detail: "The provider replaced the response with a block page.",
+                                     evidence: ["Marker found: “\(hit)”", "GET http://\(domain)"])
         }
-        return CensorshipFinding(verdict: .clean, headline: "Заглушки не обнаружено",
-                                 detail: "HTTP-ответ не содержит маркеров страницы блокировки.", evidence: ["GET http://\(domain)"])
+        return CensorshipFinding(verdict: .clean, headline: "No block page detected",
+                                 detail: "HTTP response contains no block-page markers.", evidence: ["GET http://\(domain)"])
     }
 
     // MARK: 5. Whitelist mode
@@ -154,21 +154,21 @@ public struct CensorshipChecks: Sendable {
         // IP-layer control removes DNS from the equation.
         let ipControl = await PortScanner().check(host: "1.1.1.1", port: 443, timeout: 4).isOpen
 
-        evidence.append("Из белого списка доступно: \(anchorOK)/\(Self.whitelistAnchors.count)")
-        evidence.append("Зарубежных контролей доступно: \(controlOK)/\(Self.foreignControls.count)")
-        evidence.append("Прямой IP 1.1.1.1:443: \(ipControl ? "доступен" : "недоступен")")
+        evidence.append("Reachable from whitelist: \(anchorOK)/\(Self.whitelistAnchors.count)")
+        evidence.append("Foreign controls reachable: \(controlOK)/\(Self.foreignControls.count)")
+        evidence.append("Direct IP 1.1.1.1:443: \(ipControl ? "reachable" : "unreachable")")
 
         if anchorOK >= 2 && controlOK == 0 && !ipControl {
-            return CensorshipFinding(verdict: .restricted, headline: "Режим белого списка",
-                                     detail: "Доступны только «разрешённые» ресурсы, всё остальное закрыто — похоже на whitelist-режим (региональный шатдаун).",
+            return CensorshipFinding(verdict: .restricted, headline: "Whitelist mode",
+                                     detail: "Only “allowed” resources are reachable, everything else is blocked — looks like whitelist mode (regional shutdown).",
                                      evidence: evidence)
         }
         if controlOK == 0 && anchorOK == 0 {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Нет связи",
-                                     detail: "Ничего не доступно — проверьте подключение.", evidence: evidence)
+            return CensorshipFinding(verdict: .inconclusive, headline: "No connection",
+                                     detail: "Nothing is reachable — check your connection.", evidence: evidence)
         }
-        return CensorshipFinding(verdict: .clean, headline: "Белого списка нет",
-                                 detail: "Зарубежные ресурсы доступны наравне с локальными.", evidence: evidence)
+        return CensorshipFinding(verdict: .clean, headline: "No whitelist",
+                                 detail: "Foreign resources are as reachable as local ones.", evidence: evidence)
     }
 
     // MARK: 6. Siberian block (stateful TLS-flood throttle)
@@ -176,8 +176,8 @@ public struct CensorshipChecks: Sendable {
     public func checkSiberianBlock(host: String = "www.tor-project.org", bursts: Int = 30) async -> CensorshipFinding {
         let dohIPs = (try? await DoHClient().resolveA(host)) ?? []
         guard let ip = dohIPs.first else {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Не удалось проверить",
-                                     detail: "Не удалось получить адрес.", evidence: [])
+            return CensorshipFinding(verdict: .inconclusive, headline: "Couldn't check",
+                                     detail: "Couldn't get the address.", evidence: [])
         }
         // Fire many parallel TLS handshakes to the same host in a short window.
         let results = await withTaskGroup(of: Bool.self) { group -> [Bool] in
@@ -190,20 +190,20 @@ public struct CensorshipChecks: Sendable {
         }
         let ok = results.filter { $0 }.count
         let failed = results.count - ok
-        let evidence = ["Параллельных TLS: \(results.count)", "Успешно: \(ok)", "Сорвалось: \(failed)"]
+        let evidence = ["Parallel TLS: \(results.count)", "Success: \(ok)", "Dropped: \(failed)"]
 
         // A stateful flood throttle lets the first handshakes through, then drops the rest.
         if ok >= 3 && failed >= max(5, bursts / 3) {
-            return CensorshipFinding(verdict: .restricted, headline: "Похоже на «сибирскую» блокировку",
-                                     detail: "Часть параллельных TLS-соединений к одному хосту срывается — характерно для DPI-троттлинга по количеству TLS-сессий. Обычно сбрасывается через ~2 минуты.",
+            return CensorshipFinding(verdict: .restricted, headline: "Looks like a “Siberian” block",
+                                     detail: "Some parallel TLS connections to a single host drop — characteristic of DPI throttling by number of TLS sessions. Usually resets after ~2 minutes.",
                                      evidence: evidence)
         }
         if ok == 0 {
-            return CensorshipFinding(verdict: .inconclusive, headline: "Хост недоступен",
-                                     detail: "Ни одно соединение не прошло — вероятно, другая блокировка или хост недоступен.", evidence: evidence)
+            return CensorshipFinding(verdict: .inconclusive, headline: "Host unreachable",
+                                     detail: "No connection went through — likely another block or the host is unreachable.", evidence: evidence)
         }
-        return CensorshipFinding(verdict: .clean, headline: "Троттлинга TLS не обнаружено",
-                                 detail: "Все параллельные соединения прошли нормально.", evidence: evidence)
+        return CensorshipFinding(verdict: .clean, headline: "No TLS throttling detected",
+                                 detail: "All parallel connections went through fine.", evidence: evidence)
     }
 
     // MARK: Helpers

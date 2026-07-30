@@ -15,16 +15,16 @@ public enum NetworkError: Error, LocalizedError, Sendable, Equatable {
 
     public var errorDescription: String? {
         switch self {
-        case .invalidHost(let h): return "Некорректный хост: \(h)"
-        case .resolutionFailed(let h, let r): return "Не удалось разрешить \(h): \(r)"
-        case .socketCreationFailed(let r): return "Не удалось создать сокет: \(r)"
-        case .socketOptionFailed(let r): return "Ошибка настройки сокета: \(r)"
-        case .sendFailed(let r): return "Ошибка отправки: \(r)"
-        case .timedOut: return "Истекло время ожидания"
-        case .cancelled: return "Отменено"
-        case .notSupported(let m): return "Не поддерживается: \(m)"
-        case .tls(let m): return "Ошибка TLS: \(m)"
-        case .protocolError(let m): return "Ошибка протокола: \(m)"
+        case .invalidHost(let h): return "Invalid host: \(h)"
+        case .resolutionFailed(let h, let r): return "Failed to resolve \(h): \(r)"
+        case .socketCreationFailed(let r): return "Failed to create socket: \(r)"
+        case .socketOptionFailed(let r): return "Socket setup error: \(r)"
+        case .sendFailed(let r): return "Send error: \(r)"
+        case .timedOut: return "Timed out"
+        case .cancelled: return "Cancelled"
+        case .notSupported(let m): return "Not supported: \(m)"
+        case .tls(let m): return "TLS error: \(m)"
+        case .protocolError(let m): return "Protocol error: \(m)"
         }
     }
 }

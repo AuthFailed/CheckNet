@@ -86,9 +86,9 @@ private final class PingRunner: @unchecked Sendable {
         let sock = SocketFactory.makeICMP(endpoint: endpoint, config: config)
         guard case .success(let f) = sock else {
             if case .failure(let reason) = sock {
-                fail("Не удалось открыть ICMP-сокет: \(reason). На iOS проверьте разрешение «Локальная сеть».")
+                fail("Failed to open ICMP socket: \(reason). On iOS, check the “Local Network” permission.")
             } else {
-                fail("Не удалось открыть ICMP-сокет")
+                fail("Failed to open ICMP socket")
             }
             return
         }

@@ -117,7 +117,7 @@ final class ClientHeadersModel {
         let repos = Set(clients.compactMap { $0.repo })
         guard !repos.isEmpty else {
             loadingVersions = false
-            versionsNote = "Ни один клиент не связан с GitHub-репозиторием."
+            versionsNote = "No client is linked to a GitHub repository."
             return
         }
         var updated = 0
@@ -135,8 +135,8 @@ final class ClientHeadersModel {
         saveClients()
         loadingVersions = false
         versionsNote = updated > 0
-            ? "Обновлено версий: \(updated) из GitHub."
-            : "Не удалось получить версии — проверьте сеть."
+            ? "Updated \(updated) versions from GitHub."
+            : "Couldn't fetch versions — check your network."
     }
 
     func saveClients() {
@@ -162,11 +162,11 @@ final class ClientHeadersModel {
     }
 }
 
-/// Ответ сервера подписки на заголовки разных клиентов (#75). Вводим URL
-/// подписки, запрашиваем его от лица каждого клиента (Happ, v2rayNG, Clash,
-/// sing-box…) и показываем, что сервер отдаёт каждому: статус, число узлов,
-/// формат и заголовки панели (`subscription-userinfo`, `content-disposition`,
-/// `profile-*`). Диагностика — просто повтор своей подписки под разными именами.
+/// The subscription server's response to different clients' headers (#75). We enter the
+/// subscription URL, request it on behalf of each client (Happ, v2rayNG, Clash,
+/// sing-box…) and show what the server returns to each: status, node count,
+/// format and panel headers (`subscription-userinfo`, `content-disposition`,
+/// `profile-*`). Diagnostics — just replaying your own subscription under different names.
 struct ClientHeadersView: View {
     var autostart = false
     @State private var model = ClientHeadersModel()
@@ -175,7 +175,7 @@ struct ClientHeadersView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.url, placeholder: "URL подписки",
+            HostInputBar(text: $model.url, placeholder: "Subscription URL",
                          icon: "person.2.badge.gearshape", disabled: model.isRunning) {
                 model.start()
             } trailing: {
@@ -197,14 +197,14 @@ struct ClientHeadersView: View {
             } else if model.errorMessage == nil {
                 ToolIdleHint(
                     icon: "person.2.badge.gearshape",
-                    title: "Ответ сервера по клиентам",
-                    message: "Запросим подписку от лица разных клиентов и покажем, что сервер отдаёт каждому: узлы, формат, лимиты и имя файла.",
+                    title: "Server response by client",
+                    message: "We'll request the subscription as different clients and show what the server returns to each: nodes, format, limits and file name.",
                     example: "https://example.com/sub",
                     current: model.url
                 ) { model.url = "https://example.com/sub" }
             }
         } bottom: {
-            RunButton(title: "Запросить", running: model.isRunning,
+            RunButton(title: "Request", running: model.isRunning,
                       disabled: model.url.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { model.stop() } else { model.start() }
             }
@@ -212,14 +212,14 @@ struct ClientHeadersView: View {
         .animation(.snappy, value: model.results)
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
-        .navigationTitle("Заголовки клиентов")
+        .navigationTitle("Client headers")
         .toolTitleDisplayMode()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     showEditor = true
                 } label: {
-                    Label("Клиенты и версии", systemImage: "slider.horizontal.3")
+                    Label("Clients and versions", systemImage: "slider.horizontal.3")
                 }
                 .disabled(model.isRunning)
             }
@@ -230,12 +230,12 @@ struct ClientHeadersView: View {
         .onAppear { if autostart { model.start() } }
     }
 
-    /// Same saved-subscriptions list the «Парсинг подписки» tool uses — pick one
+    /// Same saved-subscriptions list the «Subscription parsing» tool uses — pick one
     /// to substitute, or bookmark the current URL.
     @ViewBuilder private var savedMenu: some View {
         Menu {
             if !saved.items.isEmpty {
-                Section("Сохранённые") {
+                Section("Saved") {
                     ForEach(saved.items) { item in
                         Button { model.url = item.value } label: {
                             Label(item.name, systemImage: "list.bullet.rectangle")
@@ -246,24 +246,24 @@ struct ClientHeadersView: View {
             let current = model.url.trimmingCharacters(in: .whitespacesAndNewlines)
             if !current.isEmpty, !saved.contains(current) {
                 Button { saved.add(name: "", value: current) } label: {
-                    Label("Сохранить эту подписку", systemImage: "bookmark")
+                    Label("Save this subscription", systemImage: "bookmark")
                 }
             }
         } label: {
             Image(systemName: "bookmark")
         }
-        .accessibilityLabel("Сохранённые подписки")
+        .accessibilityLabel("Saved subscriptions")
         .disabled(saved.items.isEmpty && model.url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
     private var summaryCard: some View {
         HStack {
-            Text("\(model.served) обслужено").font(.headline).foregroundStyle(.green)
+            Text("\(model.served) served").font(.headline).foregroundStyle(.green)
             Spacer()
             if model.isRunning {
                 ProgressView()
             } else {
-                Text("\(model.results.count) / \(model.total) клиентов")
+                Text("\(model.results.count) / \(model.total) clients")
                     .font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
             }
         }
@@ -313,7 +313,7 @@ struct ClientHeadersView: View {
                     }
                     .padding(.top, 6)
                 } label: {
-                    Text("Заголовки ответа (\(r.responseHeaders.count))")
+                    Text("Response headers (\(r.responseHeaders.count))")
                         .font(.caption.weight(.medium)).foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 9)
@@ -332,38 +332,38 @@ struct ClientHeadersView: View {
     }
 
     private func statusWord(_ r: ClientProbeResult) -> String {
-        if r.errorText != nil { return "ошибка" }
-        if r.isServed { return "обслужен" }
-        if (200..<300).contains(r.statusCode) { return "без узлов" }
-        return "отказ"
+        if r.errorText != nil { return "error" }
+        if r.isServed { return "served" }
+        if (200..<300).contains(r.statusCode) { return "no nodes" }
+        return "refused"
     }
 
     private func statusBadge(_ r: ClientProbeResult) -> String {
         if let err = r.errorText { return err }
-        if r.nodeCount > 0 { return "\(r.statusCode) · \(r.nodeCount) узл." }
+        if r.nodeCount > 0 { return "\(r.statusCode) · \(r.nodeCount) nodes" }
         return "\(r.statusCode)"
     }
 
     private func detailRows(_ r: ClientProbeResult) -> [(String, String)]? {
         guard r.errorText == nil else { return nil }
         var rows: [(String, String)] = []
-        if let format = r.format { rows.append(("Формат", format)) }
-        rows.append(("Размер", Int64(r.byteCount).formatted(.byteCount(style: .binary))))
-        if let title = r.title { rows.append(("Название", title)) }
-        if let file = r.filename { rows.append(("Файл", file)) }
+        if let format = r.format { rows.append(("Format", format)) }
+        rows.append(("Size", Int64(r.byteCount).formatted(.byteCount(style: .binary))))
+        if let title = r.title { rows.append(("Name", title)) }
+        if let file = r.filename { rows.append(("File", file)) }
         if let h = r.updateIntervalHours {
-            rows.append(("Обновление", "\(Int(h)) ч"))
+            rows.append(("Update", "\(Int(h)) h"))
         }
         if let info = r.userInfo, info.hasData {
             if let total = info.totalBytes {
                 let used = (info.uploadBytes ?? 0) + (info.downloadBytes ?? 0)
-                rows.append(("Трафик", "\(Int64(used).formatted(.byteCount(style: .binary))) / \(total.formatted(.byteCount(style: .binary)))"))
+                rows.append(("Traffic", "\(Int64(used).formatted(.byteCount(style: .binary))) / \(total.formatted(.byteCount(style: .binary)))"))
             }
             if let expire = info.expire {
-                rows.append(("Действует до", expire.formatted(date: .abbreviated, time: .omitted)))
+                rows.append(("Valid until", expire.formatted(date: .abbreviated, time: .omitted)))
             }
         }
-        if let support = r.supportURL { rows.append(("Поддержка", support)) }
+        if let support = r.supportURL { rows.append(("Support", support)) }
         return rows
     }
 }

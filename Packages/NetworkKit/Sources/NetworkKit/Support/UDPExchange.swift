@@ -46,7 +46,7 @@ enum UDPExchange {
 
         var buffer = [UInt8](repeating: 0, count: 4096)
         let n = buffer.withUnsafeMutableBytes { recv(fd, $0.baseAddress, $0.count, 0) }
-        guard n > 0 else { throw NetworkError.protocolError("пустой ответ") }
+        guard n > 0 else { throw NetworkError.protocolError("empty response") }
         return Array(buffer[0..<Int(n)])
     }
 }

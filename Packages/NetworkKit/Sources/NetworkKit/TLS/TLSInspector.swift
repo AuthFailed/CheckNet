@@ -77,7 +77,7 @@ public final class TLSInspector: Sendable {
         let params = NWParameters(tls: tlsOptions)
         let nwHost = NWEndpoint.Host(endpoint.ipString)
         guard let nwPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
-            throw NetworkError.protocolError("некорректный порт")
+            throw NetworkError.protocolError("invalid port")
         }
         let connection = NWConnection(host: nwHost, port: nwPort, using: params)
 

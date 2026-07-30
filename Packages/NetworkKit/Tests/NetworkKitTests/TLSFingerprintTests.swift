@@ -42,7 +42,7 @@ final class TLSFingerprintTests: XCTestCase {
     func testNationalResolversArePresent() {
         let national = DNSResolverInfo.presets(in: .national)
         XCTAssertEqual(national.count, 2)
-        XCTAssertTrue(national.contains { $0.address == "195.208.4.1" }, "НСДИ primary missing")
+        XCTAssertTrue(national.contains { $0.address == "195.208.4.1" }, "NSDI primary missing")
         XCTAssertTrue(national.contains { $0.address == "62.76.76.62" }, "MSK-IX primary missing")
         XCTAssertTrue(national.allSatisfy { $0.secondary != nil }, "national resolvers publish a secondary")
 

@@ -14,18 +14,18 @@ enum BlockingSection: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         // Not "Blocking" — that's the tab title, and the repeat reads as a bug.
-        case .restrictions: "Фильтрация"
-        case .availability: "Недоступность"
-        case .degradation: "Деградация"
+        case .restrictions: "Filtering"
+        case .availability: "Unavailability"
+        case .degradation: "Degradation"
         case .dns: "DNS"
         }
     }
 
     var footer: String? {
         switch self {
-        case .restrictions: "Проверки сравнивают ваше соединение с эталоном и показывают, что именно ограничивает сеть."
-        case .availability: "Что именно недоступно — по провайдерам, сервисам и серверам уведомлений."
-        case .degradation: "Соединение устанавливается, но рвётся или замедляется в процессе."
+        case .restrictions: "The checks compare your connection with a reference and show exactly what the network restricts."
+        case .availability: "What exactly is unreachable — by provider, service and notification server."
+        case .degradation: "The connection is established but is cut off or slowed down along the way."
         case .dns: nil
         }
     }
@@ -85,13 +85,13 @@ struct BlockingView: View {
                                 Text(LocalizedStringKey(footer))
                             }
                             if index == BlockingSection.allCases.count - 1 {
-                                Text("Только диагностика: приложение показывает, какие ограничения применяет сеть, и не помогает их обходить.")
+                                Text("Diagnostics only: the app shows which restrictions the network applies and does not help to bypass them.")
                             }
                         }
                     }
                 }
             }
-            .navigationTitle("Блокировки")
+            .navigationTitle("Blocks")
             .navigationDestination(for: BlockingRoute.self) { route in
                 switch route {
                 case .check(let check): BlockingCheckView(check: check)
@@ -116,9 +116,9 @@ struct BlockingView: View {
                 .font(.title2)
                 .foregroundStyle(.orange)
             VStack(alignment: .leading, spacing: 3) {
-                Text("Сеть перехватывает трафик").font(.headline)
+                Text("The network intercepts traffic").font(.headline)
                 Text(LocalizedStringKey(portal.detail)).font(.caption).foregroundStyle(.secondary)
-                Text("Пока не выполнен вход, проверки ниже могут ошибаться.")
+                Text("Until you sign in, the checks below may be wrong.")
                     .font(.caption2).foregroundStyle(.tertiary)
             }
         }
@@ -134,14 +134,14 @@ struct BlockingView: View {
                 .frame(width: 28, height: 28)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Доступность узлов").foregroundStyle(.primary)
-                Text("Провайдеры, сервисы, push-уведомления").font(.caption).foregroundStyle(.secondary)
+                Text("Host reachability").foregroundStyle(.primary)
+                Text("Providers, services, push notifications").font(.caption).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
             // The neighbouring rows all carry an ⓘ; this one used to be the
             // exception, which read as a missing control rather than a choice.
-            InfoButton(title: "Доступность узлов", systemImage: "network",
-                       message: "Проверяет по одному эталонному узлу для каждого провайдера, сервиса и сервера push-уведомлений — отвечает ли он и не мешает ли сеть. Сравнение с эталоном показывает, что именно недоступно.")
+            InfoButton(title: "Host reachability", systemImage: "network",
+                       message: "Checks one reference node per provider, service and push-notification server — whether it responds and whether the network interferes. Comparison with a reference shows exactly what is unreachable.")
         }
         .padding(.vertical, 2)
     }

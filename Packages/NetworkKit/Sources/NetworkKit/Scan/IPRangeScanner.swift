@@ -88,7 +88,7 @@ public final class IPRangeScanner: Sendable {
     ) -> AsyncStream<ScanEvent> {
         AsyncStream(bufferingPolicy: .unbounded) { continuation in
             guard let hosts = IPv4Range.hosts(from: range), !hosts.isEmpty else {
-                continuation.yield(.failed("Некорректный диапазон: \(range)"))
+                continuation.yield(.failed("Invalid range: \(range)"))
                 continuation.finish()
                 return
             }

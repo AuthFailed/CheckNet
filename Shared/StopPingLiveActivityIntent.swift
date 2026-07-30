@@ -7,8 +7,8 @@ import AppIntents
 /// activity). Lives in `Shared/` so both the app and the widget extension —
 /// where the button is rendered — can reference it.
 struct StopPingLiveActivityIntent: LiveActivityIntent {
-    static let title: LocalizedStringResource = "Остановить проверку"
-    static let description = IntentDescription("Останавливает текущую проверку задержки.")
+    static let title: LocalizedStringResource = "Stop the test"
+    static let description = IntentDescription("Stops the current latency test.")
 
     func perform() async throws -> some IntentResult {
         LiveActivitySignal.requestStop()

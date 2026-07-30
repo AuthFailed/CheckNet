@@ -24,25 +24,25 @@ struct PrePermissionSheet: View {
         }
         var title: LocalizedStringKey {
             switch self {
-            case .localNetwork: "Разрешить доступ к локальной сети?"
-            case .location: "Показать имя сети Wi-Fi?"
+            case .localNetwork: "Allow access to the local network?"
+            case .location: "Show the Wi-Fi network name?"
             }
         }
         var body: LocalizedStringKey {
             switch self {
-            case .localNetwork: "Чтобы найти устройства в вашей сети, приложению нужен доступ к локальной сети."
-            case .location: "iOS отдаёт название сети (SSID) только приложениям с доступом к геопозиции."
+            case .localNetwork: "To find devices on your network, the app needs local-network access."
+            case .location: "iOS gives the network name (SSID) only to apps with location access."
             }
         }
         var bullets: [(icon: String, text: LocalizedStringKey)] {
             switch self {
             case .localNetwork:
-                [("house", "Сканируется только ваша локальная сеть — ничего за её пределами."),
-                 ("iphone", "Всё происходит на устройстве, наружу данные не уходят."),
-                 ("hand.thumbsup", "Дальше система покажет свой запрос — решение за вами.")]
+                [("house", "Only your local network is scanned — nothing beyond it."),
+                 ("iphone", "It all happens on the device; no data leaves it."),
+                 ("hand.thumbsup", "Next the system shows its own prompt — the choice is yours.")]
             case .location:
-                [("location", "Геопозиция нужна только чтобы прочитать имя Wi-Fi."),
-                 ("iphone", "Координаты не сохраняются и не покидают устройство.")]
+                [("location", "Location is used only to read the Wi-Fi name."),
+                 ("iphone", "Coordinates are not stored and never leave the device.")]
             }
         }
     }
@@ -97,7 +97,7 @@ struct PrePermissionSheet: View {
                 .padding(.bottom, 26)
 
                 Button(action: onAllow) {
-                    Text("Разрешить")
+                    Text("Allow")
                         .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 52)
                 }
@@ -105,13 +105,13 @@ struct PrePermissionSheet: View {
                 .buttonBorderShape(.roundedRectangle(radius: 15))
 
                 Button(action: onNotNow) {
-                    Text("Не сейчас")
+                    Text("Not now")
                         .font(.body)
                         .frame(maxWidth: .infinity, minHeight: 50)
                 }
                 .padding(.top, 2)
 
-                Text("«Не сейчас» — это нормально: проверка просто не запустится.")
+                Text("\"Not now\" is fine — the check simply won't run.")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)

@@ -23,62 +23,62 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     var title: String {
         switch self {
         case .ping: return "Ping"
-        case .traceroute: return "Трассировка"
+        case .traceroute: return "Traceroute"
         case .mtr: return "MTR"
-        case .portScan: return "Проверка портов"
-        case .tlsInspector: return "TLS-инспектор"
+        case .portScan: return "Port check"
+        case .tlsInspector: return "TLS inspector"
         case .dns: return "DNS (nslookup)"
-        case .dnsCompare: return "Сравнение резолверов"
-        case .dnsTamper: return "Детект DNS-подмены"
-        case .reverseDns: return "Обратный DNS"
-        case .networkBrowser: return "Обзор сети"
-        case .ipScanner: return "Сканер IP-диапазона"
+        case .dnsCompare: return "Resolver comparison"
+        case .dnsTamper: return "DNS spoofing detection"
+        case .reverseDns: return "Reverse DNS"
+        case .networkBrowser: return "Network overview"
+        case .ipScanner: return "IP range scanner"
         case .bonjour: return "Bonjour / mDNS"
         case .wakeOnLan: return "Wake-on-LAN"
-        case .interfaces: return "Сетевые интерфейсы"
+        case .interfaces: return "Network interfaces"
         case .hostToIP: return "Host → IP"
-        case .ipLocation: return "Геолокация IP"
-        case .whois: return "Whois домена"
-        case .blacklist: return "Проверка блэклистов"
-        case .speedTest: return "Тест скорости"
+        case .ipLocation: return "IP geolocation"
+        case .whois: return "Domain Whois"
+        case .blacklist: return "Blacklist check"
+        case .speedTest: return "Speed test"
         case .bufferbloat: return "Bufferbloat"
         case .mtuDiscovery: return "MTU discovery"
-        case .wifiAnalysis: return "Wi-Fi анализ"
-        case .currentWiFi: return "Текущая сеть Wi-Fi"
+        case .wifiAnalysis: return "Wi-Fi analysis"
+        case .currentWiFi: return "Current Wi-Fi network"
         case .worldPing: return "World Ping"
         case .cgnatDetect: return "CGNAT / Double NAT"
-        case .monitoring: return "Мониторинг хостов"
+        case .monitoring: return "Host monitoring"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .ping: return "ICMP · задержка, потери, джиттер"
-        case .traceroute: return "Путь до хоста по хопам"
-        case .mtr: return "Трассировка + непрерывный ping"
-        case .portScan: return "TCP-connect по портам"
-        case .tlsInspector: return "Сертификаты, TLS, ALPN"
-        case .dns: return "Все типы записей, латентность"
-        case .dnsCompare: return "Разные резолверы бок о бок"
-        case .dnsTamper: return "Подмена и цензура DNS"
-        case .reverseDns: return "IP → имя хоста (PTR)"
-        case .networkBrowser: return "Устройства в вашей сети"
-        case .ipScanner: return "Живые хосты в диапазоне"
-        case .bonjour: return "Сервисы mDNS рядом"
-        case .wakeOnLan: return "Разбудить устройство по MAC"
-        case .interfaces: return "IP, маска, MAC, MTU"
-        case .hostToIP: return "Разрешение имени в адрес"
-        case .ipLocation: return "Страна, город, ASN"
-        case .whois: return "Регистратор, даты, NS"
-        case .blacklist: return "IP в DNSBL-списках"
-        case .speedTest: return "Скорость загрузки/отдачи"
-        case .bufferbloat: return "Рост задержки под нагрузкой"
-        case .mtuDiscovery: return "Максимальный размер пакета"
-        case .wifiAnalysis: return "RSSI, канал, роуминг"
-        case .currentWiFi: return "SSID, BSSID, защита · на Mac ещё сигнал и канал"
-        case .worldPing: return "Доступность из разных точек"
-        case .cgnatDetect: return "Тип NAT и внешний IP"
-        case .monitoring: return "Фоновый аптайм-монитор"
+        case .ping: return "ICMP · latency, loss, jitter"
+        case .traceroute: return "Path to host by hops"
+        case .mtr: return "Traceroute + continuous ping"
+        case .portScan: return "TCP connect across ports"
+        case .tlsInspector: return "Certificates, TLS, ALPN"
+        case .dns: return "All record types, latency"
+        case .dnsCompare: return "Different resolvers side by side"
+        case .dnsTamper: return "DNS spoofing and censorship"
+        case .reverseDns: return "IP → hostname (PTR)"
+        case .networkBrowser: return "Devices on your network"
+        case .ipScanner: return "Live hosts in range"
+        case .bonjour: return "mDNS services nearby"
+        case .wakeOnLan: return "Wake a device by MAC"
+        case .interfaces: return "IP, mask, MAC, MTU"
+        case .hostToIP: return "Name-to-address resolution"
+        case .ipLocation: return "Country, city, ASN"
+        case .whois: return "Registrar, dates, NS"
+        case .blacklist: return "IP on DNSBL lists"
+        case .speedTest: return "Download/upload speed"
+        case .bufferbloat: return "Latency increase under load"
+        case .mtuDiscovery: return "Maximum packet size"
+        case .wifiAnalysis: return "RSSI, channel, roaming"
+        case .currentWiFi: return "SSID, BSSID, security · on Mac also signal and channel"
+        case .worldPing: return "Availability from different locations"
+        case .cgnatDetect: return "NAT type and external IP"
+        case .monitoring: return "Background uptime monitor"
         }
     }
 
@@ -118,32 +118,32 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     /// the right tool even though none of them is in its title.
     var keywords: [String] {
         switch self {
-        case .ping: return ["ping", "пинг", "latency", "задержка", "потери", "loss", "jitter", "джиттер", "icmp"]
-        case .traceroute: return ["traceroute", "tracert", "трассировка", "маршрут", "route", "хопы", "hops"]
-        case .mtr: return ["mtr", "my traceroute", "winmtr", "трассировка", "потери по хопам"]
-        case .portScan: return ["port", "порт", "порты", "ports", "scan", "скан", "tcp", "открытые порты"]
-        case .tlsInspector: return ["tls", "ssl", "сертификат", "certificate", "cert", "https", "handshake", "рукопожатие", "шифр", "cipher"]
-        case .dns: return ["dns", "nslookup", "dig", "домен", "запись", "record", "a", "aaaa", "mx", "txt", "резолв", "resolve"]
-        case .dnsCompare: return ["dns", "резолверы", "resolvers", "сравнение", "compare", "doh", "1.1.1.1", "8.8.8.8"]
-        case .dnsTamper: return ["dns", "подмена", "spoof", "tamper", "мониторинг dns"]
-        case .reverseDns: return ["reverse dns", "ptr", "обратный dns", "rdns", "имя по ip"]
-        case .networkBrowser: return ["network", "устройства", "devices", "обзор", "browse", "mac", "vendor", "arp"]
-        case .ipScanner: return ["ip", "scan", "скан", "диапазон", "range", "cidr", "хосты", "hosts", "сеть"]
-        case .bonjour: return ["bonjour", "mdns", "zeroconf", "сервисы", "services", "airplay", "chromecast"]
-        case .wakeOnLan: return ["wake on lan", "wol", "magic packet", "пробуждение", "включить", "mac"]
-        case .interfaces: return ["interface", "интерфейс", "адаптер", "ip", "netmask", "маска", "gateway", "шлюз"]
-        case .hostToIP: return ["host", "хост", "ip", "resolve", "домен в ip", "a запись"]
-        case .ipLocation: return ["geo", "геолокация", "location", "страна", "город", "asn"]
-        case .whois: return ["whois", "домен", "регистратор", "registrar", "владелец", "срок регистрации"]
-        case .blacklist: return ["blacklist", "чёрный список", "dnsbl", "rbl", "спам", "spam", "репутация"]
-        case .speedTest: return ["speed", "скорость", "iperf", "speedtest", "download", "upload", "загрузка", "отдача"]
-        case .bufferbloat: return ["bufferbloat", "буфер", "задержка под нагрузкой", "latency under load"]
-        case .mtuDiscovery: return ["mtu", "фрагментация", "fragmentation", "pmtud", "размер пакета", "packet size"]
-        case .wifiAnalysis: return ["wifi", "вайфай", "каналы", "channels", "помехи"]
-        case .currentWiFi: return ["wifi", "вайфай", "сеть", "ssid", "bssid", "защита", "сигнал", "signal", "rssi", "канал", "channel"]
-        case .worldPing: return ["world ping", "мировой пинг", "из разных точек", "global"]
-        case .cgnatDetect: return ["cgnat", "nat", "серый ip", "carrier grade", "двойной nat"]
-        case .monitoring: return ["monitoring", "мониторинг", "непрерывно", "уведомления", "alerts", "падение"]
+        case .ping: return ["ping", "latency", "loss", "jitter", "icmp"]
+        case .traceroute: return ["traceroute", "tracert", "route", "hops"]
+        case .mtr: return ["mtr", "my traceroute", "winmtr", "traceroute", "per-hop loss"]
+        case .portScan: return ["port", "ports", "scan", "tcp", "open ports"]
+        case .tlsInspector: return ["tls", "ssl", "certificate", "cert", "https", "handshake", "cipher"]
+        case .dns: return ["dns", "nslookup", "dig", "domain", "record", "a", "aaaa", "mx", "txt", "resolve"]
+        case .dnsCompare: return ["dns", "resolvers", "compare", "doh", "1.1.1.1", "8.8.8.8"]
+        case .dnsTamper: return ["dns", "spoof", "tamper", "dns monitoring"]
+        case .reverseDns: return ["reverse dns", "ptr", "rdns", "name by ip"]
+        case .networkBrowser: return ["network", "devices", "browse", "mac", "vendor", "arp"]
+        case .ipScanner: return ["ip", "scan", "range", "cidr", "hosts", "network"]
+        case .bonjour: return ["bonjour", "mdns", "zeroconf", "services", "airplay", "chromecast"]
+        case .wakeOnLan: return ["wake on lan", "wol", "magic packet", "wake", "power on", "mac"]
+        case .interfaces: return ["interface", "adapter", "ip", "netmask", "gateway"]
+        case .hostToIP: return ["host", "ip", "resolve", "domain to ip", "a record"]
+        case .ipLocation: return ["geo", "geolocation", "location", "country", "city", "asn"]
+        case .whois: return ["whois", "domain", "registrar", "owner", "registration date"]
+        case .blacklist: return ["blacklist", "dnsbl", "rbl", "spam", "reputation"]
+        case .speedTest: return ["speed", "iperf", "speedtest", "download", "upload"]
+        case .bufferbloat: return ["bufferbloat", "buffer", "latency under load"]
+        case .mtuDiscovery: return ["mtu", "fragmentation", "pmtud", "packet size"]
+        case .wifiAnalysis: return ["wifi", "channels", "interference"]
+        case .currentWiFi: return ["wifi", "network", "ssid", "bssid", "security", "signal", "rssi", "channel"]
+        case .worldPing: return ["world ping", "from multiple locations", "global"]
+        case .cgnatDetect: return ["cgnat", "nat", "shared ip", "carrier grade", "double nat"]
+        case .monitoring: return ["monitoring", "continuous", "notifications", "alerts", "downtime"]
         }
     }
 
@@ -158,57 +158,57 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     var info: String {
         switch self {
         case .ping:
-            return "Отправляет ICMP-эхо на хост и измеряет время отклика, потери пакетов и джиттер. Помогает понять, доступен ли узел и стабильна ли связь до него."
+            return "Sends ICMP echoes to the host and measures response time, packet loss, and jitter. Helps you tell whether the node is reachable and the connection to it is stable."
         case .traceroute:
-            return "Показывает маршрут пакетов до хоста по шагам (хопам) и задержку на каждом. Помогает найти, на каком участке сети возникают проблемы."
+            return "Shows the packet route to the host step by step (hops) and the latency at each. Helps find which network segment has problems."
         case .mtr:
-            return "Объединяет трассировку и непрерывный ping: постоянно опрашивает каждый хоп и копит статистику потерь и задержек. Аналог WinMTR — удобно ловить нестабильный участок."
+            return "Combines traceroute and continuous ping: constantly polls each hop and accumulates loss and latency stats. Like WinMTR — handy for catching an unstable segment."
         case .portScan:
-            return "Проверяет, какие TCP-порты открыты на хосте. Помогает узнать, какие сервисы доступны. Сканирование чужих хостов может расцениваться как недружественное действие."
+            return "Checks which TCP ports are open on a host. Helps find out which services are available. Scanning others' hosts may be treated as an unfriendly action."
         case .tlsInspector:
-            return "Открывает TLS-соединение и показывает сертификат, цепочку доверия, версию протокола и ALPN. Помогает проверить безопасность и корректность настройки HTTPS."
+            return "Opens a TLS connection and shows the certificate, trust chain, protocol version, and ALPN. Helps verify HTTPS security and correct setup."
         case .dns:
-            return "Запрашивает у DNS все типы записей домена (A, AAAA, MX, TXT и др.) и показывает задержку резолвера. Базовая диагностика доменных имён."
+            return "Queries DNS for all record types of a domain (A, AAAA, MX, TXT, etc.) and shows resolver latency. Basic domain-name diagnostics."
         case .dnsCompare:
-            return "Спрашивает один и тот же домен у нескольких DNS-резолверов и сравнивает ответы бок о бок. Помогает заметить подмену или расхождения."
+            return "Queries the same domain from several DNS resolvers and compares the responses side by side. Helps spot spoofing or discrepancies."
         case .dnsTamper:
-            return "Сравнивает ответ вашего DNS с доверенным и ищет признаки подмены или цензуры. Перенесено во вкладку «Блокировки»."
+            return "Compares your DNS response with a trusted one and looks for signs of spoofing or censorship. Moved to the “Blocks” tab."
         case .reverseDns:
-            return "По IP-адресу находит связанное с ним доменное имя (PTR-запись). Помогает опознать владельца адреса."
+            return "Finds the domain name associated with an IP address (PTR record). Helps identify the address owner."
         case .networkBrowser:
-            return "Находит устройства в вашей локальной сети и их адреса. Помогает увидеть, что подключено к вашему Wi-Fi."
+            return "Finds devices on your local network and their addresses. Helps you see what's connected to your Wi-Fi."
         case .ipScanner:
-            return "Перебирает диапазон IP-адресов и находит живые хосты. Полезно для инвентаризации своей сети. Сканирование чужих сетей может считаться недружественным."
+            return "Iterates over a range of IP addresses and finds live hosts. Useful for inventorying your own network. Scanning others' networks may be considered unfriendly."
         case .bonjour:
-            return "Ищет сервисы Bonjour/mDNS рядом (принтеры, AirPlay, колонки и т. п.). Показывает, что рекламирует себя в вашей сети."
+            return "Finds Bonjour/mDNS services nearby (printers, AirPlay, speakers, etc.). Shows what advertises itself on your network."
         case .wakeOnLan:
-            return "Отправляет «магический пакет» по MAC-адресу, чтобы удалённо разбудить устройство в локальной сети."
+            return "Sends a “magic packet” to a MAC address to remotely wake a device on the local network."
         case .interfaces:
-            return "Показывает сетевые интерфейсы устройства: IP, маску, MAC и MTU. Базовая информация о вашем подключении."
+            return "Shows the device's network interfaces: IP, mask, MAC, and MTU. Basic info about your connection."
         case .hostToIP:
-            return "Преобразует доменное имя в IP-адрес (и наоборот). Простейшая проверка работы DNS."
+            return "Converts a domain name to an IP address (and vice versa). The simplest DNS check."
         case .ipLocation:
-            return "Определяет предполагаемую страну, город, сеть (ASN и оператора) для IP или домена, и даёт ссылки на bgp.tools, Hurricane Electric и PeeringDB. Запрос уходит к внешнему сервису геолокации."
+            return "Estimates the likely country, city and network (ASN and operator) for an IP or domain, with links to bgp.tools, Hurricane Electric and PeeringDB. The request goes to an external geolocation service."
         case .whois:
-            return "Запрашивает данные о регистрации домена: регистратор, даты, серверы имён. Помогает узнать, кому принадлежит домен."
+            return "Requests domain registration data: registrar, dates, name servers. Helps find out who owns the domain."
         case .blacklist:
-            return "Проверяет, числится ли IP в почтовых чёрных списках (DNSBL). Полезно, если ваша почта попадает в спам."
+            return "Checks whether an IP is listed in email blacklists (DNSBL). Useful if your mail ends up in spam."
         case .speedTest:
-            return "Измеряет скорость загрузки и отдачи через iperf3-серверы или HTTP. Показывает реальную пропускную способность канала."
+            return "Measures download and upload speed via iperf3 servers or HTTP. Shows the real bandwidth of your connection."
         case .bufferbloat:
-            return "Замеряет задержку в простое и под полной нагрузкой (загрузка и отдача), показывает прирост и оценку A–F. Именно рост задержки под нагрузкой рвёт звонки и игры при быстром интернете."
+            return "Measures latency at idle and under full load (download and upload), showing the increase and an A–F grade. It’s the rise in latency under load that breaks calls and games even on a fast connection."
         case .mtuDiscovery:
-            return "Находит максимальный размер пакета, проходящий без фрагментации (Path MTU). Помогает диагностировать обрывы и залипания соединений."
+            return "Finds the maximum packet size that passes without fragmentation (Path MTU). Helps diagnose drops and stalled connections."
         case .wifiAnalysis:
-            return "Анализ Wi-Fi: уровень сигнала, канал, роуминг. Ограничено политиками iOS."
+            return "Wi-Fi analysis: signal strength, channel, roaming. Limited by iOS policies."
         case .currentWiFi:
-            return "Показывает сеть Wi-Fi, к которой устройство подключено прямо сейчас: имя (SSID), BSSID точки доступа и тип защиты. На Mac дополнительно — уровень сигнала, канал, ширина полосы, скорость и стандарт. Соседние сети не сканируются — для этого есть «Wi-Fi анализ»."
+            return "Shows the Wi-Fi network the device is connected to right now: name (SSID), the access point's BSSID, and security type. On Mac, also signal level, channel, bandwidth, speed, and standard. Nearby networks aren't scanned — use \"Wi-Fi Analysis\" for that."
         case .worldPing:
-            return "Проверяет доступность хоста с узлов по всему миру — ping, HTTP, TCP, DNS или UDP, с выбором стран. Видно, откуда ресурс доступен, а откуда нет. Проверка выполняется через внешний сервис."
+            return "Checks a host’s reachability from nodes around the world — ping, HTTP, TCP, DNS or UDP, with a choice of countries. You see where the resource is reachable and where it isn’t. The check runs through an external service."
         case .cgnatDetect:
-            return "Определяет тип NAT и ваш внешний IP через STUN. Помогает понять, находитесь ли вы за CGNAT (общим адресом провайдера)."
+            return "Determines NAT type and your external IP via STUN. Helps you tell whether you're behind CGNAT (a shared provider address)."
         case .monitoring:
-            return "Фоновый монитор доступности хостов: периодически пингует и ведёт историю аптайма."
+            return "Background host-availability monitor: pings periodically and keeps an uptime history."
         }
     }
 
@@ -262,8 +262,8 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
 
         var headline: LocalizedStringKey {
             switch self {
-            case .inDevelopment: "В разработке"
-            case .platformLimit: "Недоступно на этой платформе"
+            case .inDevelopment: "In development"
+            case .platformLimit: "Unavailable on this platform"
             }
         }
         var icon: String {
@@ -283,7 +283,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     var unavailable: Unavailable? {
         switch self {
         case .wifiAnalysis:
-            return .platformLimit("iOS не отдаёт приложениям данные о Wi-Fi-каналах и соседних сетях — это доступно только в версии для Mac (CoreWLAN).")
+            return .platformLimit("iOS doesn’t give apps Wi-Fi channel or neighboring-network data — it’s only available in the Mac version (CoreWLAN).")
         default:
             return nil
         }
@@ -299,13 +299,13 @@ struct ToolSection: Identifiable {
 
 enum ToolCatalog {
     static let sections: [ToolSection] = [
-        ToolSection(id: "reach", title: "Доступность", tools: [.ping, .traceroute, .mtr, .portScan, .tlsInspector]),
+        ToolSection(id: "reach", title: "Availability", tools: [.ping, .traceroute, .mtr, .portScan, .tlsInspector]),
         ToolSection(id: "dns", title: "DNS", tools: [.dns, .dnsCompare, .reverseDns]),
-        ToolSection(id: "discovery", title: "Обнаружение", tools: [.networkBrowser, .ipScanner, .bonjour, .wakeOnLan]),
-        ToolSection(id: "info", title: "Информация", tools: [.interfaces, .hostToIP, .ipLocation, .whois, .blacklist]),
-        ToolSection(id: "perf", title: "Производительность", tools: [.speedTest, .bufferbloat, .mtuDiscovery]),
+        ToolSection(id: "discovery", title: "Discovery", tools: [.networkBrowser, .ipScanner, .bonjour, .wakeOnLan]),
+        ToolSection(id: "info", title: "Info", tools: [.interfaces, .hostToIP, .ipLocation, .whois, .blacklist]),
+        ToolSection(id: "perf", title: "Performance", tools: [.speedTest, .bufferbloat, .mtuDiscovery]),
         ToolSection(id: "wifi", title: "Wi-Fi", tools: [.currentWiFi, .wifiAnalysis]),
-        ToolSection(id: "advanced", title: "Продвинутое", tools: [.worldPing, .cgnatDetect, .monitoring])
+        ToolSection(id: "advanced", title: "Advanced", tools: [.worldPing, .cgnatDetect, .monitoring])
     ]
 
     static func tool(withID id: String) -> Tool? { Tool(rawValue: id) }

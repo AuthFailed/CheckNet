@@ -76,14 +76,14 @@ public struct WhoisClient: Sendable {
     /// Extracts the most useful fields from a WHOIS response for display.
     private static func parseFields(_ text: String) -> [WhoisResult.WhoisField] {
         let wanted: [(display: String, keys: [String])] = [
-            ("Домен", ["domain name", "domain"]),
-            ("Регистратор", ["registrar", "registrar name", "sponsoring registrar"]),
-            ("Создан", ["creation date", "created", "registered on", "registration time"]),
-            ("Обновлён", ["updated date", "last updated", "changed", "last modified"]),
-            ("Истекает", ["registry expiry date", "expiry date", "expires", "expiration date", "paid-till"]),
-            ("Статус", ["domain status", "status"]),
-            ("Организация", ["registrant organization", "org", "organization"]),
-            ("Страна", ["registrant country", "country"])
+            ("Domain", ["domain name", "domain"]),
+            ("Registrar", ["registrar", "registrar name", "sponsoring registrar"]),
+            ("Created", ["creation date", "created", "registered on", "registration time"]),
+            ("Updated", ["updated date", "last updated", "changed", "last modified"]),
+            ("Expires", ["registry expiry date", "expiry date", "expires", "expiration date", "paid-till"]),
+            ("Status", ["domain status", "status"]),
+            ("Organization", ["registrant organization", "org", "organization"]),
+            ("Country", ["registrant country", "country"])
         ]
         var nameServers: [String] = []
         var found: [String: String] = [:]
@@ -112,7 +112,7 @@ public struct WhoisClient: Sendable {
             }
         }
         if !nameServers.isEmpty {
-            fields.append(.init(key: "NS-серверы", value: nameServers.joined(separator: "\n")))
+            fields.append(.init(key: "NS servers", value: nameServers.joined(separator: "\n")))
         }
         return fields
     }

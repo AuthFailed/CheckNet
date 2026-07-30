@@ -14,9 +14,9 @@ extension CheckRecord {
                      received: Int, transmitted: Int,
                      source: HistorySource = .manual,
                      timestamp: Date = Date()) -> CheckRecord {
-        var detail = "\(received)/\(transmitted), \(Int(lossPercent))% потерь"
+        var detail = "\(received)/\(transmitted), \(Int(lossPercent))% loss"
         if received > 0, let avg {
-            detail += ", avg \(String(format: "%.0f", avg)) мс"
+            detail += ", avg \(String(format: "%.0f", avg)) ms"
         }
         return CheckRecord(
             tool: "ping", host: host, timestamp: timestamp,
@@ -32,7 +32,7 @@ extension CheckRecord {
         CheckRecord(
             tool: "ping", host: host, timestamp: timestamp,
             latencyMillis: nil, lossPercent: nil,
-            succeeded: false, detail: "ошибка: \(reason)", source: source
+            succeeded: false, detail: "error: \(reason)", source: source
         )
     }
 

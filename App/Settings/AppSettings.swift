@@ -6,9 +6,9 @@ enum AppTheme: String, CaseIterable, Identifiable, Codable {
     var id: String { rawValue }
     var label: String {
         switch self {
-        case .system: return "Системная"
-        case .light: return "Светлая"
-        case .dark: return "Тёмная"
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
         }
     }
     var colorScheme: ColorScheme? {
@@ -29,9 +29,9 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
     /// Endonym shown in the picker (each in its own language).
     var label: String {
         switch self {
-        case .system: return "Системный / System"
+        case .system: return "System / System"
         case .en:     return "English"
-        case .ru:     return "Русский"
+        case .ru:     return "Russian"
         case .zhHans: return "简体中文"
         case .es:     return "Español"
         case .fr:     return "Français"

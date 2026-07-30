@@ -7,7 +7,7 @@ struct HostInputBar: View {
     @Binding var text: String
     // LocalizedStringKey (not String) so the placeholder localizes: a String
     // passed to TextField takes the verbatim overload and always shows Russian.
-    var placeholder: LocalizedStringKey = "Хост или IP"
+    var placeholder: LocalizedStringKey = "Host or IP"
     var icon: String = "globe"
     var disabled: Bool = false
     var savedHostTool: Tool? = nil
@@ -53,7 +53,7 @@ struct SavedHostsMenu: View {
         Menu {
             let hosts = savedHosts.hosts(for: tool)
             if !hosts.isEmpty {
-                Section("Сохранённые") {
+                Section("Saved") {
                     ForEach(hosts) { h in
                         Button {
                             text = h.value
@@ -65,7 +65,7 @@ struct SavedHostsMenu: View {
                 }
             }
             let trimmed = text.trimmingCharacters(in: .whitespaces)
-            let saveTitle: LocalizedStringKey = trimmed.isEmpty ? "Сохранить хост…" : "Сохранить «\(trimmed)»"
+            let saveTitle: LocalizedStringKey = trimmed.isEmpty ? "Save host…" : "Save “\(trimmed)”"
             Button {
                 savedHosts.add(name: "", value: trimmed, tool: nil)
             } label: {
@@ -79,7 +79,7 @@ struct SavedHostsMenu: View {
                 .padding(7)
                 .background(.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 9))
         }
-        .accessibilityLabel("Сохранённые хосты")
+        .accessibilityLabel("Saved hosts")
     }
 }
 
@@ -107,7 +107,7 @@ struct RunButton: View {
 
     var body: some View {
         Button(action: action) {
-            Label(running ? LocalizedStringKey("Остановить") : title, systemImage: running ? "stop.fill" : "play.fill")
+            Label(running ? LocalizedStringKey("Stop") : title, systemImage: running ? "stop.fill" : "play.fill")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: isShort ? 44 : 52)

@@ -60,10 +60,10 @@ extension StatusDot.Level {
 
 #Preview {
     VStack(alignment: .leading, spacing: 12) {
-        StatusDot(level: .ok, label: "Хост отвечает")
-        StatusDot(level: .warning, label: "Есть потери")
-        StatusDot(level: .bad, label: "Хост недоступен")
-        StatusDot(level: .unknown, label: "Нет данных")
+        StatusDot(level: .ok, label: "Host responds")
+        StatusDot(level: .warning, label: "Packet loss")
+        StatusDot(level: .bad, label: "Host unreachable")
+        StatusDot(level: .unknown, label: "No data")
     }
     .padding()
 }

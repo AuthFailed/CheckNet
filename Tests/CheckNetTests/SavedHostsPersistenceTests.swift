@@ -21,13 +21,13 @@ final class SavedHostsPersistenceTests: XCTestCase {
     func testSaveThenLoadRoundTrips() throws {
         let defaults = try makeDefaults()
         let hosts = [
-            SavedHost(name: "Роутер", value: "192.168.1.1", toolID: nil),
+            SavedHost(name: "Router", value: "192.168.1.1", toolID: nil),
             SavedHost(name: "Cloudflare", value: "1.1.1.1", toolID: "ping")
         ]
         SavedHostsPersistence.save(hosts, to: defaults)
         let loaded = try XCTUnwrap(SavedHostsPersistence.load(from: defaults))
         XCTAssertEqual(loaded.map(\.value), ["192.168.1.1", "1.1.1.1"])
-        XCTAssertEqual(loaded.first?.name, "Роутер")
+        XCTAssertEqual(loaded.first?.name, "Router")
     }
 
     func testEmptyListRoundTripsAsEmptyNotNil() throws {
@@ -60,7 +60,7 @@ final class SavedHostsPersistenceTests: XCTestCase {
     // MARK: filter()
 
     private let sample = [
-        SavedHost(name: "Дом-роутер", value: "192.168.1.1", toolID: nil),
+        SavedHost(name: "Home router", value: "192.168.1.1", toolID: nil),
         SavedHost(name: "Google DNS", value: "8.8.8.8", toolID: nil),
         SavedHost(name: "Cloudflare", value: "1.1.1.1", toolID: nil)
     ]
@@ -77,7 +77,7 @@ final class SavedHostsPersistenceTests: XCTestCase {
 
     func testFilterMatchesAddressSubstring() {
         let hits = SavedHostMatching.filter(sample, query: "192.168")
-        XCTAssertEqual(hits.map(\.name), ["Дом-роутер"])
+        XCTAssertEqual(hits.map(\.name), ["Home router"])
     }
 
     // MARK: isPlausibleHost()

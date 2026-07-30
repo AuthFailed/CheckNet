@@ -29,23 +29,23 @@ struct OnboardingView: View {
 
     private let pages: [Page] = [
         Page(icon: "wrench.and.screwdriver",
-             tag: "Каталог проверок",
-             title: "Все проверки в одном месте",
-             body: "Пинг, трассировка, DNS, TLS, скорость, сканер сети, Bonjour, мониторинг — и у каждой честное объяснение, что она делает и зачем.",
-             bullets: [("info.circle", "Кнопка ⓘ у каждой проверки — простыми словами"),
-                       ("list.bullet", "Чистый список как в Настройках iOS")]),
+             tag: "Catalog of checks",
+             title: "Every check in one place",
+             body: "Ping, traceroute, DNS, TLS, speed, network scanner, Bonjour, monitoring — each with an honest explanation of what it does and why.",
+             bullets: [("info.circle", "An ⓘ button on every check — in plain words"),
+                       ("list.bullet", "A clean list like iOS Settings")]),
         Page(icon: "lock.shield",
-             tag: "Приватность",
-             title: "Всё считается на устройстве",
-             body: "Диагностика выполняется прямо на вашем iPhone. Наружу ничего не уходит — результаты остаются у вас.",
-             bullets: [("iphone", "Данные не покидают устройство"),
-                       ("server.rack", "Вебхуки — только на ВАШ сервер, если вы их включите")]),
+             tag: "Privacy",
+             title: "Everything runs on the device",
+             body: "Diagnostics run right on your iPhone. Nothing leaves it — the results stay with you.",
+             bullets: [("iphone", "Data never leaves the device"),
+                       ("server.rack", "Webhooks go only to YOUR server, if you turn them on")]),
         Page(icon: "clock.arrow.circlepath",
-             tag: "Автоматизация — по желанию",
-             title: "Автоматизация, когда сами захотите",
-             body: "Расписания, вебхуки на свой сервер и мониторинг хостов. Ничего не включается само — вы решаете, что и когда запускать.",
-             bullets: [("calendar.badge.checkmark", "Расписания и мониторинг — по вашему выбору"),
-                       ("switch.2", "По умолчанию всё выключено")])
+             tag: "Automation — if you want it",
+             title: "Automation, when you choose",
+             body: "Schedules, webhooks to your own server and host monitoring. Nothing turns itself on — you decide what runs and when.",
+             bullets: [("calendar.badge.checkmark", "Schedules and monitoring — your choice"),
+                       ("switch.2", "Everything is off by default")])
     ]
 
     private var isLast: Bool { page == pages.count - 1 }
@@ -54,7 +54,7 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button("Пропустить", action: onFinish)
+                Button("Skip", action: onFinish)
                     .font(.body)
                     .padding(.horizontal, 6)
                     .frame(minHeight: 44)
@@ -77,7 +77,7 @@ struct OnboardingView: View {
                 Button {
                     if isLast { onFinish() } else { withAnimation { page += 1 } }
                 } label: {
-                    Text(isLast ? "Начать" : "Далее")
+                    Text(isLast ? "Get started" : "Next")
                         .font(.headline)
                         .frame(maxWidth: .infinity, minHeight: 52)
                 }
@@ -167,7 +167,7 @@ private struct PageDots: View {
                         .frame(width: dot, height: dot)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Страница \(index + 1) из \(count)")
+                .accessibilityLabel("Page \(index + 1) of \(count)")
                 .accessibilityAddTraits(index == current ? [.isSelected] : [])
             }
         }

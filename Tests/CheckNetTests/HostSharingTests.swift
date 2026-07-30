@@ -8,7 +8,7 @@ final class HostSharingTests: XCTestCase {
 
     func testRoundTripPreservesHosts() throws {
         let hosts = [
-            SavedHost(name: "Роутер", value: "192.168.1.1", toolID: nil),
+            SavedHost(name: "Router", value: "192.168.1.1", toolID: nil),
             SavedHost(name: "Cloudflare", value: "1.1.1.1", toolID: "ping"),
             SavedHost(name: "", value: "example.com", toolID: nil)
         ]
@@ -91,12 +91,12 @@ final class HostSharingTests: XCTestCase {
     func testExtractsLinkFromSurroundingText() throws {
         let hosts = [SavedHost(name: "r", value: "1.1.1.1", toolID: nil)]
         let url = try XCTUnwrap(HostSharing.url(for: hosts))
-        let pasted = "Смотри мой список: \(url.absoluteString) — держи!"
+        let pasted = "Check out my list: \(url.absoluteString) — here!"
         let decoded = try XCTUnwrap(HostSharing.hosts(fromPastedText: pasted))
         XCTAssertEqual(decoded.first?.value, "1.1.1.1")
     }
 
     func testPastedTextWithoutLinkReturnsNil() {
-        XCTAssertNil(HostSharing.hosts(fromPastedText: "просто текст без ссылки"))
+        XCTAssertNil(HostSharing.hosts(fromPastedText: "just text without a link"))
     }
 }

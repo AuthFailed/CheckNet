@@ -35,9 +35,9 @@ final class SupportTests: XCTestCase {
     }
 
     func testNetworkErrorInterpolatesAssociatedValues() {
-        XCTAssertEqual(NetworkError.invalidHost("1.2.3.4").errorDescription, "Некорректный хост: 1.2.3.4")
-        XCTAssertEqual(NetworkError.resolutionFailed(host: "example.com", reason: "таймаут").errorDescription,
-                       "Не удалось разрешить example.com: таймаут")
+        XCTAssertEqual(NetworkError.invalidHost("1.2.3.4").errorDescription, "Invalid host: 1.2.3.4")
+        XCTAssertEqual(NetworkError.resolutionFailed(host: "example.com", reason: "timeout").errorDescription,
+                       "Failed to resolve example.com: timeout")
     }
 
     func testNetworkErrorEquatable() {

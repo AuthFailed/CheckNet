@@ -15,31 +15,31 @@ struct XrayCoresEditor: View {
         List {
             if !XrayCoreStore.isSupported {
                 Section {
-                    Label("Ядро Xray доступно на Mac", systemImage: "desktopcomputer")
+                    Label("Xray core is available on Mac", systemImage: "desktopcomputer")
                         .font(.headline)
-                    Text("iOS не разрешает скачивать и запускать стороннее ядро. Проверка «через прокси» на iPhone использует встроенную Reality-пробу без загрузки ядра.")
+                    Text("iOS doesn't allow downloading and running a third-party core. The \"via proxy\" check on iPhone uses a built-in Reality probe without loading a core.")
                         .font(.callout).foregroundStyle(.secondary)
                     if let latest = store.latestVersion {
-                        InfoRow(label: "Последняя версия Xray", value: latest, mono: true)
+                        InfoRow(label: "Latest Xray version", value: latest, mono: true)
                     }
                 } footer: {
-                    Text("На Mac здесь можно скачивать и хранить несколько версий ядра.")
+                    Text("On Mac you can download and keep multiple core versions here.")
                 }
             }
 
             if !store.installed.isEmpty {
-                Section("Установленные") {
+                Section("Installed") {
                     ForEach(store.installed) { core in
                         HStack {
                             Label(core.version, systemImage: "shippingbox")
                             Spacer()
-                            Text("\(core.sizeMB, specifier: "%.1f") МБ").foregroundStyle(.secondary).font(.caption)
+                            Text("\(core.sizeMB, specifier: "%.1f") MB").foregroundStyle(.secondary).font(.caption)
                         }
                     }
                     .onDelete { idx in idx.map { store.installed[$0].version }.forEach(store.remove) }
 
                     Button(role: .destructive) { confirmDeleteAll = true } label: {
-                        Label("Удалить все ядра", systemImage: "trash")
+                        Label("Delete all cores", systemImage: "trash")
                     }
                 }
             }
@@ -48,53 +48,53 @@ struct XrayCoresEditor: View {
                 Section {
                     if let dl = store.active {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Загрузка \(dl.version)…").font(.callout)
+                            Text("Loading \(dl.version)…").font(.callout)
                             ProgressView(value: dl.progress)
                         }
                     } else if store.loadingIndex {
-                        HStack { ProgressView(); Text("Получаем список версий…").foregroundStyle(.secondary) }
+                        HStack { ProgressView(); Text("Fetching version list…").foregroundStyle(.secondary) }
                     } else if store.available.isEmpty {
                         Button { Task { await store.refreshIndex() } } label: {
-                            Label("Загрузить список версий", systemImage: "arrow.down.circle")
+                            Label("Load version list", systemImage: "arrow.down.circle")
                         }
                     } else {
                         ForEach(store.available) { release in
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(release.version).font(.callout.weight(.medium))
-                                    Text("\(release.asset.sizeMB, specifier: "%.1f") МБ\(release.prerelease ? " · pre-release" : "")")
+                                    Text("\(release.asset.sizeMB, specifier: "%.1f") MB\(release.prerelease ? " · pre-release" : "")")
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer()
                                 if store.isInstalled(release.version) {
-                                    Label("Установлено", systemImage: "checkmark.circle.fill")
+                                    Label("Installed", systemImage: "checkmark.circle.fill")
                                         .labelStyle(.iconOnly).foregroundStyle(.green)
                                 } else {
-                                    Button("Скачать") { Task { await store.install(release) } }
+                                    Button("Download") { Task { await store.install(release) } }
                                         .disabled(store.active != nil)
                                 }
                             }
                         }
                     }
                 } header: {
-                    Text("Доступные версии")
+                    Text("Available versions")
                 } footer: {
                     if let e = store.installError {
                         Text(LocalizedStringKey(e)).foregroundStyle(.red)
                     } else {
-                        Text("Скачивается официальная сборка Xray-core с GitHub, проверяется контрольная сумма.")
+                        Text("Downloads the official Xray-core build from GitHub and verifies the checksum.")
                     }
                 }
             }
         }
-        .navigationTitle("Ядро Xray")
+        .navigationTitle("Xray core")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
         .task { if XrayCoreStore.isSupported && store.available.isEmpty { await store.refreshIndex() } }
-        .confirmationDialog("Удалить все скачанные ядра?", isPresented: $confirmDeleteAll, titleVisibility: .visible) {
-            Button("Удалить все", role: .destructive) { store.removeAll() }
-            Button("Отмена", role: .cancel) {}
+        .confirmationDialog("Delete all downloaded cores?", isPresented: $confirmDeleteAll, titleVisibility: .visible) {
+            Button("Delete all", role: .destructive) { store.removeAll() }
+            Button("Cancel", role: .cancel) {}
         }
     }
 }

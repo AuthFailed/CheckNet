@@ -23,7 +23,7 @@ struct VPNPlaceholderView: View {
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
-                Label("В разработке", systemImage: "hammer")
+                Label("In development", systemImage: "hammer")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 16).padding(.vertical, 10)

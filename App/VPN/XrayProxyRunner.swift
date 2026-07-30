@@ -13,10 +13,10 @@ enum XrayProxyRunner {
 
         var message: String {
             switch self {
-            case .unsupportedPlatform: "Проверка через прокси доступна только на Mac"
-            case .noCore: "Ядро Xray не установлено — скачайте его в настройках"
-            case .coreFailedToStart(let s): "Ядро не запустилось: \(s)"
-            case .buildFailed(let s): "Не удалось собрать конфиг: \(s)"
+            case .unsupportedPlatform: "Checking through a proxy is available only on Mac"
+            case .noCore: "The Xray core isn't installed — download it in settings"
+            case .coreFailedToStart(let s): "The core failed to start: \(s)"
+            case .buildFailed(let s): "Couldn't build the config: \(s)"
             }
         }
     }
@@ -48,7 +48,7 @@ enum XrayProxyRunner {
         // Wait until the SOCKS port accepts connections (core is ready).
         guard await waitForPort(port, deadline: 5) else {
             let err = String(data: errPipe.fileHandleForReading.availableData, encoding: .utf8) ?? ""
-            throw RunError.coreFailedToStart(err.isEmpty ? "порт \(port) не открылся" : err)
+            throw RunError.coreFailedToStart(err.isEmpty ? "port \(port) didn't open" : err)
         }
 
         return try await Socks5Probe.probe(socksPort: port)
@@ -73,7 +73,7 @@ enum XrayProxyRunner {
 
         guard await waitForPort(port, deadline: 5) else {
             XrayCore.stop()
-            throw RunError.coreFailedToStart("SOCKS-порт \(port) не открылся")
+            throw RunError.coreFailedToStart("SOCKS port \(port) didn't open")
         }
         return port
     }

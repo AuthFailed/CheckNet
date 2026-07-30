@@ -17,7 +17,7 @@ struct ScheduledTask: Identifiable, Codable, Hashable {
         var toolLabel: String {
             switch self {
             case .ping: "Ping"
-            case .blocking(let id, _): BlockingCheck(rawValue: id)?.title ?? "Блокировка"
+            case .blocking(let id, _): BlockingCheck(rawValue: id)?.title ?? "Blocking"
             }
         }
 
@@ -153,18 +153,18 @@ final class TaskScheduler {
             ))
             WebhookReporter.reportPing(stats, samples: [])
             return stats.received > 0
-                ? "\(Int(stats.avg ?? 0)) мс, потери \(Int(stats.lossPercent))%"
-                : "хост недоступен"
+                ? "\(Int(stats.avg ?? 0)) ms, loss \(Int(stats.lossPercent))%"
+                : "host unreachable"
         } catch {
             SharedStore.appendHistory(.pingFailure(
                 host: host, reason: error.localizedDescription, source: .scheduled
             ))
-            return "ошибка"
+            return "error"
         }
     }
 
     private func runBlocking(checkID: String, target: String) async -> String {
-        guard let kind = CensorshipCheckKind(rawValue: checkID) else { return "неизвестная проверка" }
+        guard let kind = CensorshipCheckKind(rawValue: checkID) else { return "unknown check" }
         let host = target.isEmpty ? kind.defaultTarget : target
         let finding = await kind.run(target: host)
         SharedStore.appendHistory(.blocking(

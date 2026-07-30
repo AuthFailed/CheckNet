@@ -23,7 +23,7 @@ final class IPScannerModel {
         stop()
         hosts = []; scanned = 0; total = 0; errorMessage = nil; isRunning = true
         let activity = useLiveActivity ? CheckActivityController() : nil
-        activity?.start(kind: .ipScan, title: r, subtitle: "Диапазон", view: activityView())
+        activity?.start(kind: .ipScan, title: r, subtitle: "Range", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in IPRangeScanner().scan(range: r, timeout: 1.0, resolveNames: true) {
@@ -49,7 +49,7 @@ final class IPScannerModel {
     func stop() { task?.cancel(); task = nil; isRunning = false }
 
     private func activityView() -> CheckActivityView {
-        ScanActivityContent.view(foundLabel: "Активных", found: hosts.count,
+        ScanActivityContent.view(foundLabel: "Alive", found: hosts.count,
                                  scanned: scanned, total: total, isRunning: isRunning)
     }
 
@@ -76,7 +76,7 @@ struct IPScannerView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.range, placeholder: "CIDR или диапазон",
+            HostInputBar(text: $model.range, placeholder: "CIDR or range",
                          icon: "barcode.viewfinder", disabled: model.isRunning) { requestStart() }
 
             if let error = model.errorMessage {
@@ -88,18 +88,18 @@ struct IPScannerView: View {
             if !model.hosts.isEmpty {
                 hostsCard
             } else if !model.isRunning && model.scanned > 0 {
-                Text("Активных хостов не найдено").foregroundStyle(.secondary).padding(.top, 24)
+                Text("No active hosts found").foregroundStyle(.secondary).padding(.top, 24)
             } else if !model.isRunning, model.errorMessage == nil {
                 // No example here: the range is already filled in from the
                 // interface the device is actually on.
                 ToolIdleHint(
                     icon: "barcode.viewfinder",
-                    title: "Готово к сканированию",
-                    message: "Пройдём по диапазону и покажем, какие адреса отвечают, с именем и задержкой."
+                    title: "Ready to scan",
+                    message: "We'll walk the range and show which addresses answer, with name and latency."
                 )
             }
         } bottom: {
-            RunButton(title: "Сканировать", running: model.isRunning,
+            RunButton(title: "Scan", running: model.isRunning,
                       disabled: model.range.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { model.stop() } else { requestStart() }
             }
@@ -108,7 +108,7 @@ struct IPScannerView: View {
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
-        .navigationTitle("Сканер диапазона")
+        .navigationTitle("Range scanner")
         .toolTitleDisplayMode()
         .sensitiveConsent(.ipScanner, isPresented: $showConsent) { model.start() }
         .onAppear {
@@ -120,7 +120,7 @@ struct IPScannerView: View {
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("\(model.hosts.count) активных").font(.headline).foregroundStyle(.green)
+                Text("\(model.hosts.count) active").font(.headline).foregroundStyle(.green)
                 Spacer()
                 Text("\(model.scanned) / \(model.total)").font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
             }
@@ -133,7 +133,7 @@ struct IPScannerView: View {
         VStack(spacing: 0) {
             ForEach(Array(model.hosts.enumerated()), id: \.element.id) { idx, host in
                 HStack {
-                    StatusDot(level: .ok, label: "Отвечает")
+                    StatusDot(level: .ok, label: "Responds")
                     VStack(alignment: .leading, spacing: 2) {
                         Text(host.ip).font(.system(.callout, design: .monospaced)).textSelection(.enabled)
                         if let name = host.hostname {
@@ -141,7 +141,7 @@ struct IPScannerView: View {
                         }
                     }
                     Spacer()
-                    Text("\(String(format: "%.0f", host.rttMillis)) мс")
+                    Text("\(String(format: "%.0f", host.rttMillis)) ms")
                         .font(.caption.monospaced()).foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 14).padding(.vertical, 10)

@@ -9,19 +9,19 @@ import AppIntents
 /// default state when no Focus is active; a lingering mute is cleared the next
 /// time any configured Focus toggles.)
 struct MonitorFocusFilter: SetFocusFilterIntent {
-    static let title: LocalizedStringResource = "Мониторинг сети"
+    static let title: LocalizedStringResource = "Network monitoring"
     static let description = IntentDescription(
-        "Заглушает оповещения о падении и восстановлении отслеживаемых хостов в выбранном фокусе."
+        "Mutes down/recovery alerts for monitored hosts in the chosen Focus."
     )
 
-    @Parameter(title: "Заглушить оповещения мониторинга", default: true)
+    @Parameter(title: "Mute monitoring alerts", default: true)
     var muteHostAlerts: Bool
 
     var displayRepresentation: DisplayRepresentation {
         DisplayRepresentation(
             title: muteHostAlerts
-                ? "Оповещения мониторинга заглушены"
-                : "Оповещения мониторинга включены"
+                ? "Monitoring alerts muted"
+                : "Monitoring alerts on"
         )
     }
 

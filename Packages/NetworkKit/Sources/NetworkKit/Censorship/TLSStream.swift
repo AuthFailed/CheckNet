@@ -35,7 +35,7 @@ final class TLSStream: @unchecked Sendable {
 
         let params = NWParameters(tls: tlsOptions, tcp: tcpOptions)
         guard let nwPort = NWEndpoint.Port(rawValue: port) else {
-            throw NetworkError.protocolError("некорректный порт")
+            throw NetworkError.protocolError("invalid port")
         }
         connection = NWConnection(host: NWEndpoint.Host(ip), port: nwPort, using: params)
     }

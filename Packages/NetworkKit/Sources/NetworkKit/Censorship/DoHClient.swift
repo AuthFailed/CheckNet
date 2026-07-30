@@ -36,7 +36,7 @@ public struct DoHClient: Sendable {
             throw NetworkError.protocolError("DoH HTTP \((response as? HTTPURLResponse)?.statusCode ?? -1)")
         }
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw NetworkError.protocolError("некорректный DoH JSON")
+            throw NetworkError.protocolError("invalid DoH JSON")
         }
         let rawAnswers = (json["Answer"] as? [[String: Any]]) ?? []
         return rawAnswers.compactMap { entry in

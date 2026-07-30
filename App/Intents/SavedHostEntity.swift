@@ -7,7 +7,7 @@ import AppIntents
 /// name — "Home router", "Cloudflare" — and Siri can resolve a spoken favorite,
 /// while still letting anyone type a raw address.
 struct SavedHostEntity: AppEntity {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Хост")
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Host")
     static let defaultQuery = SavedHostQuery()
 
     /// The literal address, doubling as the stable identifier: a saved favorite

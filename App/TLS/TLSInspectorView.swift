@@ -17,14 +17,14 @@ struct TLSInspectorView: View {
             kind: .lookup, title: target, subtitle: "TLS",
             content: { LookupActivityContent.view($0, running: target,
                 status: { $0.trustEvaluationPassed ? .ok : .down }) { info in
-                (info.negotiatedProtocol, info.leaf?.issuer ?? "нет сертификата") } }
+                (info.negotiatedProtocol, info.leaf?.issuer ?? "no certificate") } }
         ) : nil
         run.start { try await TLSInspector().inspect(host: target, port: port) }
     }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $host, placeholder: "Хост (напр. example.com)",
+            HostInputBar(text: $host, placeholder: "Host (e.g. example.com)",
                          icon: "lock.shield", disabled: run.isRunning,
                          savedHostTool: .tlsInspector) {
                 start()
@@ -32,7 +32,7 @@ struct TLSInspectorView: View {
                 AnyView(
                     HStack(spacing: 2) {
                         Text(":").foregroundStyle(.secondary)
-                        TextField("порт", value: $port, format: .number)
+                        TextField("port", value: $port, format: .number)
                             .frame(minWidth: 46)
                             .multilineTextAlignment(.leading)
                             .font(.system(.body, design: .monospaced))
@@ -60,15 +60,15 @@ struct TLSInspectorView: View {
                 } else {
                     ToolIdleHint(
                         icon: "lock.shield",
-                        title: "Готово к разбору TLS",
-                        message: "Покажем цепочку сертификатов, сроки действия, версию TLS и шифр.",
+                        title: "Ready to inspect TLS",
+                        message: "We'll show the certificate chain, validity dates, TLS version and cipher.",
                         example: "cloudflare.com",
                         current: host
                     ) { host = "cloudflare.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Проверить", running: run.isRunning,
+            RunButton(title: "Check", running: run.isRunning,
                       disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
@@ -77,7 +77,7 @@ struct TLSInspectorView: View {
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
         .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
-        .navigationTitle("TLS-инспектор")
+        .navigationTitle("TLS inspector")
         .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { host = presetHost }
@@ -92,18 +92,18 @@ struct TLSInspectorView: View {
                     .font(.title2)
                     .foregroundStyle(info.trustEvaluationPassed ? .green : .red)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(info.trustEvaluationPassed ? LocalizedStringKey("Сертификат доверенный") : LocalizedStringKey("Доверие не подтверждено"))
+                    Text(info.trustEvaluationPassed ? LocalizedStringKey("Certificate trusted") : LocalizedStringKey("Trust not verified"))
                         .font(.headline)
-                    Text("\(info.resolvedIP) · \(String(format: "%.0f", info.handshakeMillis)) мс")
+                    Text("\(info.resolvedIP) · \(String(format: "%.0f", info.handshakeMillis)) ms")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
             }
             .padding(14)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Протокол", value: info.negotiatedProtocol, mono: true)
+            InfoRow(label: "Protocol", value: info.negotiatedProtocol, mono: true)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Шифр", value: info.cipherSuite, mono: true)
+            InfoRow(label: "Cipher", value: info.cipherSuite, mono: true)
             Divider().padding(.leading, 14)
             InfoRow(label: "ALPN", value: info.alpn ?? "—", mono: true)
         }
@@ -113,8 +113,8 @@ struct TLSInspectorView: View {
     private func certCard(_ cert: TLSCertificate, index: Int, isLeaf: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                let certLabel: LocalizedStringKey = isLeaf ? "Сертификат сервера"
-                    : (cert.isCA ? "CA · уровень \(index)" : "Промежуточный \(index)")
+                let certLabel: LocalizedStringKey = isLeaf ? "Server certificate"
+                    : (cert.isCA ? "CA · level \(index)" : "Intermediate \(index)")
                 Text(certLabel)
                     .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 Spacer()
@@ -122,15 +122,15 @@ struct TLSInspectorView: View {
             }
             .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 8)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Субъект", value: cert.subject)
+            InfoRow(label: "Subject", value: cert.subject)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Издатель", value: cert.issuer)
+            InfoRow(label: "Issuer", value: cert.issuer)
             if isLeaf, !cert.subjectAltNames.isEmpty {
                 Divider().padding(.leading, 14)
-                InfoRow(label: "Домены (SAN)", value: cert.subjectAltNames.joined(separator: ", "))
+                InfoRow(label: "Domains (SAN)", value: cert.subjectAltNames.joined(separator: ", "))
             }
             Divider().padding(.leading, 14)
-            InfoRow(label: "Действует до", value: dateString(cert.notAfter), valueColor: cert.isExpired ? .red : .primary)
+            InfoRow(label: "Valid until", value: dateString(cert.notAfter), valueColor: cert.isExpired ? .red : .primary)
             Divider().padding(.leading, 14)
             InfoRow(label: "SHA-256", value: shortFingerprint(cert.sha256Fingerprint), mono: true)
         }
@@ -140,11 +140,11 @@ struct TLSInspectorView: View {
     private func validityBadge(_ cert: TLSCertificate) -> some View {
         Group {
             if cert.isExpired {
-                badge("Истёк", .red)
+                badge("Expired", .red)
             } else if cert.isNotYetValid {
-                badge("Ещё не активен", .orange)
+                badge("Not active yet", .orange)
             } else if let days = cert.daysUntilExpiry {
-                badge("\(days) дн.", days < 21 ? .orange : .green)
+                badge("\(days) d", days < 21 ? .orange : .green)
             } else {
                 EmptyView()
             }

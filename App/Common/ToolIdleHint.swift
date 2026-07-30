@@ -61,7 +61,7 @@ struct ToolIdleHint: View {
                     useExample()
                 } label: {
                     Label {
-                        Text("Подставить \(example)")
+                        Text("Use \(example)")
                     } icon: {
                         Image(systemName: "arrow.turn.down.left")
                     }
@@ -82,8 +82,8 @@ struct ToolIdleHint: View {
 #Preview {
     ToolIdleHint(
         icon: "point.topleft.down.to.point.bottomright.curvepath",
-        title: "Готово к трассировке",
-        message: "Покажем каждый маршрутизатор на пути до хоста и задержку на каждом шаге.",
+        title: "Ready to trace",
+        message: "We'll show every router on the way to the host and the latency at each step.",
         example: "cloudflare.com",
         current: "",
         useExample: {}

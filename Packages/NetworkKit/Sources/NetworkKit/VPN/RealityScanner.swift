@@ -59,7 +59,7 @@ public final class RealityScanner: Sendable {
         AsyncStream(bufferingPolicy: .unbounded) { continuation in
             let task = Task {
                 guard let hosts = await Self.resolveTargets(target, port: port), !hosts.isEmpty else {
-                    continuation.yield(.failed("Не удалось разобрать цель: \(target)"))
+                    continuation.yield(.failed("Couldn't parse the target: \(target)"))
                     continuation.finish()
                     return
                 }

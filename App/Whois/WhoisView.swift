@@ -15,14 +15,14 @@ struct WhoisView: View {
         run.activity = settings.liveActivitiesEnabled ? .init(
             kind: .lookup, title: q, subtitle: "Whois",
             content: { LookupActivityContent.view($0, running: q) { r in
-                (r.query, "\(r.fields.count) полей") } }
+                (r.query, "\(r.fields.count) fields") } }
         ) : nil
         run.start { try await WhoisClient().lookup(q) }
     }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $query, placeholder: "Домен", icon: "doc.text.magnifyingglass",
+            HostInputBar(text: $query, placeholder: "Domain", icon: "doc.text.magnifyingglass",
                          disabled: run.isRunning, savedHostTool: .whois) { start() }
             if let error = run.errorMessage {
                 ErrorCard(message: error) { start() }
@@ -37,15 +37,15 @@ struct WhoisView: View {
                 } else {
                     ToolIdleHint(
                         icon: "doc.text.magnifyingglass",
-                        title: "Готово к запросу whois",
-                        message: "Узнаем регистратора домена, даты регистрации и окончания, серверы имён.",
+                        title: "Ready to query whois",
+                        message: "We'll look up the registrar, the registration and expiry dates, and the name servers.",
                         example: "apple.com",
                         current: query
                     ) { query = "apple.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Запросить", running: run.isRunning,
+            RunButton(title: "Request", running: run.isRunning,
                       disabled: query.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
@@ -64,7 +64,7 @@ struct WhoisView: View {
 
     private func fieldsCard(_ result: WhoisResult) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "Сервер: \(result.server)")
+            SectionCaption(text: "Server: \(result.server)")
             VStack(spacing: 0) {
                 ForEach(Array(result.fields.enumerated()), id: \.element.id) { idx, field in
                     InfoRow(label: field.key, value: field.value, mono: field.key.contains("NS"))
@@ -83,7 +83,7 @@ struct WhoisView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 8)
         } label: {
-            Label("Полный ответ", systemImage: "doc.plaintext")
+            Label("Full response", systemImage: "doc.plaintext")
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
         .card()

@@ -21,9 +21,9 @@ struct PingSnapshot: Codable, Hashable, Sendable {
 
     var statusLabel: String {
         switch status {
-        case .ok: return "Онлайн"
-        case .degraded: return "Нестабильно"
-        case .down: return "Недоступен"
+        case .ok: return "Online"
+        case .degraded: return "Unstable"
+        case .down: return "Unreachable"
         case .unknown: return "—"
         }
     }

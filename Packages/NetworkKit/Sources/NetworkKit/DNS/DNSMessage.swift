@@ -70,10 +70,10 @@ enum DNSMessage {
     }
 
     static func decode(_ data: [UInt8]) throws -> Decoded {
-        guard data.count >= 12 else { throw NetworkError.protocolError("DNS-ответ слишком короткий") }
+        guard data.count >= 12 else { throw NetworkError.protocolError("DNS response too short") }
         var p = 0
         func u16() throws -> UInt16 {
-            guard p + 1 < data.count else { throw NetworkError.protocolError("выход за пределы") }
+            guard p + 1 < data.count else { throw NetworkError.protocolError("out of range") }
             let v = (UInt16(data[p]) << 8) | UInt16(data[p + 1]); p += 2; return v
         }
         let header = Header(
@@ -140,18 +140,18 @@ enum DNSMessage {
             if (len & 0xC0) == 0xC0 {
                 // Compression pointer: two bytes, low 14 bits are the target offset.
                 guard cursor + 1 < data.count else {
-                    throw NetworkError.protocolError("обрезанный указатель сжатия DNS")
+                    throw NetworkError.protocolError("truncated DNS compression pointer")
                 }
                 let pointer = (Int(len & 0x3F) << 8) | Int(data[cursor + 1])
                 if !jumped { p = cursor + 2 }
                 // A valid pointer always references an earlier position; anything
                 // else (forward, self, or a cycle) would loop forever.
                 guard pointer < cursor else {
-                    throw NetworkError.protocolError("указатель сжатия DNS не ведёт назад")
+                    throw NetworkError.protocolError("DNS compression pointer doesn’t point back")
                 }
                 pointerHops += 1
                 guard pointerHops <= data.count else {
-                    throw NetworkError.protocolError("слишком много указателей сжатия DNS")
+                    throw NetworkError.protocolError("too many DNS compression pointers")
                 }
                 jumped = true
                 cursor = pointer
@@ -159,16 +159,16 @@ enum DNSMessage {
             }
             // The two high bits of a label length are reserved and must be zero.
             guard (len & 0xC0) == 0 else {
-                throw NetworkError.protocolError("недопустимая длина метки DNS")
+                throw NetworkError.protocolError("invalid DNS label length")
             }
             let start = cursor + 1
             let end = start + Int(len)
             guard end <= data.count else {
-                throw NetworkError.protocolError("метка DNS выходит за пределы пакета")
+                throw NetworkError.protocolError("DNS label runs past the packet")
             }
             nameLength += Int(len) + 1
             guard nameLength <= 255 else {
-                throw NetworkError.protocolError("имя DNS длиннее 255 байт")
+                throw NetworkError.protocolError("DNS name longer than 255 bytes")
             }
             labels.append(String(decoding: data[start..<end], as: UTF8.self))
             cursor = end
@@ -242,7 +242,7 @@ enum DNSMessage {
             let target = (try? readName(data, &pp)) ?? "."
             return "\(prio) \(target == "." ? "(self)" : target)"
         default:
-            return "\(length) байт"
+            return "\(length) bytes"
         }
     }
 

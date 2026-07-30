@@ -12,11 +12,11 @@ struct SettingsView: View {
         @Bindable var settings = settings
         NavigationStack {
             Form {
-                Section("Оформление") {
-                    Picker("Тема", selection: $settings.theme) {
+                Section("Appearance") {
+                    Picker("Theme", selection: $settings.theme) {
                         ForEach(AppTheme.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                     }
-                    Picker("Язык", selection: $settings.language) {
+                    Picker("Language", selection: $settings.language) {
                         ForEach(AppLanguage.allCases) { Text($0.label).tag($0) }
                     }
                 }
@@ -26,30 +26,30 @@ struct SettingsView: View {
                         SavedHostsEditor(kind: .domain)
                     } label: {
                         Label {
-                            LabeledContent("Домены", value: "\(savedHosts.savedDomains.count)")
+                            LabeledContent("Domains", value: "\(savedHosts.savedDomains.count)")
                         } icon: { Image(systemName: "globe") }
                     }
                     NavigationLink {
                         SavedHostsEditor(kind: .ip)
                     } label: {
                         Label {
-                            LabeledContent("IP-адреса", value: "\(savedHosts.savedIPs.count)")
+                            LabeledContent("IP addresses", value: "\(savedHosts.savedIPs.count)")
                         } icon: { Image(systemName: "number") }
                     }
                     NavigationLink {
                         SavedSubscriptionsEditor()
                     } label: {
                         Label {
-                            LabeledContent("Подписки VPN", value: "\(savedSubscriptions.items.count)")
+                            LabeledContent("VPN subscriptions", value: "\(savedSubscriptions.items.count)")
                         } icon: { Image(systemName: "list.bullet.rectangle") }
                     }
                     NavigationLink {
                         XrayCoresEditor()
                     } label: {
                         Label {
-                            LabeledContent("Ядро Xray") {
+                            LabeledContent("Xray core") {
                                 Text(xrayCores.installed.isEmpty
-                                     ? (XrayCoreStore.isSupported ? "нет" : "Mac")
+                                     ? (XrayCoreStore.isSupported ? "no" : "Mac")
                                      : "\(xrayCores.installed.count)")
                                 .foregroundStyle(.secondary)
                             }
@@ -58,53 +58,53 @@ struct SettingsView: View {
                     NavigationLink {
                         HostSharingView()
                     } label: {
-                        Label("Поделиться и импорт", systemImage: "square.and.arrow.up")
+                        Label("Sharing and import", systemImage: "square.and.arrow.up")
                     }
                     LabeledContent {
-                        Text(CloudHostSync.isAvailable ? "Включена" : "Недоступна")
+                        Text(CloudHostSync.isAvailable ? "Enabled" : "Unavailable")
                             .foregroundStyle(.secondary)
                     } label: {
-                        Label("iCloud-синхронизация", systemImage: "icloud")
+                        Label("iCloud sync", systemImage: "icloud")
                     }
                 } header: {
-                    Text("Сохранённые хосты")
+                    Text("Saved hosts")
                 } footer: {
-                    Text("Сохранённые хосты и избранное синхронизируются через ваш iCloud между вашими устройствами.")
+                    Text("Saved hosts and favorites sync via your iCloud across your devices.")
                 }
 
                 Section {
                     #if !os(macOS)
-                    Toggle("Live Activity в Dynamic Island", isOn: $settings.liveActivitiesEnabled)
-                    Toggle("Тактильная отдача", isOn: $settings.hapticsEnabled)
+                    Toggle("Live Activity in Dynamic Island", isOn: $settings.liveActivitiesEnabled)
+                    Toggle("Haptic feedback", isOn: $settings.hapticsEnabled)
                     #endif
-                    Toggle("Обратный DNS по умолчанию", isOn: $settings.reverseDNSByDefault)
-                    Toggle("Предупреждать о сканирующих проверках", isOn: $settings.confirmSensitiveTests)
+                    Toggle("Reverse DNS by default", isOn: $settings.reverseDNSByDefault)
+                    Toggle("Warn about scanning checks", isOn: $settings.confirmSensitiveTests)
                     Button {
                         showHistory = true
                     } label: {
-                        Label("История проверок", systemImage: "clock.arrow.circlepath")
+                        Label("Check history", systemImage: "clock.arrow.circlepath")
                     }
                 } header: {
-                    Text("Проверки")
+                    Text("Checks")
                 } footer: {
-                    Text("Сканирование портов и диапазонов IP в чужих сетях может расцениваться как атака. Когда включено, приложение спрашивает согласие перед запуском таких проверок.")
+                    Text("Scanning ports and IP ranges on others' networks may be treated as an attack. When enabled, the app asks for consent before running such checks.")
                 }
 
-                Section("Автоматизация") {
+                Section("Automation") {
                     NavigationLink {
                         ScheduledTasksView()
                     } label: {
-                        Label("Расписание", systemImage: "clock.arrow.2.circlepath")
+                        Label("Schedule", systemImage: "clock.arrow.2.circlepath")
                     }
                     NavigationLink {
                         NetworkProfilesView()
                     } label: {
-                        Label("Профили сети", systemImage: "wifi")
+                        Label("Network profiles", systemImage: "wifi")
                     }
                     NavigationLink {
                         WebhookSettingsView()
                     } label: {
-                        Label("Вебхуки", systemImage: "paperplane")
+                        Label("Webhooks", systemImage: "paperplane")
                     }
                 }
 
@@ -115,31 +115,31 @@ struct SettingsView: View {
                         LocalNetworkPermission.shared.request { granted in
                             Task { @MainActor in
                                 permissionResult = granted
-                                    ? "Доступ к локальной сети активен."
-                                    : "Доступ к локальной сети не подтверждён — разрешите его в Настройках iOS."
+                                    ? "Local network access is active."
+                                    : "Local network access not granted — allow it in iOS Settings."
                             }
                         }
                     } label: {
-                        Label("Запросить доступ к локальной сети", systemImage: "wifi")
+                        Label("Request local network access", systemImage: "wifi")
                     }
                     if let permissionResult {
                         Text(LocalizedStringKey(permissionResult)).font(.caption).foregroundStyle(.secondary)
                     }
                 } header: {
-                    Text("Разрешения")
+                    Text("Permissions")
                 } footer: {
-                    Text("Сканер сети, обзор устройств и Bonjour требуют доступа к локальной сети. На iOS без него проверки могут молча не работать.")
+                    Text("The network scanner, device overview, and Bonjour require local network access. On iOS, without it the checks may silently fail.")
                 }
 
-                Section("О приложении") {
-                    LabeledContent("Версия", value: appVersion)
-                    LabeledContent("Инструментов", value: "\(Tool.allCases.filter(\.isImplemented).count)")
+                Section("About") {
+                    LabeledContent("Version", value: appVersion)
+                    LabeledContent("Tools", value: "\(Tool.allCases.filter(\.isImplemented).count)")
                     Link(destination: URL(string: "https://ru.wikipedia.org/wiki/Ping")!) {
-                        Label("Как работают проверки", systemImage: "questionmark.circle")
+                        Label("How the checks work", systemImage: "questionmark.circle")
                     }
                 }
             }
-            .navigationTitle("Настройки")
+            .navigationTitle("Settings")
             .sheet(isPresented: $showHistory) {
                 HistoryView().presentationDetents([.large])
             }
@@ -156,7 +156,7 @@ struct SettingsView: View {
 /// Add/edit/delete saved hosts of one kind (IP or domain).
 struct SavedHostsEditor: View {
     enum Kind { case ip, domain
-        var title: String { self == .ip ? "IP-адреса" : "Домены" }
+        var title: String { self == .ip ? "IP addresses" : "Domains" }
         var placeholder: String { self == .ip ? "8.8.8.8" : "example.com" }
         var icon: String { self == .ip ? "number" : "globe" }
     }
@@ -169,8 +169,8 @@ struct SavedHostsEditor: View {
 
     var body: some View {
         Form {
-            Section("Добавить") {
-                TextField("Название (необязательно)", text: $newName)
+            Section("Add") {
+                TextField("Name (optional)", text: $newName)
                 HStack {
                     Image(systemName: kind.icon).foregroundStyle(.secondary)
                     TextField(kind.placeholder, text: $newValue)
@@ -180,16 +180,16 @@ struct SavedHostsEditor: View {
                         .keyboardType(kind == .ip ? .numbersAndPunctuation : .URL)
                         #endif
                 }
-                Button("Сохранить") { add() }
+                Button("Save") { add() }
                     .disabled(!isValid)
             }
 
-            Section("Сохранённые") {
+            Section("Saved") {
                 if items.isEmpty {
                     ContentUnavailableView(
-                        "Пока пусто",
+                        "Empty for now",
                         systemImage: kind.icon,
-                        description: Text("Сохранённые адреса появляются в меню закладок на каждом экране с полем ввода.")
+                        description: Text("Saved addresses show up in the bookmarks menu on every screen with an input field.")
                     )
                 } else {
                     ForEach(items) { host in

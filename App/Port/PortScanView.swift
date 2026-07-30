@@ -4,7 +4,7 @@ import NetworkKit
 @MainActor
 @Observable
 final class PortScanModel {
-    enum Mode: String, CaseIterable, Identifiable { case common = "Частые", range = "Диапазон"; var id: String { rawValue } }
+    enum Mode: String, CaseIterable, Identifiable { case common = "Frequent", range = "Range"; var id: String { rawValue } }
 
     var host = "scanme.nmap.org"
     var mode: Mode = .common
@@ -41,7 +41,7 @@ final class PortScanModel {
         total = list.count
         isRunning = true
         let activity = useLiveActivity ? CheckActivityController() : nil
-        activity?.start(kind: .portScan, title: target, subtitle: "Порты", view: activityView())
+        activity?.start(kind: .portScan, title: target, subtitle: "Ports", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             // Resolved once, up front. Every port of a name that does not
@@ -78,7 +78,7 @@ final class PortScanModel {
     }
 
     private func activityView() -> CheckActivityView {
-        ScanActivityContent.view(foundLabel: "Открыто", found: openPorts.count,
+        ScanActivityContent.view(foundLabel: "Open", found: openPorts.count,
                                  scanned: scanned, total: total, isRunning: isRunning)
     }
 }
@@ -96,7 +96,7 @@ struct PortScanView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Хост или IP",
+            HostInputBar(text: $model.host, placeholder: "Host or IP",
                          icon: "square.grid.3x3.middle.filled", disabled: model.isRunning,
                          savedHostTool: .portScan) {
                 model.start()
@@ -111,19 +111,19 @@ struct PortScanView: View {
             if !model.openPorts.isEmpty {
                 resultsCard
             } else if !model.isRunning && model.scanned > 0 {
-                Text("Открытых портов не найдено")
+                Text("No open ports found")
                     .foregroundStyle(.secondary).padding(.top, 24)
             } else if !model.isRunning, model.errorMessage == nil {
                 ToolIdleHint(
                     icon: "square.grid.3x3.middle.filled",
-                    title: "Готово к проверке портов",
-                    message: "Проверим, какие порты хоста принимают соединения, и подпишем известные службы.",
+                    title: "Ready to check ports",
+                    message: "We'll check which of the host's ports accept connections and label the known services.",
                     example: "scanme.nmap.org",
                     current: model.host
                 ) { model.host = "scanme.nmap.org" }
             }
         } bottom: {
-            RunButton(title: "Сканировать", running: model.isRunning,
+            RunButton(title: "Scan", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { model.stop() } else { requestStart() }
             }
@@ -132,7 +132,7 @@ struct PortScanView: View {
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
-        .navigationTitle("Проверка портов")
+        .navigationTitle("Port check")
         .toolTitleDisplayMode()
         .sensitiveConsent(.portScan, isPresented: $showConsent) { model.start() }
         .onAppear {
@@ -144,7 +144,7 @@ struct PortScanView: View {
 
     private var modeCard: some View {
         VStack(spacing: 10) {
-            Picker("Режим", selection: $model.mode) {
+            Picker("Mode", selection: $model.mode) {
                 ForEach(PortScanModel.Mode.allCases) { Text(LocalizedStringKey($0.rawValue)).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -153,11 +153,11 @@ struct PortScanView: View {
             if model.mode == .range {
                 HStack {
                     Stepper(value: $model.rangeStart, in: 1...65535) {
-                        Text("От \(model.rangeStart)").monospacedDigit()
+                        Text("From \(model.rangeStart)").monospacedDigit()
                     }
                 }
                 Stepper(value: $model.rangeEnd, in: 1...65535) {
-                    Text("До \(model.rangeEnd)").monospacedDigit()
+                    Text("To \(model.rangeEnd)").monospacedDigit()
                 }
             }
         }
@@ -168,7 +168,7 @@ struct PortScanView: View {
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("\(model.openPorts.count) открыто")
+                Text("\(model.openPorts.count) open")
                     .font(.headline).foregroundStyle(.green)
                 Spacer()
                 Text("\(model.scanned) / \(model.total)")
@@ -183,18 +183,18 @@ struct PortScanView: View {
 
     private var resultsCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "Открытые порты")
+            SectionCaption(text: "Open ports")
             VStack(spacing: 0) {
                 ForEach(Array(model.openPorts.enumerated()), id: \.element.port) { idx, port in
                     HStack {
-                        StatusDot(level: .ok, label: "Порт открыт")
+                        StatusDot(level: .ok, label: "Port open")
                         Text("\(port.port)").font(.system(.body, design: .monospaced)).bold()
                         if let svc = port.serviceName {
                             Text(svc).font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
                         if let lat = port.latencyMillis {
-                            Text("\(String(format: "%.0f", lat)) мс")
+                            Text("\(String(format: "%.0f", lat)) ms")
                                 .font(.caption.monospaced()).foregroundStyle(.secondary)
                         }
                     }

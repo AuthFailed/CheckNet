@@ -16,13 +16,13 @@ enum ServerFacet: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .proto: "Протокол"
-        case .security: "Безопасность"
-        case .network: "Транспорт"
-        case .port: "Порт"
+        case .proto: "Protocol"
+        case .security: "Security"
+        case .network: "Transport"
+        case .port: "Port"
         case .fingerprint: "Fingerprint"
         case .sni: "SNI"
-        case .country: "Страна"
+        case .country: "Country"
         case .flow: "Flow"
         }
     }
@@ -47,11 +47,11 @@ enum ServerSort: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .original: "По подписке"
-        case .remark: "По имени"
-        case .ping: "По пингу"
-        case .country: "По стране"
-        case .port: "По порту"
+        case .original: "By subscription"
+        case .remark: "By name"
+        case .ping: "By ping"
+        case .country: "By country"
+        case .port: "By port"
         }
     }
 }
@@ -114,7 +114,7 @@ final class SubscriptionModel {
             let r = try await XrayProxyRunner.probe(node: node, coreBinary: coreBinary)
             proxyPings[node.id] = .ms(r.latencyMillis, r.httpStatus)
         } catch {
-            proxyPings[node.id] = .fail((error as? XrayProxyRunner.RunError)?.message ?? "ошибка прокси")
+            proxyPings[node.id] = .fail((error as? XrayProxyRunner.RunError)?.message ?? "proxy error")
         }
     }
     #endif
@@ -201,11 +201,11 @@ final class SubscriptionModel {
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if text.hasPrefix("happ://crypt") {
-            do { text = try HappDecrypt.decrypt(text); sourceNote = "Расшифровано из Happ-ссылки" }
-            catch { self.error = "Не удалось расшифровать Happ-ссылку"; return }
+            do { text = try HappDecrypt.decrypt(text); sourceNote = "Decrypted from the Happ link" }
+            catch { self.error = "Couldn't decrypt the Happ link"; return }
         } else if text.hasPrefix("incy://crypt1/") {
-            do { text = try IncyLink.decode(text).url; sourceNote = "Извлечено из Incy-ссылки" }
-            catch { self.error = "Не удалось разобрать Incy-ссылку"; return }
+            do { text = try IncyLink.decode(text).url; sourceNote = "Extracted from the Incy link" }
+            catch { self.error = "Couldn't parse the Incy link"; return }
         }
 
         if text.hasPrefix("http://") || text.hasPrefix("https://"),
@@ -216,8 +216,8 @@ final class SubscriptionModel {
                 rawContent = out.content
                 usedUA = out.userAgent
                 sourceURL = text
-                if out.result.nodes.isEmpty { error = "Сервер вернул неизвестный формат — попробуйте другой User-Agent" }
-            } catch { self.error = "Не удалось загрузить подписку" }
+                if out.result.nodes.isEmpty { error = "The server returned an unknown format — try a different User-Agent" }
+            } catch { self.error = "Couldn't load the subscription" }
         } else {
             apply(SubscriptionParser.parse(text)); rawContent = text; usedUA = nil; sourceURL = nil
         }
@@ -300,13 +300,13 @@ struct SubscriptionView: View {
                         ServerRow(node: node, model: model) { selected = node }
                     }
                 } header: {
-                    Text("Серверы · \(model.filtered.count)")
+                    Text("Servers · \(model.filtered.count)")
                 } footer: {
                     Text(LocalizedStringKey(parseNote))
                 }
             }
         }
-        .navigationTitle("Серверы")
+        .navigationTitle("Servers")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -329,7 +329,7 @@ struct SubscriptionView: View {
         Section {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("Поиск: имя, хост, SNI, порт, fp…", text: $model.search)
+                TextField("Search: name, host, SNI, port, fp…", text: $model.search)
                     .autocorrectionDisabled()
                     #if os(iOS)
                     .textInputAutocapitalization(.never)
@@ -339,7 +339,7 @@ struct SubscriptionView: View {
                         Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
                     }
                     .buttonStyle(.borderless)
-                    .accessibilityLabel("Очистить поиск")
+                    .accessibilityLabel("Clear search")
                 }
             }
         }
@@ -350,7 +350,7 @@ struct SubscriptionView: View {
     @ViewBuilder private var savedMenu: some View {
         Menu {
             if !saved.items.isEmpty {
-                Section("Сохранённые") {
+                Section("Saved") {
                     ForEach(saved.items) { item in
                         Button { model.input = item.value } label: {
                             Label(item.name, systemImage: "list.bullet.rectangle")
@@ -361,23 +361,23 @@ struct SubscriptionView: View {
             let current = model.input.trimmingCharacters(in: .whitespacesAndNewlines)
             if !current.isEmpty, !saved.contains(current) {
                 Button { saved.add(name: "", value: current) } label: {
-                    Label("Сохранить эту подписку", systemImage: "bookmark")
+                    Label("Save this subscription", systemImage: "bookmark")
                 }
             }
         } label: {
             // Icon-only: three labelled controls wrap the row on a phone.
             Image(systemName: "bookmark")
         }
-        .accessibilityLabel("Сохранённые подписки")
+        .accessibilityLabel("Saved subscriptions")
         .disabled(saved.items.isEmpty && model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
     /// Where the "how it was parsed" line lives now — one quiet caption instead
     /// of a card taking a whole screenful.
     private var parseNote: String {
-        var parts = ["Формат: \(formatLabel(model.format))"]
+        var parts = ["Format: \(formatLabel(model.format))"]
         if let ua = model.usedUA {
-            parts.append(model.selectedUA.header == nil ? "Авто выбрал UA: \(ua)" : "UA: \(ua)")
+            parts.append(model.selectedUA.header == nil ? "Auto-selected UA: \(ua)" : "UA: \(ua)")
         }
         if let note = model.sourceNote { parts.append(note) }
         return parts.joined(separator: " · ")
@@ -388,7 +388,7 @@ struct SubscriptionView: View {
         Section {
             Button { Task { await model.pingAll() } } label: {
                 HStack {
-                    Label("Пинг всех серверов", systemImage: "bolt.horizontal.circle")
+                    Label("Ping all servers", systemImage: "bolt.horizontal.circle")
                     Spacer()
                     if model.pinging { ProgressView() }
                 }
@@ -397,7 +397,7 @@ struct SubscriptionView: View {
 
             Button { Task { await model.checkAllSNI() } } label: {
                 HStack {
-                    Label("Проверить SNI у всех", systemImage: "checkmark.shield")
+                    Label("Check SNI for all", systemImage: "checkmark.shield")
                     Spacer()
                     if model.sniRunning { ProgressView() }
                 }
@@ -406,11 +406,11 @@ struct SubscriptionView: View {
 
             if let url = model.sourceURL {
                 Button {
-                    qr = QRPayload(title: "Подписка", text: url)
-                } label: { Label("Поделиться подпиской (QR)", systemImage: "qrcode") }
+                    qr = QRPayload(title: "Subscription", text: url)
+                } label: { Label("Share subscription (QR)", systemImage: "qrcode") }
             }
         } footer: {
-            Text("Пинг — TCP-доступность самого сервера. SNI — не режет ли DPI имя из поля sni. Проверки можно запускать повторно.")
+            Text("Ping — TCP reachability of the server itself. SNI — whether DPI blocks the name in the sni field. Checks can be rerun.")
         }
     }
 
@@ -418,7 +418,7 @@ struct SubscriptionView: View {
 
     private var inputSection: some View {
         Section {
-            TextField("URL, содержимое или happ:// / incy:// ссылка", text: $model.input, axis: .vertical)
+            TextField("URL, content or happ:// / incy:// link", text: $model.input, axis: .vertical)
                 .lineLimit(1...4)
                 .font(.callout.monospaced())
                 .autocorrectionDisabled()
@@ -430,13 +430,13 @@ struct SubscriptionView: View {
             }
             HStack(spacing: 14) {
                 Button { if let s = clipboard() { model.input = s } } label: {
-                    Label("Вставить", systemImage: "doc.on.clipboard")
+                    Label("Paste", systemImage: "doc.on.clipboard")
                 }
                 .buttonStyle(.borderless)
                 savedMenu
                 Spacer()
                 Button { Task { await model.resolveAndParse() } } label: {
-                    if model.loading { ProgressView() } else { Label("Разобрать", systemImage: "arrow.right.circle.fill") }
+                    if model.loading { ProgressView() } else { Label("Parse", systemImage: "arrow.right.circle.fill") }
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.loading || model.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -455,7 +455,7 @@ struct SubscriptionView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     Menu {
-                        Picker("Сортировка", selection: $model.sort) {
+                        Picker("Sorting", selection: $model.sort) {
                             ForEach(ServerSort.allCases) { Text($0.title).tag($0) }
                         }
                     } label: {
@@ -465,7 +465,7 @@ struct SubscriptionView: View {
                     ForEach(model.availableFacets) { facet in
                         Menu {
                             Button { model.filters[facet] = nil } label: {
-                                if model.filters[facet] == nil { Label("Все", systemImage: "checkmark") } else { Text("Все") }
+                                if model.filters[facet] == nil { Label("All", systemImage: "checkmark") } else { Text("All") }
                             }
                             Divider()
                             ForEach(model.facetValues(facet), id: \.self) { value in
@@ -483,7 +483,7 @@ struct SubscriptionView: View {
 
                     if !model.filters.isEmpty {
                         Button { model.filters.removeAll() } label: {
-                            filterChip(icon: "xmark", text: "Сбросить", active: false)
+                            filterChip(icon: "xmark", text: "Reset", active: false)
                         }
                         .buttonStyle(.plain)
                     }
@@ -512,11 +512,11 @@ struct SubscriptionView: View {
     private func formatLabel(_ f: SubscriptionFormat) -> String {
         switch f {
         case .base64List: "base64"
-        case .plainList: "список ссылок"
+        case .plainList: "link list"
         case .clash: "Clash"
         case .singbox: "sing-box"
         case .xray: "Xray JSON"
-        case .unknown: "неизвестно"
+        case .unknown: "unknown"
         }
     }
 
@@ -558,7 +558,7 @@ private struct ServerRow: View {
                         }
                         // The two things an operator actually needs at a glance.
                         if node.isMultihost {
-                            Text("Мультихост · \(node.children.count) серверов")
+                            Text("Multi-host · \(node.children.count) servers")
                                 .font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
                         } else {
                             Text("\(node.host):\(String(node.port))")
@@ -584,11 +584,11 @@ private struct ServerRow: View {
         }
         .padding(.vertical, 3)
         .contextMenu {
-            Button { Task { await model.ping(node) } } label: { Label("Пинг", systemImage: "bolt.horizontal") }
+            Button { Task { await model.ping(node) } } label: { Label("Ping", systemImage: "bolt.horizontal") }
             if !node.sni.isEmpty {
-                Button { Task { await model.checkSNI(node) } } label: { Label("Проверить SNI", systemImage: "checkmark.shield") }
+                Button { Task { await model.checkSNI(node) } } label: { Label("Check SNI", systemImage: "checkmark.shield") }
             }
-            Button { copy(node.raw) } label: { Label("Скопировать ссылку", systemImage: "doc.on.doc") }
+            Button { copy(node.raw) } label: { Label("Copy link", systemImage: "doc.on.doc") }
         }
     }
 
@@ -608,7 +608,7 @@ private struct ServerRow: View {
                 }
             }
             .buttonStyle(.borderless)
-            .accessibilityLabel("Проверить доступность ещё раз")
+            .accessibilityLabel("Check availability again")
         }
     }
 
@@ -624,7 +624,7 @@ private struct ServerRow: View {
                     .font(.footnote)
             }
             .buttonStyle(.borderless)
-            .accessibilityLabel("Проверить блокировку SNI ещё раз")
+            .accessibilityLabel("Check SNI block again")
         }
     }
 
@@ -714,9 +714,9 @@ private struct ServerDetailView: View {
                         .buttonStyle(.plain)
                     }
                 } header: {
-                    Text("Серверы внутри · \(node.children.count)")
+                    Text("Servers inside · \(node.children.count)")
                 } footer: {
-                    Text("Этот хост объединяет несколько прокси. Проверки ниже относятся к основному (первому) серверу.")
+                    Text("This host combines several proxies. The checks below apply to the main (first) server.")
                 }
             }
 
@@ -724,21 +724,21 @@ private struct ServerDetailView: View {
             Section {
                 Button { ipOverviewHost = node.host } label: {
                     HStack {
-                        InfoRow(label: "Хост", value: node.host, mono: true)
+                        InfoRow(label: "Host", value: node.host, mono: true)
                         Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
                     }
                 }
                 .buttonStyle(.plain)
-                InfoRow(label: "Порт", value: String(node.port), mono: true)
+                InfoRow(label: "Port", value: String(node.port), mono: true)
             } header: {
-                Text("Адрес")
+                Text("Address")
             } footer: {
-                Text("Нажмите на хост, чтобы посмотреть провайдера, страну и ASN.")
+                Text("Tap a host to see its provider, country and ASN.")
             }
-            Section("Подключение") {
-                InfoRow(label: "Протокол", value: node.proto.rawValue.uppercased())
-                InfoRow(label: "Транспорт", value: node.network.uppercased())
-                InfoRow(label: "Безопасность", value: node.isReality ? "REALITY" : node.security.uppercased(),
+            Section("Connection") {
+                InfoRow(label: "Protocol", value: node.proto.rawValue.uppercased())
+                InfoRow(label: "Transport", value: node.network.uppercased())
+                InfoRow(label: "Security", value: node.isReality ? "REALITY" : node.security.uppercased(),
                         valueColor: node.isReality ? .teal : .primary)
             }
             if !node.sni.isEmpty || !node.flow.isEmpty {
@@ -753,18 +753,18 @@ private struct ServerDetailView: View {
                         InfoRow(label: p.key, value: p.value, mono: true)
                     }
                 } header: {
-                    Text("Параметры · \(node.extras.count)")
+                    Text("Parameters · \(node.extras.count)")
                 } footer: {
-                    Text("Всё, что пришло помимо основных полей: fingerprint, pbk/sid, alpn, mux, sockopt, xhttp extra, route и т. д.")
+                    Text("Everything beyond the core fields: fingerprint, pbk/sid, alpn, mux, sockopt, xhttp extra, route, etc.")
                 }
             }
-            Section("Имя") {
+            Section("Name") {
                 InfoRow(label: "Remark", value: node.name)
             }
 
             Section {
                 // Ping (TCP)
-                checkRow("Пинг", systemImage: "bolt.horizontal.circle",
+                checkRow("Ping", systemImage: "bolt.horizontal.circle",
                          running: model.pingInFlight.contains(node.id),
                          hasResult: model.pings[node.id] != nil,
                          action: { Task { await model.ping(node) } }) {
@@ -786,7 +786,7 @@ private struct ServerDetailView: View {
                     }
                 }
                 // Native TLS/Reality handshake
-                checkRow("Рукопожатие", systemImage: "hand.wave",
+                checkRow("Handshake", systemImage: "hand.wave",
                          running: model.handshakeInFlight.contains(node.id),
                          hasResult: model.handshakes[node.id] != nil,
                          action: { Task { await model.handshakePing(node) } }) {
@@ -798,13 +798,13 @@ private struct ServerDetailView: View {
                 // Through proxy (macOS)
                 proxyCheckRow
             } header: {
-                Text("Проверки")
+                Text("Checks")
             } footer: {
-                Text("Рукопожатие — TLS-ответ по dest-SNI (ловит блокировку SNI). Через прокси (Mac) — реальный запрос к gstatic через тоннель. Всё можно перезапускать.")
+                Text("Handshake — TLS response by dest-SNI (catches SNI blocking). Via proxy (Mac) — a real request to gstatic through the tunnel. Everything can be rerun.")
             }
 
             Section {
-                DisclosureGroup("Блок этого сервера", isExpanded: $showRaw) {
+                DisclosureGroup("Block this server", isExpanded: $showRaw) {
                     Text(node.raw)
                         .font(.caption.monospaced())
                         .textSelection(.enabled)
@@ -813,42 +813,42 @@ private struct ServerDetailView: View {
                 // The full Xray config the client receives for this specific host
                 // (dns + routing + outbounds), not just its outbound.
                 if let full = node.fullConfig {
-                    DisclosureGroup("Полный Xray JSON этого хоста") {
+                    DisclosureGroup("Full Xray JSON for this host") {
                         Text(full)
                             .font(.caption.monospaced())
                             .textSelection(.enabled)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     Button { copy(full) } label: {
-                        Label("Скопировать полный JSON", systemImage: "doc.on.doc.fill")
+                        Label("Copy full JSON", systemImage: "doc.on.doc.fill")
                     }
                 }
                 Button { copy(node.raw) } label: {
-                    Label("Скопировать блок", systemImage: "doc.on.doc")
+                    Label("Copy block", systemImage: "doc.on.doc")
                 }
                 if !model.rawContent.isEmpty {
                     Button { copy(model.rawContent) } label: {
-                        Label("Скопировать всю подписку", systemImage: "doc.on.clipboard")
+                        Label("Copy entire subscription", systemImage: "doc.on.clipboard")
                     }
                 }
                 // QR only makes sense for a real link: scanning a JSON block into
                 // a client is useless. We don't share the whole subscription from
                 // here — the main list has an action for that.
                 if node.raw.contains("://") {
-                    Button { qr = QRPayload(title: "Сервер", text: node.raw) } label: {
-                        Label("Поделиться сервером (QR)", systemImage: "qrcode")
+                    Button { qr = QRPayload(title: "Server", text: node.raw) } label: {
+                        Label("Share server (QR)", systemImage: "qrcode")
                     }
                 }
             } header: {
                 HStack {
-                    Text("Исходные данные")
+                    Text("Source data")
                     Spacer()
                     if let ok = jsonValid {
-                        Label(ok ? "JSON валиден" : "JSON битый",
+                        Label(ok ? "JSON is valid" : "JSON is broken",
                               systemImage: ok ? "checkmark.seal.fill" : "xmark.seal.fill")
                             .font(.caption).foregroundStyle(ok ? .green : .red)
                     } else {
-                        Text("ссылка").font(.caption).foregroundStyle(.secondary)
+                        Text("link").font(.caption).foregroundStyle(.secondary)
                     }
                 }
             }
@@ -863,7 +863,7 @@ private struct ServerDetailView: View {
         }
         .navigationDestination(item: $ipOverviewHost) { host in
             IPLocationView(presetHost: host, autostart: true)
-                .navigationTitle("Обзор IP")
+                .navigationTitle("IP overview")
         }
     }
 
@@ -888,7 +888,7 @@ private struct ServerDetailView: View {
                         .foregroundStyle(.tint)
                 }
                 .buttonStyle(.borderless)
-                .accessibilityLabel(hasResult ? "Проверить ещё раз" : "Проверить")
+                .accessibilityLabel(hasResult ? "Check again" : "Check")
             }
         }
     }
@@ -898,7 +898,7 @@ private struct ServerDetailView: View {
     @ViewBuilder private var proxyCheckRow: some View {
         #if os(macOS)
         if let core = cores.installed.first?.binary {
-            checkRow("Через прокси", systemImage: "arrow.triangle.swap",
+            checkRow("Via proxy", systemImage: "arrow.triangle.swap",
                      running: model.proxyInFlight.contains(node.id),
                      hasResult: model.proxyPings[node.id] != nil,
                      action: { Task { await model.proxyPing(node, coreBinary: core) } }) {
@@ -906,16 +906,16 @@ private struct ServerDetailView: View {
                 case .ms(let ms, let status):
                     Text("\(Int(ms.rounded())) ms")
                         .foregroundStyle(status == 204 || status == 200 ? .green : .orange)
-                case .fail: Text("ошибка").foregroundStyle(.red)
+                case .fail: Text("error").foregroundStyle(.red)
                 case nil: EmptyView()
                 }
             }
         } else {
             HStack(spacing: 10) {
                 Image(systemName: "arrow.triangle.swap").foregroundStyle(.tint).frame(width: 22)
-                Text("Через прокси").lineLimit(1)
+                Text("Via proxy").lineLimit(1)
                 Spacer(minLength: 8)
-                Text("нужно ядро").font(.caption).foregroundStyle(.secondary)
+                Text("core required").font(.caption).foregroundStyle(.secondary)
             }
         }
         #else
@@ -939,17 +939,17 @@ private struct ServerDetailView: View {
         case .serverHello: "OK"
         case .tlsAlert: "alert"
         case .reset: "RST"
-        case .timeout: "таймаут"
-        case .closed: "закрыто"
-        case .tcpFailed: "нет TCP"
+        case .timeout: "timeout"
+        case .closed: "closed"
+        case .tcpFailed: "no TCP"
         }
     }
 
     private func verdictText(_ v: CensorshipVerdict) -> String {
-        switch v { case .clean: "не блокируется"; case .restricted: "блокируется"; case .inconclusive: "не определено" }
+        switch v { case .clean: "not blocked"; case .restricted: "blocked"; case .inconclusive: "undetermined" }
     }
     private func verdictShort(_ v: CensorshipVerdict) -> String {
-        switch v { case .clean: "чисто"; case .restricted: "блок"; case .inconclusive: "?" }
+        switch v { case .clean: "clean"; case .restricted: "block"; case .inconclusive: "?" }
     }
     private func verdictColor(_ v: CensorshipVerdict) -> Color {
         switch v { case .clean: .green; case .restricted: .red; case .inconclusive: .gray }
@@ -995,7 +995,7 @@ struct QRShareSheet: View {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(payload.text, forType: .string)
                         #endif
-                    } label: { Label("Скопировать", systemImage: "doc.on.doc") }
+                    } label: { Label("Copy", systemImage: "doc.on.doc") }
                         .buttonStyle(.borderedProminent)
                 }
                 .padding()
@@ -1006,7 +1006,7 @@ struct QRShareSheet: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }

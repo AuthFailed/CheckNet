@@ -118,7 +118,7 @@ public struct WebhookDispatcher: Sendable {
         do {
             body = try Self.encode(event)
         } catch {
-            return WebhookDelivery(statusCode: nil, attempts: 0, error: "не удалось сформировать payload")
+            return WebhookDelivery(statusCode: nil, attempts: 0, error: "could not build the payload")
         }
         return await send(body: body, contentType: "application/json", eventName: event.event)
     }
@@ -150,9 +150,9 @@ public struct WebhookDispatcher: Sendable {
                 }
                 // 4xx means the receiver rejected the payload; retrying won't fix it.
                 if let code, (400..<500).contains(code) {
-                    return WebhookDelivery(statusCode: code, attempts: attempt, error: "получен ответ \(code)")
+                    return WebhookDelivery(statusCode: code, attempts: attempt, error: "received response \(code)")
                 }
-                lastError = code.map { "получен ответ \($0)" } ?? "нет ответа"
+                lastError = code.map { "received response \($0)" } ?? "no response"
             } catch {
                 lastError = error.localizedDescription
             }

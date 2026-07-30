@@ -19,7 +19,7 @@ struct ErrorCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label {
-                Text("Ошибка").font(.subheadline.weight(.semibold))
+                Text("Error").font(.subheadline.weight(.semibold))
             } icon: {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.orange)
@@ -41,7 +41,7 @@ struct ErrorCard: View {
                 Button {
                     retry()
                 } label: {
-                    Label("Повторить", systemImage: "arrow.clockwise")
+                    Label("Retry", systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
@@ -53,14 +53,14 @@ struct ErrorCard: View {
         // One announcement instead of four fragments; the retry button stays a
         // separate element so VoiceOver can still reach it.
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text("Ошибка: \(message)"))
+        .accessibilityLabel(Text("Error: \(message)"))
     }
 }
 
 #Preview {
     VStack(spacing: 16) {
-        ErrorCard(message: "Хост не найден", hint: "Проверьте написание имени и подключение к сети") {}
-        ErrorCard(message: "Соединение прервано по таймауту")
+        ErrorCard(message: "Host not found", hint: "Check the spelling and your network connection") {}
+        ErrorCard(message: "The connection timed out")
     }
     .padding()
     .background(Palette.groupedBackground)

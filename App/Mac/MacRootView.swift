@@ -14,7 +14,7 @@ struct MacRootView: View {
     enum Mode: String, CaseIterable, Identifiable {
         case tests, blocking
         var id: String { rawValue }
-        var title: LocalizedStringKey { self == .tests ? "Тесты" : "Блокировки" }
+        var title: LocalizedStringKey { self == .tests ? "Tests" : "Blocks" }
         var symbol: String { self == .tests ? "wrench.and.screwdriver" : "hand.raised" }
     }
 
@@ -51,7 +51,7 @@ struct MacRootView: View {
     private var sidebar: some View {
         List(selection: $selection) {
             Section {
-                Picker("Раздел", selection: $mode) {
+                Picker("Section", selection: $mode) {
                     ForEach(Mode.allCases) { m in
                         Label(m.title, systemImage: m.symbol).tag(m)
                     }
@@ -83,11 +83,11 @@ struct MacRootView: View {
                     }
                 }
                 Section {
-                    row("Доступность узлов", "globe").tag(Selection.reachability)
+                    row("Host reachability", "globe").tag(Selection.reachability)
                 }
             }
         }
-        .searchable(text: $query, prompt: "Поиск")
+        .searchable(text: $query, prompt: "Search")
         .navigationTitle("CheckNet")
         .onAppear(perform: reload)
         // Cheap poll rather than a store observer: the checks write through
@@ -106,9 +106,9 @@ struct MacRootView: View {
     private func badge(for tool: Tool) -> (text: String, tint: Color)? {
         guard let record = recent.first(where: { $0.tool == tool.title }) else { return nil }
         if let latency = record.latencyMillis, record.succeeded {
-            return (String(format: "%.0f мс", latency), .secondary)
+            return (String(format: "%.0f ms", latency), .secondary)
         }
-        return record.succeeded ? ("ок", .secondary) : ("сбой", .red)
+        return record.succeeded ? ("ok", .secondary) : ("fail", .red)
     }
 
     private func row(_ title: String, _ symbol: String, soon: Bool = false,
@@ -123,7 +123,7 @@ struct MacRootView: View {
             }
             if soon {
                 Spacer(minLength: 6)
-                Text("скоро")
+                Text("soon")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 6).padding(.vertical, 2)
@@ -170,14 +170,14 @@ struct MacRootView: View {
     private var emptyDetail: some View {
         if recent.isEmpty {
             ContentUnavailableView(
-                "Выберите инструмент",
+                "Select a tool",
                 systemImage: "wrench.and.screwdriver",
-                description: Text("Слева — все проверки. Выберите любую, чтобы запустить её.")
+                description: Text("All checks are on the left. Select one to run it.")
             )
         } else {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Недавние проверки")
+                    Text("Recent Checks")
                         .font(.title3.weight(.semibold))
                     ForEach(recent) { record in
                         Button {
@@ -194,7 +194,7 @@ struct MacRootView: View {
                                 }
                                 Spacer()
                                 if let latency = record.latencyMillis {
-                                    Text(String(format: "%.0f мс", latency))
+                                    Text(String(format: "%.0f ms", latency))
                                         .font(.callout.monospacedDigit())
                                         .foregroundStyle(.secondary)
                                 }

@@ -16,7 +16,7 @@ struct WakeOnLanView: View {
     var body: some View {
         ToolScaffold {
             VStack(spacing: 0) {
-                fieldRow(icon: "number", title: "MAC-адрес") {
+                fieldRow(icon: "number", title: "MAC address") {
                     TextField("AA:BB:CC:DD:EE:FF", text: $mac)
                         .font(.system(.body, design: .monospaced))
                         .autocorrectionDisabled()
@@ -33,7 +33,7 @@ struct WakeOnLanView: View {
                         #endif
                 }
                 Divider().padding(.leading, 44)
-                fieldRow(icon: "poweroutlet.type.b", title: "Порт") {
+                fieldRow(icon: "poweroutlet.type.b", title: "Port") {
                     Stepper(value: $port, in: 1...65535) {
                         Text("\(port)").monospacedDigit()
                     }
@@ -45,7 +45,7 @@ struct WakeOnLanView: View {
                 switch status {
                 case .sent:
                     banner(icon: "checkmark.circle.fill", color: .green,
-                           text: "Магический пакет отправлен на \(mac.uppercased())")
+                           text: "Magic packet sent to \(mac.uppercased())")
                 case .failed(let msg):
                     banner(icon: "exclamationmark.triangle.fill", color: .orange, text: msg)
                 }
@@ -53,14 +53,14 @@ struct WakeOnLanView: View {
         } content: {
             ToolIdleHint(
                 icon: "power",
-                title: "Готово к пробуждению",
-                message: "Отправим magic-пакет на MAC-адрес. Работает только внутри локальной сети и только если устройство умеет просыпаться по сети."
+                title: "Ready to wake a device",
+                message: "We'll send a magic packet to the MAC address. It only works inside the local network, and only if the device supports wake-on-network."
             )
         } bottom: {
             Button {
                 send()
             } label: {
-                Label("Разбудить", systemImage: "power")
+                Label("Wake", systemImage: "power")
                     .font(.headline).frame(maxWidth: .infinity).frame(minHeight: 52)
                     .foregroundStyle(.white)
                     .background(macValid ? AnyShapeStyle(Color.blue) : AnyShapeStyle(Color.gray.opacity(0.4)),

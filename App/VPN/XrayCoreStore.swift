@@ -52,7 +52,7 @@ final class XrayCoreStore {
         loadingIndex = true; indexError = nil
         defer { loadingIndex = false }
         do { available = try await XrayReleaseIndex.fetch() }
-        catch { indexError = "Не удалось получить список версий" }
+        catch { indexError = "Couldn't fetch the version list" }
     }
 
     // MARK: - Installed set (macOS)
@@ -104,20 +104,20 @@ final class XrayCoreStore {
             try unzipCore(zip, version: release.version)
             refreshInstalled()
         } catch {
-            installError = (error as? CoreError)?.message ?? "Не удалось установить ядро"
+            installError = (error as? CoreError)?.message ?? "Couldn't install the core"
         }
         #else
-        installError = "Скачивание ядра недоступно на этой платформе"
+        installError = "Core download isn't available on this platform"
         #endif
     }
 
     enum CoreError: Error { case badURL, http, checksum, noBinary(String)
         var message: String {
             switch self {
-            case .badURL: "Неверная ссылка на ядро"
-            case .http: "Ошибка загрузки"
-            case .checksum: "Контрольная сумма не совпала — файл повреждён"
-            case .noBinary(let s): "В архиве не найден исполняемый xray (\(s))"
+            case .badURL: "Invalid core link"
+            case .http: "Load error"
+            case .checksum: "Checksum mismatch — file is corrupted"
+            case .noBinary(let s): "No xray executable found in the archive (\(s))"
             }
         }
     }

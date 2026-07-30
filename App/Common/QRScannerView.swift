@@ -25,38 +25,38 @@ struct QRScannerSheet: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .denied:
                     ContentUnavailableView {
-                        Label("Нет доступа к камере", systemImage: "camera.fill")
+                        Label("No camera access", systemImage: "camera.fill")
                     } description: {
-                        Text("Разрешите доступ к камере в Настройках iOS, чтобы сканировать QR-коды.")
+                        Text("Allow camera access in iOS Settings to scan QR codes.")
                     } actions: {
                         if let url = URL(string: UIApplication.openSettingsURLString) {
-                            Link("Открыть Настройки", destination: url)
+                            Link("Open Settings", destination: url)
                         }
                     }
                 case .unsupported:
                     ContentUnavailableView {
-                        Label("Сканирование недоступно", systemImage: "qrcode.viewfinder")
+                        Label("Scanning unavailable", systemImage: "qrcode.viewfinder")
                     } description: {
-                        Text("Это устройство не поддерживает сканирование камерой. Вставьте ссылку из буфера обмена.")
+                        Text("This device doesn’t support camera scanning. Paste a link from the clipboard instead.")
                     }
                 // The camera can also refuse to start after access was granted —
                 // another app holding it, or the session failing to configure.
                 // That used to leave a black rectangle and no explanation.
                 case .failed(let reason):
                     ContentUnavailableView {
-                        Label("Камера не запустилась", systemImage: "video.slash")
+                        Label("Camera didn’t start", systemImage: "video.slash")
                     } description: {
                         Text(LocalizedStringKey(reason))
                     } actions: {
-                        Button("Повторить") { Task { await resolveAccess() } }
+                        Button("Retry") { Task { await resolveAccess() } }
                     }
                 }
             }
-            .navigationTitle("Сканировать QR")
+            .navigationTitle("Scan QR")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
             }
             .task { await resolveAccess() }
@@ -73,7 +73,7 @@ struct QRScannerSheet: View {
             }
             .ignoresSafeArea(edges: .bottom)
 
-            Text("Наведите камеру на QR-код из CheckNet")
+            Text("Point the camera at a QR code from CheckNet")
                 .font(.footnote)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)

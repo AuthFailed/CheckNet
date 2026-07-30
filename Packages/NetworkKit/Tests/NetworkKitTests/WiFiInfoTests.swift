@@ -29,8 +29,8 @@ final class WiFiInfoTests: XCTestCase {
     }
 
     func testEnumLabels() {
-        XCTAssertEqual(WiFiBand.ghz5.label, "5 ГГц")
-        XCTAssertEqual(WiFiWidth.mhz80.label, "80 МГц")
+        XCTAssertEqual(WiFiBand.ghz5.label, "5 GHz")
+        XCTAssertEqual(WiFiWidth.mhz80.label, "80 MHz")
         XCTAssertEqual(WiFiPHYMode.ax.label, "Wi-Fi 6 (ax)")
     }
 

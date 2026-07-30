@@ -71,7 +71,7 @@ enum ControlSnapshotDisplay {
             return snapshot.statusLabel          // "—"
         case .ok, .degraded:
             if let ms = snapshot.latencyMillis {
-                return "\(Int(ms.rounded())) мс"
+                return "\(Int(ms.rounded())) ms"
             }
             return snapshot.statusLabel
         }

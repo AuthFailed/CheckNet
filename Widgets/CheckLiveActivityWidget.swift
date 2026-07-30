@@ -118,7 +118,7 @@ struct CheckLiveActivityWidget: Widget {
     /// ping.
     private func stopButton(fill: Bool) -> some View {
         Button(intent: StopPingLiveActivityIntent()) {
-            Label("Стоп", systemImage: "stop.fill")
+            Label("Stop", systemImage: "stop.fill")
                 .font(.caption.weight(.semibold))
                 .frame(maxWidth: fill ? .infinity : nil)
         }

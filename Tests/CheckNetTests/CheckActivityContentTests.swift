@@ -11,18 +11,18 @@ final class CheckActivityContentTests: XCTestCase {
     func testPingViewFormatsLatencyAndStats() {
         let v = PingActivityContent.view(latency: 12.4, loss: 0, received: 5, transmitted: 5,
                                          status: .ok, isRunning: true)
-        XCTAssertEqual(v.headline, "12 мс")
-        XCTAssertEqual(v.caption, "идёт проверка")
+        XCTAssertEqual(v.headline, "12 ms")
+        XCTAssertEqual(v.caption, "testing")
         XCTAssertEqual(v.status, .ok)
-        XCTAssertEqual(v.stats.first { $0.label == "Пакеты" }?.value, "5/5")
-        XCTAssertEqual(v.stats.first { $0.label == "Статус" }?.value, "OK")
+        XCTAssertEqual(v.stats.first { $0.label == "Packets" }?.value, "5/5")
+        XCTAssertEqual(v.stats.first { $0.label == "Status" }?.value, "OK")
     }
 
     func testPingViewWithoutLatencyShowsDash() {
         let v = PingActivityContent.view(latency: nil, loss: 100, received: 0, transmitted: 3,
                                          status: .down, isRunning: false)
         XCTAssertEqual(v.headline, "—")
-        XCTAssertEqual(v.caption, "завершено")
+        XCTAssertEqual(v.caption, "done")
     }
 
     // MARK: Monitor aggregation
@@ -42,30 +42,30 @@ final class CheckActivityContentTests: XCTestCase {
         // 3 up (ok/degraded count as online), 1 down → "3/4".
         let v = MonitorActivityContent.view(for: entries([.ok, .degraded, .ok, .down]))
         XCTAssertEqual(v.headline, "3/4")
-        XCTAssertEqual(v.caption, "не отвечают: 1")
+        XCTAssertEqual(v.caption, "not responding: 1")
         XCTAssertEqual(v.status, .down)
-        XCTAssertEqual(v.stats.first { $0.label == "Не отвечают" }?.value, "1")
+        XCTAssertEqual(v.stats.first { $0.label == "Down" }?.value, "1")
     }
 
     func testMonitorCaptionWhenAllUp() {
         let v = MonitorActivityContent.view(for: entries([.ok, .ok]))
         XCTAssertEqual(v.headline, "2/2")
-        XCTAssertEqual(v.caption, "все отвечают")
+        XCTAssertEqual(v.caption, "all responding")
     }
 
     func testMonitorCaptionBeforeFirstCheck() {
         let v = MonitorActivityContent.view(for: entries([.unknown, .unknown]))
-        XCTAssertEqual(v.caption, "ожидание проверки")
+        XCTAssertEqual(v.caption, "awaiting check")
         XCTAssertEqual(v.headline, "0/2")
     }
 
     func testMonitorEmptyState() {
         let v = MonitorActivityContent.view(for: [])
-        XCTAssertEqual(v.caption, "нет хостов")
+        XCTAssertEqual(v.caption, "no hosts")
         XCTAssertEqual(v.headline, "0/0")
     }
 
     func testMonitorSubtitle() {
-        XCTAssertEqual(MonitorActivityContent.subtitle(for: entries([.ok, .ok, .down])), "3 хостов")
+        XCTAssertEqual(MonitorActivityContent.subtitle(for: entries([.ok, .ok, .down])), "3 hosts")
     }
 }

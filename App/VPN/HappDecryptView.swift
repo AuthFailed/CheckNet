@@ -25,10 +25,10 @@ struct HappDecryptView: View {
                 HStack {
                     Button {
                         if let s = clipboardString() { input = s; result = nil; error = nil }
-                    } label: { Label("Вставить", systemImage: "doc.on.clipboard") }
+                    } label: { Label("Paste", systemImage: "doc.on.clipboard") }
                     Spacer()
                     Button { decrypt() } label: {
-                        Label("Расшифровать", systemImage: "lock.open.fill")
+                        Label("Decrypt", systemImage: "lock.open.fill")
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(preview == nil)
@@ -38,19 +38,19 @@ struct HappDecryptView: View {
                     Label(LocalizedStringKey(error), systemImage: "exclamationmark.triangle")
                         .foregroundStyle(.red)
                 } else if let preview {
-                    Text("Формат: \(preview.name)")
+                    Text("Format: \(preview.name)")
                 }
             }
 
             if let result {
-                Section("Результат") {
+                Section("Result") {
                     Text(result)
                         .font(.callout.monospaced())
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     Button {
                         copyToClipboard(result)
-                    } label: { Label("Скопировать", systemImage: "doc.on.doc") }
+                    } label: { Label("Copy", systemImage: "doc.on.doc") }
                 }
             }
         }
@@ -77,12 +77,12 @@ struct HappDecryptView: View {
 
     private func message(for error: Error) -> String {
         switch error as? HappDecrypt.DecryptError {
-        case .notACryptLink: "Это не ссылка happ://crypt…"
-        case .keysUnavailable: "Ключи расшифровки недоступны"
-        case .unknownMarker: "Неизвестный ключ crypt5 — возможно, новый формат"
-        case .rsaFailed: "Ошибка RSA — ссылка повреждена или чужой формат"
-        case .authenticationFailed: "Не прошла проверка подлинности (crypt5)"
-        case .badFormat, .none: "Не удалось расшифровать ссылку"
+        case .notACryptLink: "Not a happ://crypt… link"
+        case .keysUnavailable: "Decryption keys unavailable"
+        case .unknownMarker: "Unknown crypt5 key — possibly a new format"
+        case .rsaFailed: "RSA error — the link is corrupted or a foreign format"
+        case .authenticationFailed: "Authentication failed (crypt5)"
+        case .badFormat, .none: "Couldn't decrypt the link"
         }
     }
 

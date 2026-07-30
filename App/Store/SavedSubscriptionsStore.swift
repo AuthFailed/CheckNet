@@ -52,8 +52,8 @@ final class SavedSubscriptionsStore {
     static func suggestedName(for value: String) -> String {
         if let host = URL(string: value)?.host { return host }
         let lower = value.lowercased()
-        if lower.hasPrefix("happ://") { return "Happ-ссылка" }
-        if lower.hasPrefix("incy://") { return "Incy-ссылка" }
+        if lower.hasPrefix("happ://") { return "Happ link" }
+        if lower.hasPrefix("incy://") { return "Incy link" }
         return String(value.prefix(24))
     }
 

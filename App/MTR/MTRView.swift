@@ -67,7 +67,7 @@ struct MTRView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "chart.line.uptrend.xyaxis",
+            HostInputBar(text: $model.host, placeholder: "Host or IP", icon: "chart.line.uptrend.xyaxis",
                          disabled: model.isRunning, savedHostTool: .mtr) { model.start() }
 
             if let error = model.errorMessage {
@@ -78,7 +78,7 @@ struct MTRView: View {
                 HStack {
                     Text(model.resolvedIP).font(.subheadline.monospaced())
                     Spacer()
-                    if model.isRunning { Text("Раунд \(model.round)").font(.caption).foregroundStyle(.secondary) }
+                    if model.isRunning { Text("Round \(model.round)").font(.caption).foregroundStyle(.secondary) }
                 }
                 .padding(.horizontal, 4)
             }
@@ -88,14 +88,14 @@ struct MTRView: View {
             } else if !model.isRunning, model.errorMessage == nil {
                 ToolIdleHint(
                     icon: "chart.line.uptrend.xyaxis",
-                    title: "Готово к запуску MTR",
-                    message: "Трассировка и пинг одновременно: потери и задержка по каждому хопу, раунд за раундом.",
+                    title: "Ready to run MTR",
+                    message: "Trace and ping at once: loss and latency per hop, round after round.",
                     example: "cloudflare.com",
                     current: model.host
                 ) { model.host = "cloudflare.com" }
             }
         } bottom: {
-            RunButton(title: "Запустить MTR", running: model.isRunning,
+            RunButton(title: "Run MTR", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) { model.toggle() }
         }
         .animation(.snappy, value: model.hops)
@@ -148,7 +148,7 @@ struct MTRView: View {
                     stackedStat("Best", hop.best.map { String(format: "%.0f", $0) } ?? "—")
                     stackedStat("Wrst", hop.worst.map { String(format: "%.0f", $0) } ?? "—")
                     stackedStat("Last", hop.last.map { String(format: "%.0f", $0) } ?? "—")
-                    Text("отпр. \(hop.sent) · получ. \(hop.received)")
+                    Text("sent \(hop.sent) · recv \(hop.received)")
                         .font(.caption).foregroundStyle(.tertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -173,7 +173,7 @@ struct MTRView: View {
         Grid(alignment: .trailing, horizontalSpacing: 10, verticalSpacing: 8) {
             GridRow {
                 Text("#").gridColumnAlignment(.leading)
-                Text("Хост").gridColumnAlignment(.leading)
+                Text("Host").gridColumnAlignment(.leading)
                 Text("Loss")
                 Text("Avg")
                 Text("Best")
@@ -211,7 +211,7 @@ struct MTRView: View {
                     // 9 pt and 8 pt literals ignored Dynamic Type entirely.
                     Text(name).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 }
-                Text("отпр. \(hop.sent) · получ. \(hop.received)")
+                Text("sent \(hop.sent) · recv \(hop.received)")
                     .font(.caption2).foregroundStyle(.tertiary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)

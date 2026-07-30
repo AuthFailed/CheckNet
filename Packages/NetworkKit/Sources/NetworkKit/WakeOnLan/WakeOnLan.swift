@@ -8,8 +8,8 @@ public enum WakeOnLan {
         case sendFailed(String)
         public var errorDescription: String? {
             switch self {
-            case .invalidMAC(let m): return "Некорректный MAC-адрес: \(m)"
-            case .sendFailed(let r): return "Не удалось отправить пакет: \(r)"
+            case .invalidMAC(let m): return "Invalid MAC address: \(m)"
+            case .sendFailed(let r): return "Failed to send packet: \(r)"
             }
         }
     }

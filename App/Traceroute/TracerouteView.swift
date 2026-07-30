@@ -22,7 +22,7 @@ final class TracerouteModel {
         stop()
         hops = []; reached = false; resolvedIP = ""; errorMessage = nil; isRunning = true
         let activity = useLiveActivity ? CheckActivityController() : nil
-        activity?.start(kind: .traceroute, title: target, subtitle: "Трассировка", view: activityView())
+        activity?.start(kind: .traceroute, title: target, subtitle: "Traceroute", view: activityView())
         let cfg = TracerouteConfig(maxHops: 30, probesPerHop: 3, timeout: 1.5, resolveNames: resolveNames)
         task = Task { [weak self] in
             guard let self else { return }
@@ -56,11 +56,11 @@ struct TracerouteView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Хост или IP",
+            HostInputBar(text: $model.host, placeholder: "Host or IP",
                          icon: "point.topleft.down.to.point.bottomright.curvepath",
                          disabled: model.isRunning, savedHostTool: .traceroute) { model.start() }
 
-            Toggle("Разрешать имена (rDNS)", isOn: $model.resolveNames)
+            Toggle("Resolve names (rDNS)", isOn: $model.resolveNames)
                 .padding(.horizontal, 14).padding(.vertical, 6)
                 .card()
                 .disabled(model.isRunning)
@@ -76,14 +76,14 @@ struct TracerouteView: View {
             } else if !model.isRunning, model.errorMessage == nil {
                 ToolIdleHint(
                     icon: "point.topleft.down.to.point.bottomright.curvepath",
-                    title: "Готово к трассировке",
-                    message: "Покажем каждый маршрутизатор на пути до хоста и задержку на каждом шаге.",
+                    title: "Ready to trace",
+                    message: "We'll show every router on the way to the host and the latency at each step.",
                     example: "cloudflare.com",
                     current: model.host
                 ) { model.host = "cloudflare.com" }
             }
         } bottom: {
-            RunButton(title: "Трассировать", running: model.isRunning,
+            RunButton(title: "Trace", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 model.toggle()
             }
@@ -92,7 +92,7 @@ struct TracerouteView: View {
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
-        .navigationTitle("Трассировка")
+        .navigationTitle("Traceroute")
         .toolTitleDisplayMode()
         .onAppear {
             model.useLiveActivity = settings.liveActivitiesEnabled
@@ -105,12 +105,12 @@ struct TracerouteView: View {
         HStack(spacing: 10) {
             if model.isRunning {
                 ProgressView().controlSize(.small)
-                Text("Трассировка \(model.resolvedIP)…").foregroundStyle(.secondary)
+                Text("Tracing \(model.resolvedIP)…").foregroundStyle(.secondary)
             } else {
                 Image(systemName: model.reached ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                     .foregroundStyle(model.reached ? .green : .orange)
                 let reachedLabel: LocalizedStringKey = model.reached
-                    ? "Достигнут за \(model.hops.count) хопов" : "Цель не достигнута"
+                    ? "Reached in \(model.hops.count) hops" : "Target not reached"
                 Text(reachedLabel)
             }
             Spacer()

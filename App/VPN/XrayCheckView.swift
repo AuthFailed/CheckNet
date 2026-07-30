@@ -43,7 +43,7 @@ final class XrayCheckModel {
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !isRunning else { return }
         guard let parsed = SubscriptionParser.parse(text).nodes.first else {
-            errorMessage = "Не удалось разобрать ссылку или конфиг"; return
+            errorMessage = "Couldn't parse the link or config"; return
         }
         results = []; errorMessage = nil; node = parsed; isRunning = true
         task = Task {
@@ -64,7 +64,7 @@ final class XrayCheckModel {
     /// Keep results grouped by category, fastest first inside each group.
     private func insert(_ result: EgressResult) {
         results.append(result)
-        let order = ["IP-эхо": 0, "Cloudflare": 1, "Гео и ASN": 2]
+        let order = ["IP echo": 0, "Cloudflare": 1, "Geo and ASN": 2]
         results.sort {
             let a = order[$0.category] ?? 9, b = order[$1.category] ?? 9
             if a != b { return a < b }
@@ -76,11 +76,11 @@ final class XrayCheckModel {
     func stop() { task?.cancel(); task = nil; isRunning = false; XrayCore.stop() }
 }
 
-/// Доступность Xray-инбаунда + выходной IP (#71): вставляем ссылку `vless://` /
-/// `trojan://` или конфиг, поднимаем ядро Xray **в процессе** (libXray) с
-/// локальным SOCKS и опрашиваем через него десяток IP-эхо/гео-сервисов — какой
-/// выходной IP видит каждый (провайдер, Cloudflare, страна, ASN). Диагностика
-/// своего сервера, не обход.
+/// Xray inbound reachability + exit IP (#71): we paste a `vless://` /
+/// `trojan://` link or a config, bring up the Xray core **in-process** (libXray) with
+/// a local SOCKS and poll a dozen IP-echo/geo services through it — what
+/// exit IP each one sees (provider, Cloudflare, country, ASN). Diagnostics for
+/// your own server, not circumvention.
 struct XrayCheckView: View {
     var autostart = false
     @State private var model = XrayCheckModel()
@@ -100,21 +100,21 @@ struct XrayCheckView: View {
             if model.results.isEmpty, !model.isRunning, model.errorMessage == nil {
                 ToolIdleHint(
                     icon: "globe.badge.chevron.backward",
-                    title: "Выходной IP через ваш прокси",
-                    message: "Ядро Xray поднимется в приложении, подключится к вашему серверу и опросит через него разные ресурсы — какой выходной IP они видят: адрес и страну провайдера, что показывает Cloudflare, ASN.",
+                    title: "Exit IP through your proxy",
+                    message: "The Xray core starts in the app, connects to your server and queries various resources through it — which exit IP they see: address and provider country, what Cloudflare shows, ASN.",
                     example: "",
                     current: model.input
                 )
             } else if model.isRunning, model.results.isEmpty {
                 VStack(spacing: 10) {
                     ProgressView()
-                    Text("Поднимаем ядро и подключаемся к серверу…")
+                    Text("Starting the core and connecting to the server…")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .padding(.top, 40)
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning,
+            RunButton(title: "Check", running: model.isRunning,
                       disabled: model.input.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if model.isRunning { model.stop() } else { model.start() }
             }
@@ -123,11 +123,11 @@ struct XrayCheckView: View {
         .animation(.snappy, value: model.errorMessage)
         .haptic(.success, trigger: model.isRunning) { !$0 && model.answered > 0 }
         .haptic(.failure, trigger: model.isRunning) { !$0 && (model.errorMessage != nil || model.didFinishWithNoAnswers) }
-        .navigationTitle("Доступность Xray")
+        .navigationTitle("Xray availability")
         .toolTitleDisplayMode()
         .safeAreaInset(edge: .bottom) {
             if let v = model.coreVersion {
-                Text("Ядро Xray \(v)")
+                Text("Xray core \(v)")
                     .font(.caption2).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity).padding(.bottom, 2)
             }
@@ -142,7 +142,7 @@ struct XrayCheckView: View {
 
     private var inputCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("Ссылка узла или конфиг", systemImage: "bolt.horizontal.circle")
+            Label("Node link or config", systemImage: "bolt.horizontal.circle")
                 .font(.caption).foregroundStyle(.secondary)
             TextField("vless:// · trojan:// · xray json", text: $model.input, axis: .vertical)
                 .lineLimit(1...4)
@@ -167,11 +167,11 @@ struct XrayCheckView: View {
                     .font(.title).foregroundStyle(ok ? Color.green : .red)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(ok ? "Инбаунд работает" : "Соединение не прошло")
+                    Text(ok ? "Inbound works" : "Connection failed")
                         .font(.headline)
                     Text(ok
-                         ? "Ответили \(model.answered) из \(model.results.count) ресурсов."
-                         : "Ядро поднялось, но ни один запрос не прошёл через прокси.")
+                         ? "\(model.answered) of \(model.results.count) resources responded."
+                         : "The core started, but no request went through the proxy.")
                         .font(.caption).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -185,7 +185,7 @@ struct XrayCheckView: View {
                         Text(flag).font(.title2)
                     }
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Выходной IP").font(.caption2).foregroundStyle(.secondary)
+                        Text("Exit IP").font(.caption2).foregroundStyle(.secondary)
                         Text(ip).font(.system(.title3, design: .monospaced).weight(.semibold))
                             .textSelection(.enabled)
                     }
@@ -194,7 +194,7 @@ struct XrayCheckView: View {
                 .padding(14)
                 if split {
                     Divider().padding(.leading, 14)
-                    Label("Ресурсы видят разные выходные IP: \(model.egressIPs.joined(separator: ", "))",
+                    Label("Resources see different exit IPs: \(model.egressIPs.joined(separator: ", "))",
                           systemImage: "exclamationmark.triangle.fill")
                         .font(.caption).foregroundStyle(.orange)
                         .padding(14)
@@ -208,7 +208,7 @@ struct XrayCheckView: View {
     // MARK: - list
 
     private var resultsList: some View {
-        let groups = ["IP-эхо", "Cloudflare", "Гео и ASN"]
+        let groups = ["IP echo", "Cloudflare", "Geo and ASN"]
         return ForEach(groups, id: \.self) { group in
             let rows = model.results.filter { $0.category == group }
             if !rows.isEmpty {
@@ -240,7 +240,7 @@ private struct EgressRow: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: result.ok ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .foregroundStyle(result.ok ? Color.green : .red)
-                .accessibilityLabel(result.ok ? "Ответил" : "Не ответил")
+                .accessibilityLabel(result.ok ? "Responded" : "No response")
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.name).font(.subheadline.weight(.medium))
                 if let info = result.info {
@@ -256,7 +256,7 @@ private struct EgressRow: View {
             }
             Spacer(minLength: 8)
             if result.ok {
-                Text("\(Int(result.millis)) мс").font(.caption2.monospacedDigit())
+                Text("\(Int(result.millis)) ms").font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
         }

@@ -48,7 +48,7 @@ public final class MTUDiscovery: Sendable {
                     // Ensure the smallest size works at all (host reachable).
                     continuation.yield(.probing(payload: low))
                     guard await probe(host: host, size: low, timeout: perProbeTimeout) else {
-                        continuation.yield(.failed("Хост не отвечает на ICMP"))
+                        continuation.yield(.failed("Host doesn't respond to ICMP"))
                         continuation.finish()
                         return
                     }

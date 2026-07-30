@@ -14,7 +14,7 @@ public struct SubscriptionUserAgent: Identifiable, Equatable, Hashable, Sendable
 }
 
 public enum SubscriptionUserAgents {
-    public static let auto = SubscriptionUserAgent(id: "auto", label: "Авто", header: nil)
+    public static let auto = SubscriptionUserAgent(id: "auto", label: "Auto", header: nil)
 
     /// Auto and the concrete clients, ordered popular → niche. Auto walks the
     /// concrete headers below until one returns a parseable node list.

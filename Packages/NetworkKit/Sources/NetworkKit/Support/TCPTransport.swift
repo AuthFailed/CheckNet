@@ -77,7 +77,7 @@ enum TCPTransport {
             buffer.append(contentsOf: chunk[0..<n])
         }
         guard buffer.count == count else {
-            throw NetworkError.protocolError("соединение закрыто (\(buffer.count)/\(count) байт)")
+            throw NetworkError.protocolError("connection closed (\(buffer.count)/\(count) bytes)")
         }
         return buffer
     }
@@ -122,7 +122,7 @@ enum TCPTransport {
 
         let lenBytes = try readExactly(fd: fd, count: 2, timeout: timeout)
         let respLen = (Int(lenBytes[0]) << 8) | Int(lenBytes[1])
-        guard respLen > 0 else { throw NetworkError.protocolError("нулевая длина TCP DNS") }
+        guard respLen > 0 else { throw NetworkError.protocolError("zero-length TCP DNS") }
         return try readExactly(fd: fd, count: respLen, timeout: timeout)
     }
 }

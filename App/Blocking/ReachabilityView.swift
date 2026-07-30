@@ -47,16 +47,16 @@ struct ReachabilityView: View {
     var body: some View {
         List {
             Section {
-                Picker("Группа", selection: $scope) {
+                Picker("Group", selection: $scope) {
                     ForEach(ProbeTarget.Category.allCases, id: \.self) { category in
                         Text(LocalizedStringKey(category.label)).tag(category)
                     }
                 }
-                Picker("Профиль соединения", selection: $fingerprint) {
+                Picker("Connection profile", selection: $fingerprint) {
                     ForEach(TLSFingerprint.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
             } footer: {
-                Text("Профиль меняет вид TLS-рукопожатия. Это не полная имитация браузера — порядок расширений задаёт система. Но если один профиль проходит, а другой обрывается, ограничение зависит от вида соединения.")
+                Text("The profile changes what the TLS handshake looks like. It isn’t a full browser imitation — the system decides the order of extensions. But if one profile gets through and another is cut off, the restriction depends on the kind of connection.")
             }
 
             if let finding = run.value?.finding {
@@ -74,7 +74,7 @@ struct ReachabilityView: View {
             }
 
             if !results.isEmpty {
-                Section("По провайдерам") {
+                Section("By provider") {
                     ForEach(summaries) { summary in
                         HStack {
                             Text(summary.provider)
@@ -86,7 +86,7 @@ struct ReachabilityView: View {
                     }
                 }
 
-                Section("Узлы") {
+                Section("Hosts") {
                     ForEach(results) { result in
                         HStack(spacing: 10) {
                             StatusDot(level: level(for: result.status),
@@ -99,7 +99,7 @@ struct ReachabilityView: View {
                             }
                             Spacer()
                             if let ms = result.handshakeMillis {
-                                Text("\(Int(ms)) мс").font(.caption.monospacedDigit()).foregroundStyle(.tertiary)
+                                Text("\(Int(ms)) ms").font(.caption.monospacedDigit()).foregroundStyle(.tertiary)
                             }
                         }
                     }
@@ -107,14 +107,14 @@ struct ReachabilityView: View {
             } else if !run.isRunning {
                 Section {
                     ContentUnavailableView(
-                        "Проверка не запускалась",
+                        "Check hasn’t been run",
                         systemImage: "network",
-                        description: Text("Будет проверено узлов: \(targets.count). Каталог от \(ProbeCatalog.revision).")
+                        description: Text("\(targets.count) hosts will be checked. Catalog from \(ProbeCatalog.revision).")
                     )
                 }
             }
         }
-        .navigationTitle("Доступность")
+        .navigationTitle("Availability")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -123,13 +123,13 @@ struct ReachabilityView: View {
         // its own — every check explains itself.
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                InfoButton(title: "Доступность узлов", systemImage: "network",
-                           message: "Проверяет по одному эталонному узлу для каждого провайдера, сервиса и сервера push-уведомлений — отвечает ли он и не мешает ли сеть. Профиль соединения меняет вид TLS-рукопожатия: если один проходит, а другой обрывается, ограничение зависит от вида соединения.")
+                InfoButton(title: "Host reachability", systemImage: "network",
+                           message: "Checks one reference node per provider, service and push-notification server — whether it responds and whether the network interferes. The connection profile changes the TLS handshake: if one passes and another is cut, the restriction depends on the connection type.")
             }
         }
         .refreshable { await performSweep() }
         .safeAreaInset(edge: .bottom) {
-            RunButton(title: "Проверить", running: run.isRunning, disabled: false) {
+            RunButton(title: "Check", running: run.isRunning, disabled: false) {
                 if run.isRunning { return }
                 start()
             }

@@ -27,10 +27,10 @@ struct RootTabView: View {
 
     var body: some View {
         TabView(selection: $selection) {
-            Tab("Тесты", systemImage: "wrench.and.screwdriver", value: 0) {
+            Tab("Tests", systemImage: "wrench.and.screwdriver", value: 0) {
                 CatalogView()
             }
-            Tab("Блокировки", systemImage: "hand.raised", value: 1) {
+            Tab("Blocks", systemImage: "hand.raised", value: 1) {
                 BlockingView()
             }
             Tab("VPN", systemImage: "network.badge.shield.half.filled", value: 2) {
@@ -39,7 +39,7 @@ struct RootTabView: View {
             // Not on macOS: settings live in the ⌘, scene there, and a
             // Settings tab as well would be two doors to the same room.
             #if !os(macOS)
-            Tab("Настройки", systemImage: "gearshape", value: 3) {
+            Tab("Settings", systemImage: "gearshape", value: 3) {
                 SettingsView()
             }
             #endif

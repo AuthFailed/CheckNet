@@ -62,7 +62,7 @@ public struct NetworkInterface: Sendable, Hashable, Codable, Identifiable {
         switch true {
         case name == "en0": return "Wi-Fi / Ethernet (en0)"
         case name.hasPrefix("en"): return "Ethernet (\(name))"
-        case name.hasPrefix("pdp_ip"): return "Сотовая (\(name))"
+        case name.hasPrefix("pdp_ip"): return "Cellular (\(name))"
         case name.hasPrefix("utun"), name.hasPrefix("ipsec"), name.hasPrefix("tun"): return "VPN (\(name))"
         case name == "lo0": return "Loopback (lo0)"
         case name.hasPrefix("awdl"): return "AWDL (\(name))"

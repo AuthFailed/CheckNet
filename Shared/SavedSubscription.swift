@@ -16,7 +16,7 @@ struct SavedSubscription: Identifiable, Codable, Hashable {
         if v.hasPrefix("happ://") { return "Happ" }
         if v.hasPrefix("incy://") { return "Incy" }
         if v.hasPrefix("http") { return "URL" }
-        return "текст"
+        return "text"
     }
 }
 

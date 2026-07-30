@@ -21,8 +21,8 @@ struct PingControl: ControlWidget {
                 Text(value.subtitle)
             }
         }
-        .displayName("Пинг хоста")
-        .description("Повторяет последнюю проверку задержки.")
+        .displayName("Ping host")
+        .description("Repeats the last latency check.")
     }
 }
 
@@ -41,12 +41,12 @@ struct LastPingProvider: ControlValueProvider {
     }
 
     var previewValue: Value {
-        Value(host: "1.1.1.1", title: "1.1.1.1", subtitle: "12 мс")
+        Value(host: "1.1.1.1", title: "1.1.1.1", subtitle: "12 ms")
     }
 
     func currentValue() async throws -> Value {
         guard let snapshot = SharedStore.latestSnapshot() else {
-            return Value(host: "", title: "Пинг", subtitle: "Нет данных")
+            return Value(host: "", title: "Ping", subtitle: "No data")
         }
         return Value(
             host: snapshot.host,
@@ -63,10 +63,10 @@ struct BlockingControl: ControlWidget {
             ControlWidgetButton(action: OpenURLIntent(
                 ControlDeepLink.tabURL("blocking") ?? URL(string: "checknet://tab/blocking")!
             )) {
-                Label("Блокировки", systemImage: "hand.raised")
+                Label("Blocks", systemImage: "hand.raised")
             }
         }
-        .displayName("Проверить блокировки")
-        .description("Открывает проверки сетевых ограничений.")
+        .displayName("Check blocks")
+        .description("Opens the network restriction checks.")
     }
 }

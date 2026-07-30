@@ -8,9 +8,9 @@ struct HostSharingView: View {
         var id: Int { rawValue }
         var label: String {
             switch self {
-            case .all: "Все"
-            case .domains: "Домены"
-            case .ips: "IP-адреса"
+            case .all: "All"
+            case .domains: "Domains"
+            case .ips: "IP addresses"
             }
         }
     }
@@ -51,14 +51,14 @@ struct HostSharingView: View {
             if globalHosts.isEmpty {
                 Section {
                     ContentUnavailableView(
-                        "Нет сохранённых хостов",
+                        "No saved hosts",
                         systemImage: "bookmark",
-                        description: Text("Добавьте домены или IP-адреса, чтобы поделиться ими.")
+                        description: Text("Add domains or IP addresses to share them.")
                     )
                 }
             } else {
                 Section {
-                    Picker("Показывать", selection: $scope) {
+                    Picker("Show", selection: $scope) {
                         ForEach(Scope.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                     }
                     .pickerStyle(.segmented)
@@ -71,42 +71,42 @@ struct HostSharingView: View {
                     }
                 } header: {
                     HStack {
-                        Text("Что отправить")
+                        Text("What to share")
                         Spacer()
-                        Button(allVisibleSelected ? "Снять все" : "Выбрать все") {
+                        Button(allVisibleSelected ? "Deselect All" : "Select All") {
                             toggleAllVisible()
                         }
                         .font(.caption)
                         .textCase(nil)
                     }
                 } footer: {
-                    Text("Выбрано: \(selection.count)")
+                    Text("Selected: \(selection.count)")
                 }
 
                 Section {
                     if let shareURL {
                         ShareLink(item: shareURL) {
-                            Label("Поделиться ссылкой", systemImage: "square.and.arrow.up")
+                            Label("Share link", systemImage: "square.and.arrow.up")
                         }
                         Button {
                             showQR = true
                         } label: {
-                            Label("Показать QR-код", systemImage: "qrcode")
+                            Label("Show QR code", systemImage: "qrcode")
                         }
                         Button {
                             Pasteboard.copy(shareURL.absoluteString)
                             copied = true
                         } label: {
-                            Label(copied ? "Ссылка скопирована" : "Скопировать ссылку",
+                            Label(copied ? "Link copied" : "Copy link",
                                   systemImage: copied ? "checkmark" : "doc.on.doc")
                         }
                     } else {
-                        Text("Выберите хотя бы один хост").foregroundStyle(.secondary)
+                        Text("Select at least one host").foregroundStyle(.secondary)
                     }
                 } header: {
-                    Text("Отправить")
+                    Text("Send")
                 } footer: {
-                    Text("Ссылка содержит только выбранные хосты. Она открывается в CheckNet на другом устройстве и ничего не отправляет в интернет.")
+                    Text("The link contains only the hosts you selected. It opens in CheckNet on another device and sends nothing to the internet.")
                 }
             }
 
@@ -116,24 +116,24 @@ struct HostSharingView: View {
                     pasteError = nil
                     showScanner = true
                 } label: {
-                    Label("Сканировать QR-код", systemImage: "qrcode.viewfinder")
+                    Label("Scan QR code", systemImage: "qrcode.viewfinder")
                 }
                 #endif
                 Button {
                     importFromClipboard()
                 } label: {
-                    Label("Вставить ссылку из буфера", systemImage: "doc.on.clipboard")
+                    Label("Paste link from clipboard", systemImage: "doc.on.clipboard")
                 }
                 if let pasteError {
                     Text(LocalizedStringKey(pasteError)).font(.caption).foregroundStyle(.secondary)
                 }
             } header: {
-                Text("Импорт")
+                Text("Import")
             } footer: {
-                Text("Отсканируйте QR-код с другого устройства или скопируйте присланную ссылку checknet:// — приложение покажет, что именно будет добавлено.")
+                Text("Scan a QR code from another device or copy a checknet:// link you received — the app will show exactly what gets added.")
             }
         }
-        .navigationTitle("Поделиться хостами")
+        .navigationTitle("Share hosts")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -158,7 +158,7 @@ struct HostSharingView: View {
 
     private func handleScan(_ payload: String) {
         guard let hosts = HostSharing.hosts(fromPastedText: payload), !hosts.isEmpty else {
-            pasteError = "В этом QR-коде нет списка хостов CheckNet."
+            pasteError = "This QR code has no CheckNet host list."
             return
         }
         scannedHosts = hosts
@@ -213,11 +213,11 @@ struct HostSharingView: View {
     private func importFromClipboard() {
         pasteError = nil
         guard let text = Pasteboard.string, !text.isEmpty else {
-            pasteError = "Буфер обмена пуст."
+            pasteError = "The clipboard is empty."
             return
         }
         guard let hosts = HostSharing.hosts(fromPastedText: text), !hosts.isEmpty else {
-            pasteError = "В буфере нет ссылки CheckNet."
+            pasteError = "The clipboard has no CheckNet link."
             return
         }
         pendingImport = ImportPayload(hosts: hosts)
@@ -242,22 +242,22 @@ private struct QRSharePosterView: View {
             VStack(spacing: 20) {
                 QRCodeView(text: url.absoluteString)
                     .frame(maxWidth: 320)
-                Text("Хостов в коде: \(count)")
+                Text("Hosts in the code: \(count)")
                     .font(.headline)
-                Text("Отсканируйте камерой на другом устройстве с установленным CheckNet.")
+                Text("Scan it with the camera on another device that has CheckNet installed.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                 Spacer()
             }
             .padding()
-            .navigationTitle("QR-код")
+            .navigationTitle("QR code")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -282,22 +282,22 @@ struct ImportHostsSheet: View {
             Form {
                 if let result {
                     Section {
-                        Label("Добавлено: \(result.added)", systemImage: "checkmark.circle.fill")
+                        Label("Added: \(result.added)", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                         if result.skipped > 0 {
-                            Text("Пропущено дубликатов: \(result.skipped)")
+                            Text("Duplicates skipped: \(result.skipped)")
                                 .foregroundStyle(.secondary)
                         }
                     }
                 } else {
                     Section {
-                        LabeledContent("Новых", value: "\(newHosts.count)")
-                        LabeledContent("Уже сохранено", value: "\(duplicates)")
+                        LabeledContent("New", value: "\(newHosts.count)")
+                        LabeledContent("Already saved", value: "\(duplicates)")
                     } footer: {
-                        Text("Импорт только добавляет хосты — существующие записи не изменяются и не удаляются.")
+                        Text("Import only adds hosts — existing entries are never changed or deleted.")
                     }
 
-                    Section("Из ссылки") {
+                    Section("From link") {
                         ForEach(hosts) { host in
                             HStack(spacing: 12) {
                                 Image(systemName: SavedHostsStore.isIP(host.value) ? "number" : "globe")
@@ -308,7 +308,7 @@ struct ImportHostsSheet: View {
                                 }
                                 Spacer()
                                 if store.containsGlobally(host.value) {
-                                    Text("уже есть").font(.caption2).foregroundStyle(.tertiary)
+                                    Text("already added").font(.caption2).foregroundStyle(.tertiary)
                                 }
                             }
                         }
@@ -316,22 +316,22 @@ struct ImportHostsSheet: View {
                 }
             }
             // Short title: "Import hosts" is truncated between the two toolbar buttons.
-            .navigationTitle("Импорт")
+            .navigationTitle("Import")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 if result == nil {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Отмена") { dismiss() }
+                        Button("Cancel") { dismiss() }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Импортировать") { result = store.merge(hosts) }
+                        Button("Import") { result = store.merge(hosts) }
                             .disabled(newHosts.isEmpty)
                     }
                 } else {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Готово") { dismiss() }
+                        Button("Done") { dismiss() }
                     }
                 }
             }

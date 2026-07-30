@@ -6,7 +6,7 @@ options:
     macOS: "26.0"
   createIntermediateGroups: true
   groupSortPosition: top
-  developmentLanguage: ru
+  developmentLanguage: en
 
 packages:
   NetworkKit:
@@ -41,7 +41,7 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: CheckNet
-        CFBundleDevelopmentRegion: ru
+        CFBundleDevelopmentRegion: en
         # Track the build settings so bumping CURRENT_PROJECT_VERSION / MARKETING_VERSION
         # actually changes the shipped version (XcodeGen otherwise writes literal defaults).
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
@@ -107,9 +107,9 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        NSCameraUsageDescription: "Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются."
-        NSLocationWhenInUseUsageDescription: "Доступ к геопозиции нужен только чтобы прочитать имя текущей Wi-Fi-сети — iOS отдаёт SSID лишь с этим разрешением. Координаты не используются и никуда не отправляются."
-        NSLocalNetworkUsageDescription: "CheckNet сканирует локальную сеть для обнаружения устройств, Bonjour-сервисов и проверки хостов."
+        NSCameraUsageDescription: "The camera is used only to scan QR codes containing your list of saved hosts. Images are not sent anywhere."
+        NSLocationWhenInUseUsageDescription: "Location access is used only to read the name of the current Wi-Fi network — iOS provides the SSID only with this permission. Coordinates are not used or sent anywhere."
+        NSLocalNetworkUsageDescription: "CheckNet scans the local network to discover devices, Bonjour services, and check hosts."
         NSBonjourServices:
           - _services._dns-sd._udp
           - _checknet._tcp

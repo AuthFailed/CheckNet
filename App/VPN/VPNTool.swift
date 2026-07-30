@@ -27,31 +27,31 @@ enum VPNTool: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .happRouting: "Роутинг Happ"
-        case .subscription: "Парсинг подписки"
+        case .happRouting: "Happ routing"
+        case .subscription: "Subscription parsing"
         case .happDecrypt: "Happ Decrypt"
-        case .incyLink: "Incy-ссылка"
-        case .sniCheck: "Проверка SNI для Reality"
-        case .realityScanner: "Сканер для Reality"
-        case .xrayCheck: "Доступность Xray"
+        case .incyLink: "Incy link"
+        case .sniCheck: "SNI check for Reality"
+        case .realityScanner: "Scanner for Reality"
+        case .xrayCheck: "Xray availability"
         case .geoData: "geosite / geoip"
-        case .mrsViewer: "Правила mihomo (.mrs)"
-        case .clientHeaders: "Заголовки клиентов"
+        case .mrsViewer: "mihomo rules (.mrs)"
+        case .clientHeaders: "Client headers"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .happRouting: "Разбор и сборка правил роутинга"
-        case .subscription: "Хосты и роутинг из подписки"
-        case .happDecrypt: "Расшифровка happ://crypt-ссылок"
-        case .incyLink: "Разбор и генерация incy://crypt1"
-        case .sniCheck: "Годится ли домен под dest"
-        case .realityScanner: "Поиск TLS 1.3 доменов в подсети"
-        case .xrayCheck: "Живой ли VLESS/Trojan-инбаунд"
-        case .geoData: "Просмотр .dat: категории, поиск"
-        case .mrsViewer: "Распаковка rule-set в правила"
-        case .clientHeaders: "Что отдаёт сервер разным клиентам"
+        case .happRouting: "Parse and build routing rules"
+        case .subscription: "Hosts and routing from a subscription"
+        case .happDecrypt: "Decrypt happ://crypt links"
+        case .incyLink: "Parse and generate incy://crypt1"
+        case .sniCheck: "Whether the domain works as dest"
+        case .realityScanner: "Find TLS 1.3 domains in a subnet"
+        case .xrayCheck: "Whether the VLESS/Trojan inbound is alive"
+        case .geoData: "View .dat: categories, search"
+        case .mrsViewer: "Unpack rule-set into rules"
+        case .clientHeaders: "What the server returns to different clients"
         }
     }
 
@@ -75,25 +75,25 @@ enum VPNTool: String, CaseIterable, Identifiable {
     var info: String {
         switch self {
         case .happRouting:
-            "Разбирает ссылку `happ://routing/add/…` в читаемый профиль (DNS, стратегия, списки Direct/Proxy/Block) и собирает ссылку обратно. Импорт существующих правил и генерация новых для клиента Happ."
+            "Parses a `happ://routing/add/…` link into a readable profile (DNS, strategy, Direct/Proxy/Block lists) and builds the link back. Import existing rules and generate new ones for the Happ client."
         case .subscription:
-            "Разбирает подписку (base64-ссылки, Clash YAML, sing-box JSON, Happ/Incy) и показывает список узлов, параметры и встроенный роутинг с быстрым переходом к проверкам."
+            "Parses a subscription (base64 links, Clash YAML, sing-box JSON, Happ/Incy) and shows the node list, parameters, and built-in routing with quick jumps to checks."
         case .happDecrypt:
-            "Расшифровывает ссылки `happ://crypt…` (обычно это подписка или конфиг) в читаемый вид. Всё считается на устройстве."
+            "Decrypts `happ://crypt…` links (usually a subscription or config) into readable form. Everything is computed on the device."
         case .incyLink:
-            "Разбирает `incy://crypt1/…` в URL подписки и генерирует такую ссылку из своего URL — чтобы отдавать пользователям ссылку и QR вместо «голого» адреса."
+            "Parses `incy://crypt1/…` into a subscription URL and generates such a link from your own URL — so you can hand users a link and QR instead of a bare address."
         case .sniCheck:
-            "Проверяет, годится ли домен как SNI/dest для Reality: TLS 1.3, HTTP/2, отсутствие редиректа, сертификат, гео и доступность — с итоговым вердиктом."
+            "Checks whether a domain works as an SNI/dest for Reality: TLS 1.3, HTTP/2, no redirect, certificate, geo, and reachability — with a final verdict."
         case .realityScanner:
-            "Обходит IP-адрес, подсеть (CIDR) или домен и находит хосты с TLS 1.3, показывая домен из их сертификата — кандидаты под dest рядом с вашим сервером. Рукопожатие идёт без SNI, как в RealiTLScanner. Только поиск, без обхода блокировок."
+            "Walks an IP address, subnet (CIDR), or domain and finds hosts with TLS 1.3, showing the domain from their certificate — dest candidates near your server. The handshake runs without SNI, as in RealiTLScanner. Discovery only, no censorship circumvention."
         case .xrayCheck:
-            "Делает настоящий handshake к вашему инбаунду (VLESS/Trojan) и пробный запрос через сервер, чтобы подтвердить, что он работает, и назвать причину при сбое."
+            "Performs a real handshake to your inbound (VLESS/Trojan) and a test request through the server to confirm it works, and names the cause on failure."
         case .geoData:
-            "Открывает ваши файлы `geosite.dat` / `geoip.dat`: категории и теги, поиск домена/IP по категориям, фильтры и сортировка, экспорт."
+            "Opens your `geosite.dat` / `geoip.dat` files: categories and tags, domain/IP lookup by category, filters and sorting, export."
         case .mrsViewer:
-            "Распаковывает скомпилированный rule-set mihomo (`.mrs`) обратно в список доменов или подсетей с поиском и экспортом."
+            "Unpacks a compiled mihomo rule-set (`.mrs`) back into a list of domains or subnets, with search and export."
         case .clientHeaders:
-            "Запрашивает вашу подписку с заголовками разных клиентов (Happ, Clash-семейство, sing-box…) и показывает, что сервер отдаёт каждому, с группировкой по типу клиента."
+            "Requests your subscription with the headers of different clients (Happ, Clash family, sing-box…) and shows what the server returns to each, grouped by client type."
         }
     }
 
@@ -118,11 +118,11 @@ struct VPNSection: Identifiable {
 
 enum VPNCatalog {
     static let sections: [VPNSection] = [
-        VPNSection(id: "links", title: "Ссылки и подписки",
+        VPNSection(id: "links", title: "Links and subscriptions",
                    tools: [.happRouting, .subscription, .happDecrypt, .incyLink]),
-        VPNSection(id: "server", title: "Проверки сервера",
+        VPNSection(id: "server", title: "Server checks",
                    tools: [.sniCheck, .realityScanner, .xrayCheck]),
-        VPNSection(id: "data", title: "Списки и данные",
+        VPNSection(id: "data", title: "Lists and data",
                    tools: [.geoData, .mrsViewer, .clientHeaders]),
     ]
 }

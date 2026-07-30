@@ -54,21 +54,21 @@ enum HistoryExporter {
             Date.FormatStyle(date: .abbreviated, time: .standard).locale(locale)
         )
         let outcome = r.succeeded
-            ? String(localized: "успех", locale: locale)
-            : String(localized: "проблема", locale: locale)
+            ? String(localized: "success", locale: locale)
+            : String(localized: "problem", locale: locale)
         var lines = [
             "CheckNet — \(r.tool)",
-            String(localized: "Хост: \(r.host)", locale: locale),
-            String(localized: "Время: \(time)", locale: locale),
-            String(localized: "Результат: \(outcome)", locale: locale)
+            String(localized: "Host: \(r.host)", locale: locale),
+            String(localized: "Time: \(time)", locale: locale),
+            String(localized: "Result: \(outcome)", locale: locale)
         ]
         if let latency = r.latencyMillis {
             let value = String(format: "%.1f", latency)
-            lines.append(String(localized: "Задержка: \(value) мс", locale: locale))
+            lines.append(String(localized: "Latency: \(value) ms", locale: locale))
         }
         if let loss = r.lossPercent {
             let value = String(format: "%.0f", loss)
-            lines.append(String(localized: "Потери: \(value)%", locale: locale))
+            lines.append(String(localized: "Loss: \(value)%", locale: locale))
         }
         lines.append(r.detail)
         return lines.joined(separator: "\n")
@@ -120,7 +120,7 @@ private func writeExport(_ records: [CheckRecord], format: HistoryExporter.Forma
 /// screen shows its own scheduled history so the two never mix.
 struct HistoryView: View {
     var source: HistorySource = .manual
-    var title: String = "История"
+    var title: String = "History"
 
     /// One day's records, precomputed. Grouping and sorting used to run inside
     /// `body`, i.e. on every render.
@@ -147,8 +147,8 @@ struct HistoryView: View {
         NavigationStack {
             Group {
                 if records.isEmpty {
-                    ContentUnavailableView("Нет истории", systemImage: "clock.arrow.circlepath",
-                                           description: Text("Результаты проверок будут появляться здесь."))
+                    ContentUnavailableView("No history", systemImage: "clock.arrow.circlepath",
+                                           description: Text("Check results will appear here."))
                 } else if groups.isEmpty {
                     ContentUnavailableView.search(text: query)
                 } else {
@@ -166,10 +166,10 @@ struct HistoryView: View {
                     .refreshable { reload() }
                 }
             }
-            .searchable(text: $query, prompt: "Хост или инструмент")
+            .searchable(text: $query, prompt: "Host or tool")
             .searchScopes($scope) {
-                Text("Все").tag(Scope.all)
-                Text("С ошибками").tag(Scope.failures)
+                Text("All").tag(Scope.all)
+                Text("Failures").tag(Scope.failures)
             }
             .onChange(of: query) { _, _ in regroup() }
             .onChange(of: scope) { _, _ in regroup() }
@@ -181,27 +181,27 @@ struct HistoryView: View {
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
-                        ShareLink("Экспорт CSV",
+                        ShareLink("Export CSV",
                                   item: HistoryCSVExport(records: records),
                                   preview: SharePreview("checknet-history.csv"))
-                        ShareLink("Экспорт JSON",
+                        ShareLink("Export JSON",
                                   item: HistoryJSONExport(records: records),
                                   preview: SharePreview("checknet-history.json"))
                         Divider()
-                        Button("Очистить историю", role: .destructive) { showClearConfirm = true }
+                        Button("Clear history", role: .destructive) { showClearConfirm = true }
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                     }
                     .disabled(records.isEmpty)
-                    .accessibilityLabel("Экспорт и очистка истории")
+                    .accessibilityLabel("Export and clear history")
                 }
             }
-            .confirmationDialog("Очистить всю историю?", isPresented: $showClearConfirm, titleVisibility: .visible) {
-                Button("Очистить", role: .destructive) {
+            .confirmationDialog("Clear all history?", isPresented: $showClearConfirm, titleVisibility: .visible) {
+                Button("Clear", role: .destructive) {
                     SharedStore.clearHistory(source: source)
                     records = []
                     groups = []
@@ -240,7 +240,7 @@ struct HistoryView: View {
                 HStack(spacing: 12) {
                     Image(systemName: record.succeeded ? "checkmark.circle.fill" : "xmark.circle.fill")
                         .foregroundStyle(record.succeeded ? .green : .red)
-                        .accessibilityLabel(record.succeeded ? "Успешно" : "С ошибкой")
+                        .accessibilityLabel(record.succeeded ? "Success" : "Failed")
                     VStack(alignment: .leading, spacing: 2) {
                         Text(record.host).font(.callout.weight(.medium))
                         Text(record.detail).font(.caption).foregroundStyle(.secondary)
@@ -249,7 +249,7 @@ struct HistoryView: View {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
                         if let latency = record.latencyMillis {
-                            Text("\(Int(latency)) мс").font(.callout.monospaced())
+                            Text("\(Int(latency)) ms").font(.callout.monospaced())
                         }
                         Text(record.timestamp, style: .time).font(.caption2).foregroundStyle(.secondary)
                     }
@@ -269,26 +269,26 @@ struct HistoryView: View {
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
                 delete(record)
-            } label: { Label("Удалить", systemImage: "trash") }
+            } label: { Label("Delete", systemImage: "trash") }
             ShareLink(item: HistoryExporter.shareText(record, locale: locale)) {
-                Label("Поделиться", systemImage: "square.and.arrow.up")
+                Label("Share", systemImage: "square.and.arrow.up")
             }
         }
     }
 
     private func expandedDetail(_ record: CheckRecord) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            LabeledContent("Инструмент", value: record.tool)
+            LabeledContent("Tool", value: record.tool)
             LabeledContent {
                 Text(record.timestamp, format: Date.FormatStyle(date: .abbreviated, time: .standard).locale(locale))
             } label: {
-                Text("Время")
+                Text("Time")
             }
             if let loss = record.lossPercent {
-                LabeledContent("Потери", value: "\(Int(loss))%")
+                LabeledContent("Loss", value: "\(Int(loss))%")
             }
             ShareLink(item: HistoryExporter.shareText(record, locale: locale)) {
-                Label("Поделиться результатом", systemImage: "square.and.arrow.up")
+                Label("Share result", systemImage: "square.and.arrow.up")
             }
             .font(.callout)
         }
@@ -313,8 +313,8 @@ struct HistoryView: View {
     /// catalog, and every other date is formatted with the locale the user
     /// selected in Settings rather than a hardcoded `ru_RU`.
     private func dayTitle(_ day: Date) -> Text {
-        if Calendar.current.isDateInToday(day) { return Text("Сегодня") }
-        if Calendar.current.isDateInYesterday(day) { return Text("Вчера") }
+        if Calendar.current.isDateInToday(day) { return Text("Today") }
+        if Calendar.current.isDateInYesterday(day) { return Text("Yesterday") }
         return Text(day, format: Date.FormatStyle(date: .abbreviated).locale(locale))
     }
 }

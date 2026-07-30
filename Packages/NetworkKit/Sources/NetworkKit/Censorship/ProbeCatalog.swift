@@ -20,10 +20,10 @@ public struct ProbeTarget: Sendable, Codable, Hashable, Identifiable {
 
         public var label: String {
             switch self {
-            case .foreignInfrastructure: "Зарубежные провайдеры"
-            case .russianInfrastructure: "Российские провайдеры"
-            case .webService: "Популярные сервисы"
-            case .pushNotification: "Push-уведомления"
+            case .foreignInfrastructure: "International providers"
+            case .russianInfrastructure: "Russian providers"
+            case .webService: "Popular services"
+            case .pushNotification: "Push notifications"
             }
         }
     }
@@ -137,7 +137,7 @@ public enum ProbeCatalog {
         .init(id: "SVC.GH", provider: "GitHub", country: nil, host: "github.com", category: .webService),
         .init(id: "SVC.GH-RAW", provider: "GitHub", country: nil, host: "raw.githubusercontent.com", category: .webService),
         .init(id: "SVC.WIKI", provider: "Wikipedia", country: nil, host: "ru.wikipedia.org", category: .webService),
-        .init(id: "SVC.GOSUSLUGI", provider: "Госуслуги", country: "RU", host: "www.gosuslugi.ru", category: .webService)
+        .init(id: "SVC.GOSUSLUGI", provider: "Gosuslugi", country: "RU", host: "www.gosuslugi.ru", category: .webService)
     ]
 
     // MARK: - Push notification endpoints

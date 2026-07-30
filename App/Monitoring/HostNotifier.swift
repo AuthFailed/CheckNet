@@ -23,10 +23,10 @@ final class HostNotifier: NSObject, UNUserNotificationCenterDelegate {
         center.delegate = self
         let open = UNNotificationAction(
             identifier: MonitorNotification.actionOpen,
-            title: "Открыть", options: [.foreground])
+            title: "Open", options: [.foreground])
         let recheck = UNNotificationAction(
             identifier: MonitorNotification.actionRecheck,
-            title: "Проверить снова", options: [])
+            title: "Check again", options: [])
         let category = UNNotificationCategory(
             identifier: MonitorNotification.categoryID,
             actions: [open, recheck], intentIdentifiers: [], options: [])

@@ -26,9 +26,9 @@ public enum JA3Profile: String, Sendable, CaseIterable, Identifiable, Codable {
 
     public var detail: String {
         switch self {
-        case .chrome: "Реальное рукопожатие Chrome: GREASE, ALPS, порядок расширений Chromium."
-        case .firefox: "Реальное рукопожатие Firefox: без GREASE-cipher, свой набор групп и расширений."
-        case .safari: "Реальное рукопожатие Safari/WebKit."
+        case .chrome: "A real Chrome handshake: GREASE, ALPS, Chromium’s extension order."
+        case .firefox: "A real Firefox handshake: no GREASE cipher, its own set of groups and extensions."
+        case .safari: "A real Safari/WebKit handshake."
         }
     }
 

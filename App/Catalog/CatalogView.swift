@@ -131,9 +131,9 @@ struct CatalogView: View {
                         .id(selection)
                 } else {
                     ContentUnavailableView(
-                        "Выберите инструмент",
+                        "Select a tool",
                         systemImage: "wrench.and.screwdriver",
-                        description: Text("Слева — все проверки. Выберите любую, чтобы запустить её.")
+                        description: Text("All checks are on the left. Select one to run it.")
                     )
                 }
             }
@@ -182,20 +182,20 @@ struct CatalogView: View {
         Section {
             VStack(alignment: .leading, spacing: 10) {
                 Label {
-                    Text("Доступ к локальной сети отклонён")
+                    Text("Local-network access denied")
                         .font(.subheadline.weight(.semibold))
                 } icon: {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
                 }
-                Text("Без него сканер сети, обзор устройств и Bonjour не работают. Включить можно в Настройках iOS.")
+                Text("Without it, the network scanner, device browser and Bonjour don't work. Turn it on in iOS Settings.")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 10) {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
-                        Link("Открыть Настройки", destination: url)
+                        Link("Open Settings", destination: url)
                             .font(.subheadline.weight(.semibold))
                     }
-                    Button("Скрыть") { flow.localNetworkDenied = false }
+                    Button("Hide") { flow.localNetworkDenied = false }
                         .font(.subheadline)
                 }
                 .padding(.top, 2)
@@ -214,7 +214,7 @@ struct CatalogView: View {
             }
         } header: {
             Label {
-                Text("Избранное")
+                Text("Favorites")
             } icon: {
                 Image(systemName: "star.fill").foregroundStyle(.orange)
             }
@@ -253,8 +253,8 @@ struct CatalogView: View {
             .font(.footnote)
             // The chevron is hidden, so the button says its own state instead.
             .accessibilityLabel(Text(LocalizedStringKey(section.title)))
-            .accessibilityValue(collapsed ? Text("свёрнуто") : Text("развёрнуто"))
-            .accessibilityHint(collapsed ? Text("Развернуть раздел") : Text("Свернуть раздел"))
+            .accessibilityValue(collapsed ? Text("collapsed") : Text("expanded"))
+            .accessibilityHint(collapsed ? Text("Expand section") : Text("Collapse section"))
         }
     }
 
@@ -297,7 +297,7 @@ struct CatalogView: View {
                 Button {
                     store.togglePin(tool)
                 } label: {
-                    Label(store.isPinned(tool) ? LocalizedStringKey("Открепить") : LocalizedStringKey("Закрепить"),
+                    Label(store.isPinned(tool) ? LocalizedStringKey("Unpin") : LocalizedStringKey("Pin"),
                           systemImage: store.isPinned(tool) ? "star.slash" : "star")
                 }
                 .tint(.orange)
@@ -307,14 +307,14 @@ struct CatalogView: View {
                     Button {
                         open(ToolRoute(tool: tool, autostart: true))
                     } label: {
-                        Label("Запустить", systemImage: "play.fill")
+                        Label("Run", systemImage: "play.fill")
                     }
                     .tint(.green)
                 }
                 Button {
                     open(ToolRoute(tool: tool, openSettings: true))
                 } label: {
-                    Label("Настройки", systemImage: "slider.horizontal.3")
+                    Label("Settings", systemImage: "slider.horizontal.3")
                 }
                 .tint(.gray)
             }
@@ -342,7 +342,7 @@ struct ToolRowView: View {
                         Image(systemName: "star.fill")
                             .font(.caption)
                             .foregroundStyle(.orange)
-                            .accessibilityLabel("В избранном")
+                            .accessibilityLabel("In favorites")
                     }
                 }
                 if showSubtitle {
@@ -353,7 +353,7 @@ struct ToolRowView: View {
             }
             Spacer(minLength: 8)
             if !tool.isImplemented {
-                Text("скоро")
+                Text("soon")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 7).padding(.vertical, 2)
@@ -469,11 +469,11 @@ private struct CatalogChrome: ViewModifier {
             #else
             .listStyle(.inset)
             #endif
-            .navigationTitle("Инструменты")
+            .navigationTitle("Tools")
             #if os(iOS)
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Поиск")
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search")
             #else
-            .searchable(text: $query, prompt: "Поиск")
+            .searchable(text: $query, prompt: "Search")
             #endif
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -482,7 +482,7 @@ private struct CatalogChrome: ViewModifier {
                     } label: {
                         Image(systemName: "clock.arrow.circlepath")
                     }
-                    .accessibilityLabel("История")
+                    .accessibilityLabel("History")
                 }
             }
             .sheet(isPresented: $showHistory) {

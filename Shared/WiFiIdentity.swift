@@ -32,11 +32,11 @@ struct WiFiIdentity: Sendable, Equatable {
     /// String Catalog keys (see the localization notes in CLAUDE.md).
     var securityLabel: String {
         switch security {
-        case .open: "Открытая (без шифрования)"
+        case .open: "Open (unencrypted)"
         case .wep: "WEP"
         case .personal: "WPA/WPA2/WPA3 Personal"
         case .enterprise: "Enterprise (802.1X)"
-        case .unknown: "Неизвестно"
+        case .unknown: "Unknown"
         }
     }
 

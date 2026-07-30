@@ -18,22 +18,22 @@ final class MRSViewModel {
             let data = try Data(contentsOf: url)
             load(data, name: url.lastPathComponent)
         } catch {
-            self.error = "Не удалось открыть файл: \(error.localizedDescription)"
+            self.error = "Couldn't open file: \(error.localizedDescription)"
         }
     }
 
     func loadFromURL() {
         let trimmed = urlText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: trimmed), url.scheme?.hasPrefix("http") == true else {
-            error = "Некорректная ссылка"; return
+            error = "Invalid link"; return
         }
         isLoading = true; error = nil
         Task {
             do {
                 let (data, _) = try await URLSession.shared.data(from: url)
-                await parse(data, name: url.lastPathComponent + " · загружен")
+                await parse(data, name: url.lastPathComponent + " · loaded")
             } catch {
-                self.error = "Не удалось загрузить: \(error.localizedDescription)"
+                self.error = "Couldn't download: \(error.localizedDescription)"
                 isLoading = false
             }
         }
@@ -60,18 +60,18 @@ final class MRSViewModel {
 
     private static func friendly(_ error: Error) -> String {
         switch error as? MRSParser.ParseError {
-        case .notCompressed: "Это не .mrs файл (не zstd)."
-        case .badMagic: "Не похоже на mihomo rule-set (нет метки MRS)."
-        case .badVersion: "Неподдерживаемая версия формата."
-        case .unsupportedBehavior(let b): "Неизвестный тип rule-set (\(b)). Поддерживаются domain и ipcidr."
-        case .truncated, .none: "Файл повреждён или обрезан."
+        case .notCompressed: "Not a .mrs file (not zstd)."
+        case .badMagic: "Doesn't look like a mihomo rule-set (no MRS marker)."
+        case .badVersion: "Unsupported format version."
+        case .unsupportedBehavior(let b): "Unknown rule-set type (\(b)). Only domain and ipcidr are supported."
+        case .truncated, .none: "The file is corrupted or truncated."
         }
     }
 }
 
-/// Просмотр mihomo rule-set (#74): распаковывает `.mrs` (zstd + succinct-trie /
-/// ipcidr) обратно в список доменов или подсетей с поиском и экспортом. Чистая
-/// диагностика — разбор ваших списков на устройстве, без маршрутизации трафика.
+/// Viewer for mihomo rule-set (#74): unpacks `.mrs` (zstd + succinct-trie /
+/// ipcidr) back into a list of domains or subnets with search and export. Pure
+/// diagnostics — parsing your own lists on the device, without routing traffic.
 struct MRSView: View {
     @State private var model = MRSViewModel()
     @State private var showImporter = false
@@ -96,18 +96,18 @@ struct MRSView: View {
                 idle
             }
         }
-        .navigationTitle("Правила mihomo (.mrs)")
+        .navigationTitle("mihomo rules (.mrs)")
         .toolTitleDisplayMode()
         .toolbar {
             if model.ruleSet != nil {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showImporter = true } label: {
-                        Label("Открыть файл", systemImage: "folder")
+                        Label("Open file", systemImage: "folder")
                     }
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     ShareLink(item: items.joined(separator: "\n")) {
-                        Label("Экспорт списка", systemImage: "square.and.arrow.up")
+                        Label("Export list", systemImage: "square.and.arrow.up")
                     }
                 }
             }
@@ -124,13 +124,13 @@ struct MRSView: View {
         List {
             Section {
                 Button { showImporter = true } label: {
-                    Label("Открыть .mrs файл", systemImage: "folder")
+                    Label("Open .mrs file", systemImage: "folder")
                 }
             } footer: {
-                Text("Скомпилированный rule-set mihomo (`.mrs`) — это zstd-сжатый список доменов или подсетей. Откройте свой файл или загрузите его по ссылке ниже; тип (домены/подсети) определяется автоматически.")
+                Text("A compiled mihomo rule-set (`.mrs`) is a zstd-compressed list of domains or subnets. Open your own file or load it from the link below; the type (domains/subnets) is detected automatically.")
             }
 
-            Section("Загрузить по ссылке") {
+            Section("Load from link") {
                 HStack {
                     Image(systemName: "link").foregroundStyle(.secondary)
                     TextField("https://…/ruleset.mrs", text: $model.urlText)
@@ -141,12 +141,12 @@ struct MRSView: View {
                         #endif
                         .onSubmit { model.loadFromURL() }
                 }
-                Button("Загрузить") { model.loadFromURL() }
+                Button("Load") { model.loadFromURL() }
                     .disabled(model.urlText.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
             if model.isLoading {
-                HStack { ProgressView(); Text("Распаковка…").foregroundStyle(.secondary) }
+                HStack { ProgressView(); Text("Unpacking…").foregroundStyle(.secondary) }
             }
             if let error = model.error {
                 Text(LocalizedStringKey(error)).foregroundStyle(.red).font(.callout)
@@ -160,14 +160,14 @@ struct MRSView: View {
         List {
             Section {
                 HStack {
-                    Label(set.behavior == .domain ? "Домены" : "Подсети",
+                    Label(set.behavior == .domain ? "Domains" : "Subnets",
                           systemImage: set.behavior == .domain ? "globe" : "network")
                     Spacer()
-                    Text("\(set.itemCount) правил").font(.caption.monospacedDigit())
+                    Text("\(set.itemCount) rules").font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
                 if set.entryCount != set.itemCount {
-                    Text("Исходных записей: \(set.entryCount) (после слияния — \(set.itemCount))")
+                    Text("Source records: \(set.entryCount) (after merge — \(set.itemCount))")
                         .font(.caption2).foregroundStyle(.secondary)
                 }
                 if let name = model.sourceName {
@@ -175,9 +175,9 @@ struct MRSView: View {
                 }
             }
 
-            Section(set.behavior == .domain ? "Домены" : "Подсети") {
+            Section(set.behavior == .domain ? "Domains" : "Subnets") {
                 if filtered.isEmpty {
-                    Text("Ничего не найдено").font(.caption).foregroundStyle(.secondary)
+                    Text("Nothing found").font(.caption).foregroundStyle(.secondary)
                 } else {
                     ForEach(filtered, id: \.self) { item in
                         Text(item)
@@ -187,6 +187,6 @@ struct MRSView: View {
                 }
             }
         }
-        .searchable(text: $search, prompt: set.behavior == .domain ? "Домен" : "Подсеть")
+        .searchable(text: $search, prompt: set.behavior == .domain ? "Domain" : "Subnet")
     }
 }

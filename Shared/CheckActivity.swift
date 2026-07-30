@@ -52,8 +52,8 @@ enum PingActivityContent {
     static func statusText(_ status: PingSnapshot.Status) -> String {
         switch status {
         case .ok: return "OK"
-        case .degraded: return L("Плохо")
-        case .down: return L("Нет")
+        case .degraded: return L("Poor")
+        case .down: return L("No")
         case .unknown: return "…"
         }
     }
@@ -62,12 +62,12 @@ enum PingActivityContent {
                      status: PingSnapshot.Status, isRunning: Bool) -> CheckActivityView {
         CheckActivityView(
             status: status,
-            headline: latency.map { Lf("%lld мс", Int($0)) } ?? "—",
-            caption: isRunning ? L("идёт проверка") : L("завершено"),
+            headline: latency.map { Lf("%lld ms", Int($0)) } ?? "—",
+            caption: isRunning ? L("testing") : L("done"),
             stats: [
-                CheckStat(label: L("Потери"), value: "\(Int(loss))%"),
-                CheckStat(label: L("Пакеты"), value: "\(received)/\(transmitted)"),
-                CheckStat(label: L("Статус"), value: statusText(status))
+                CheckStat(label: L("Loss"), value: "\(Int(loss))%"),
+                CheckStat(label: L("Packets"), value: "\(received)/\(transmitted)"),
+                CheckStat(label: L("Status"), value: statusText(status))
             ],
             isRunning: isRunning
         )
@@ -86,7 +86,7 @@ enum MonitorActivityContent {
     }
 
     static func subtitle(for entries: [MonitoredEntry]) -> String {
-        Lf("%lld хостов", entries.count)
+        Lf("%lld hosts", entries.count)
     }
 
     static func view(for entries: [MonitoredEntry], isRunning: Bool = true) -> CheckActivityView {
@@ -94,18 +94,18 @@ enum MonitorActivityContent {
         let down = entries.filter { $0.status == .down }.count
         let anyChecked = entries.contains { $0.status != .unknown }
         let caption: String
-        if entries.isEmpty { caption = L("нет хостов") }
-        else if down > 0 { caption = Lf("не отвечают: %lld", down) }
-        else if anyChecked { caption = L("все отвечают") }
-        else { caption = L("ожидание проверки") }
+        if entries.isEmpty { caption = L("no hosts") }
+        else if down > 0 { caption = Lf("not responding: %lld", down) }
+        else if anyChecked { caption = L("all responding") }
+        else { caption = L("awaiting check") }
         return CheckActivityView(
             status: overallStatus(entries),
             headline: "\(online)/\(entries.count)",
             caption: caption,
             stats: [
-                CheckStat(label: L("Онлайн"), value: "\(online)"),
-                CheckStat(label: L("Не отвечают"), value: "\(down)"),
-                CheckStat(label: L("Хостов"), value: "\(entries.count)")
+                CheckStat(label: L("Online"), value: "\(online)"),
+                CheckStat(label: L("Down"), value: "\(down)"),
+                CheckStat(label: L("Hosts"), value: "\(entries.count)")
             ],
             isRunning: isRunning
         )
@@ -120,17 +120,17 @@ enum SpeedActivityContent {
     static func view(liveMbps: Double, directionLabel: String, download: Double?, upload: Double?,
                      phaseLabel: String, isRunning: Bool) -> CheckActivityView {
         let headline = isRunning
-            ? Lf("%lld Мбит/с", Int(liveMbps.rounded()))
-            : (download.map { Lf("%lld Мбит/с", Int($0.rounded())) } ?? "—")
-        let caption = isRunning ? (phaseLabel.isEmpty ? directionLabel : phaseLabel) : L("готово")
+            ? Lf("%lld Mbps", Int(liveMbps.rounded()))
+            : (download.map { Lf("%lld Mbps", Int($0.rounded())) } ?? "—")
+        let caption = isRunning ? (phaseLabel.isEmpty ? directionLabel : phaseLabel) : L("done")
         return CheckActivityView(
             status: isRunning ? .unknown : .ok,
             headline: headline,
             caption: caption,
             stats: [
-                CheckStat(label: L("Загрузка"), value: mbps(download)),
-                CheckStat(label: L("Отдача"), value: mbps(upload)),
-                CheckStat(label: L("Сейчас"), value: "\(Int(liveMbps.rounded()))")
+                CheckStat(label: L("Download"), value: mbps(download)),
+                CheckStat(label: L("Upload"), value: mbps(upload)),
+                CheckStat(label: L("Now"), value: "\(Int(liveMbps.rounded()))")
             ],
             isRunning: isRunning
         )
@@ -155,21 +155,21 @@ enum BufferbloatActivityContent {
         let headline: String
         let caption: String
         if isRunning {
-            headline = latestRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "…"
+            headline = latestRTT.map { Lf("%lld ms", Int($0.rounded())) } ?? "…"
             caption = phaseLabel
         } else if let grade = gradeLetter {
             headline = grade
-            caption = addedLatency.map { Lf("+%lld мс под нагрузкой", Int($0.rounded())) } ?? L("готово")
+            caption = addedLatency.map { Lf("+%lld ms under load", Int($0.rounded())) } ?? L("done")
         } else {
             headline = "—"
-            caption = L("готово")
+            caption = L("done")
         }
         let stats = isRunning
-            ? [CheckStat(label: L("Фаза"), value: phaseLabel.isEmpty ? "…" : phaseLabel),
-               CheckStat(label: "RTT", value: latestRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "—")]
-            : [CheckStat(label: L("Простой"), value: idleRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "—"),
-               CheckStat(label: L("Нагрузка"), value: loadedRTT.map { Lf("%lld мс", Int($0.rounded())) } ?? "—"),
-               CheckStat(label: L("Оценка"), value: gradeLetter ?? "—")]
+            ? [CheckStat(label: L("Phase"), value: phaseLabel.isEmpty ? "…" : phaseLabel),
+               CheckStat(label: "RTT", value: latestRTT.map { Lf("%lld ms", Int($0.rounded())) } ?? "—")]
+            : [CheckStat(label: L("Idle"), value: idleRTT.map { Lf("%lld ms", Int($0.rounded())) } ?? "—"),
+               CheckStat(label: L("Loaded"), value: loadedRTT.map { Lf("%lld ms", Int($0.rounded())) } ?? "—"),
+               CheckStat(label: L("Grade"), value: gradeLetter ?? "—")]
         return CheckActivityView(
             status: isRunning ? .unknown : status(gradeLetter: gradeLetter),
             headline: headline, caption: caption, stats: stats, isRunning: isRunning)
@@ -185,12 +185,12 @@ enum MTRActivityContent {
             : PingSnapshot.status(loss: lastLoss, latency: lastAvg)
         return CheckActivityView(
             status: status,
-            headline: lastAvg.map { Lf("%lld мс", Int($0.rounded())) } ?? Lf("%lld хопов", hopCount),
-            caption: isRunning ? Lf("раунд %lld", round) : L("готово"),
+            headline: lastAvg.map { Lf("%lld ms", Int($0.rounded())) } ?? Lf("%lld hops", hopCount),
+            caption: isRunning ? Lf("round %lld", round) : L("done"),
             stats: [
-                CheckStat(label: L("Хопы"), value: "\(hopCount)"),
-                CheckStat(label: L("Потери"), value: "\(Int(lastLoss.rounded()))%"),
-                CheckStat(label: L("Раунд"), value: "\(round)")
+                CheckStat(label: L("Hops"), value: "\(hopCount)"),
+                CheckStat(label: L("Loss"), value: "\(Int(lastLoss.rounded()))%"),
+                CheckStat(label: L("Round"), value: "\(round)")
             ],
             isRunning: isRunning
         )
@@ -207,13 +207,13 @@ enum LookupActivityContent {
         switch phase {
         case .idle, .running:
             return CheckActivityView(status: .unknown, headline: running,
-                                     caption: L("выполняется"), isRunning: true)
+                                     caption: L("running"), isRunning: true)
         case .success(let value):
             let d = describe(value)
             return CheckActivityView(status: status(value), headline: d.headline,
                                      caption: d.caption, isRunning: false)
         case .failure(let message):
-            return CheckActivityView(status: .down, headline: L("Ошибка"),
+            return CheckActivityView(status: .down, headline: L("Error"),
                                      caption: String(message.prefix(60)), isRunning: false)
         }
     }
@@ -228,11 +228,11 @@ enum ScanActivityContent {
         CheckActivityView(
             status: isRunning ? .unknown : .ok,
             headline: total > 0 ? "\(scanned)/\(total)" : "\(scanned)",
-            caption: isRunning ? L("сканирование") : Lf("готово — %lld %@", found, foundLabel.lowercased() as NSString),
+            caption: isRunning ? L("scanning") : Lf("done — %lld %@", found, foundLabel.lowercased() as NSString),
             stats: [
                 CheckStat(label: foundLabel, value: "\(found)"),
-                CheckStat(label: L("Проверено"), value: "\(scanned)"),
-                CheckStat(label: L("Всего"), value: "\(total)")
+                CheckStat(label: L("Scanned"), value: "\(scanned)"),
+                CheckStat(label: L("Total"), value: "\(total)")
             ],
             isRunning: isRunning
         )
@@ -244,11 +244,11 @@ enum TracerouteActivityContent {
     static func view(host: String, hopCount: Int, reached: Bool, isRunning: Bool) -> CheckActivityView {
         CheckActivityView(
             status: isRunning ? .unknown : (reached ? .ok : .degraded),
-            headline: Lf("%lld хопов", hopCount),
-            caption: isRunning ? L("идёт трассировка") : (reached ? L("цель достигнута") : L("цель не достигнута")),
+            headline: Lf("%lld hops", hopCount),
+            caption: isRunning ? L("tracing") : (reached ? L("target reached") : L("target not reached")),
             stats: [
-                CheckStat(label: L("Хопы"), value: "\(hopCount)"),
-                CheckStat(label: L("Цель"), value: reached ? L("достигнута") : (isRunning ? "…" : L("нет")))
+                CheckStat(label: L("Hops"), value: "\(hopCount)"),
+                CheckStat(label: L("Target"), value: reached ? L("reached") : (isRunning ? "…" : L("no")))
             ],
             isRunning: isRunning
         )

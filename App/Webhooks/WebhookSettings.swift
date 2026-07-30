@@ -10,9 +10,9 @@ enum WebhookTrigger: String, CaseIterable, Identifiable, Codable {
 
     var label: String {
         switch self {
-        case .allChecks: "Все проверки"
-        case .failuresOnly: "Только проблемы"
-        case .blockingOnly: "Только блокировки"
+        case .allChecks: "All checks"
+        case .failuresOnly: "Problems only"
+        case .blockingOnly: "Blocking only"
         }
     }
 
@@ -139,9 +139,9 @@ final class WebhookSettings {
             _ = try WebhookDispatcher.validate(urlString: trimmed)
             return nil
         } catch WebhookDispatcher.DispatchError.insecureScheme {
-            return "http допустим только для localhost — иначе результаты уйдут в открытом виде."
+            return "http is allowed for localhost only — otherwise results are sent unencrypted."
         } catch {
-            return "Не похоже на корректный адрес."
+            return "This doesn’t look like a valid address."
         }
     }
 
@@ -153,7 +153,7 @@ final class WebhookSettings {
     /// relying on it.
     func sendTestEvent() async {
         guard let url = validatedURL else {
-            lastStatus = "Адрес не задан или некорректен."
+            lastStatus = "The address is missing or invalid."
             return
         }
         // Build the test event with the user's chosen format and ping field
@@ -172,8 +172,8 @@ final class WebhookSettings {
         let dispatcher = WebhookDispatcher(url: url, secret: secret)
         let delivery = await dispatcher.send(body: body, contentType: contentType, eventName: "test.ping")
         lastStatus = delivery.succeeded
-            ? "Доставлено, ответ \(delivery.statusCode ?? 200)."
-            : "Не доставлено: \(delivery.error ?? "неизвестная ошибка")."
+            ? "Delivered, response \(delivery.statusCode ?? 200)."
+            : "Not delivered: \(delivery.error ?? "unknown error")."
     }
 }
 
@@ -219,8 +219,8 @@ enum WebhookReporter {
             let delivery = await dispatcher.send(body: body, contentType: contentType, eventName: event)
             await MainActor.run {
                 settings.setStatus(delivery.succeeded
-                    ? "Отправлено: \(event)"
-                    : "Ошибка отправки \(event): \(delivery.error ?? "-")")
+                    ? "Sent: \(event)"
+                    : "Failed to send \(event): \(delivery.error ?? "-")")
             }
         }
     }
