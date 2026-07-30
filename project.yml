@@ -56,13 +56,12 @@ targets:
           - tr
           - ar
           - hi
-        # The app uses standard published algorithms beyond TLS (config-link
-        # decoding: RSA/ChaCha20-Poly1305/AES-GCM via Apple frameworks), so it
-        # declares encryption and qualifies for the mass-market exemption
-        # (15 CFR 740.17). Export compliance is answered in App Store Connect;
-        # an annual self-classification report goes to BIS/ENC. See
-        # docs/appstore/export-compliance.md.
-        ITSAppUsesNonExemptEncryption: true
+        # All cryptography is standard, published algorithms via Apple frameworks
+        # (TLS, plus config-link decoding: RSA/ChaCha20-Poly1305/AES-GCM). That
+        # qualifies for the export exemption, so this is false. The annual
+        # mass-market self-classification report to BIS/ENC (15 CFR 740.17) is a
+        # separate obligation. See docs/appstore/export-compliance.md.
+        ITSAppUsesNonExemptEncryption: false
         # Expose the app's Documents folder in Files ("On My iPhone/CheckNet") and
         # let it open documents in place — so users can open geosite/geoip .dat and
         # mihomo .mrs files, and get at exported lists.
@@ -92,8 +91,16 @@ targets:
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
+        # iPhone: no upside-down (the platform norm). iPad: all four, which App
+        # Store validation requires for multitasking (an iPad build missing
+        # PortraitUpsideDown is rejected at ingest).
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSCameraUsageDescription: "Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются."
