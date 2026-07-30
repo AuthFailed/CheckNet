@@ -11,8 +11,15 @@ let package = Package(
         .library(name: "NetworkKit", targets: ["NetworkKit"])
     ],
     targets: [
+        // Vendored single-file Zstandard decompressor (facebook/zstd, BSD).
+        // Needed for mihomo .mrs rule-sets, which are zstd-compressed and which
+        // Apple's Compression framework cannot decode.
+        .target(
+            name: "CZstd"
+        ),
         .target(
             name: "NetworkKit",
+            dependencies: ["CZstd"],
             resources: [
                 .copy("HappKeys")
             ],

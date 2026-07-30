@@ -56,8 +56,18 @@ struct VPNView: View {
             IncyLinkView()
         case .subscription:
             SubscriptionView()
-        default:
-            VPNPlaceholderView(tool: tool)
+        case .sniCheck:
+            RealitySNIView()
+        case .realityScanner:
+            RealityScannerView()
+        case .clientHeaders:
+            ClientHeadersView()
+        case .geoData:
+            GeoDataView()
+        case .xrayCheck:
+            XrayCheckView()
+        case .mrsViewer:
+            MRSView()
         }
     }
 

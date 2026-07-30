@@ -31,6 +31,12 @@ targets:
       - target: CheckNetWidgets
         embed: true
         platformFilter: iOS
+      # Xray core for the "Xray inbound availability" tool (#71). Static xcframework
+      # (libXray.a) — linked, not embedded. Fetch with Scripts/fetch-libxray.sh.
+      - framework: Frameworks/LibXray.xcframework
+        embed: false
+      # The Go core resolves DNS via libresolv (res_9_ninit/nsearch/nclose).
+      - sdk: libresolv.tbd
     info:
       path: App/Info.plist
       properties:
@@ -51,6 +57,11 @@ targets:
           - ar
           - hi
         ITSAppUsesNonExemptEncryption: false
+        # Expose the app's Documents folder in Files ("On My iPhone/CheckNet") and
+        # let it open documents in place — so users can open geosite/geoip .dat and
+        # mihomo .mrs files, and get at exported lists.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
         # ip-api.com's key-less geolocation tier is HTTP-only. Scope a cleartext
         # exception to just that host — only a public IP is ever sent to it.
         NSAppTransportSecurity:

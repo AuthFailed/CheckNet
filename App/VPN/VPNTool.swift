@@ -16,6 +16,7 @@ enum VPNTool: String, CaseIterable, Identifiable {
     case incyLink
     // Server checks
     case sniCheck
+    case realityScanner
     case xrayCheck
     // Lists & data
     case geoData
@@ -31,6 +32,7 @@ enum VPNTool: String, CaseIterable, Identifiable {
         case .happDecrypt: "Happ Decrypt"
         case .incyLink: "Incy-ссылка"
         case .sniCheck: "Проверка SNI для Reality"
+        case .realityScanner: "Сканер для Reality"
         case .xrayCheck: "Доступность Xray"
         case .geoData: "geosite / geoip"
         case .mrsViewer: "Правила mihomo (.mrs)"
@@ -45,6 +47,7 @@ enum VPNTool: String, CaseIterable, Identifiable {
         case .happDecrypt: "Расшифровка happ://crypt-ссылок"
         case .incyLink: "Разбор и генерация incy://crypt1"
         case .sniCheck: "Годится ли домен под dest"
+        case .realityScanner: "Поиск TLS 1.3 доменов в подсети"
         case .xrayCheck: "Живой ли VLESS/Trojan-инбаунд"
         case .geoData: "Просмотр .dat: категории, поиск"
         case .mrsViewer: "Распаковка rule-set в правила"
@@ -59,6 +62,7 @@ enum VPNTool: String, CaseIterable, Identifiable {
         case .happDecrypt: "lock.open"
         case .incyLink: "link.badge.plus"
         case .sniCheck: "checkmark.shield"
+        case .realityScanner: "dot.radiowaves.left.and.right"
         case .xrayCheck: "bolt.horizontal.circle"
         case .geoData: "globe.badge.chevron.backward"
         case .mrsViewer: "doc.plaintext"
@@ -80,6 +84,8 @@ enum VPNTool: String, CaseIterable, Identifiable {
             "Разбирает `incy://crypt1/…` в URL подписки и генерирует такую ссылку из своего URL — чтобы отдавать пользователям ссылку и QR вместо «голого» адреса."
         case .sniCheck:
             "Проверяет, годится ли домен как SNI/dest для Reality: TLS 1.3, HTTP/2, отсутствие редиректа, сертификат, гео и доступность — с итоговым вердиктом."
+        case .realityScanner:
+            "Обходит IP-адрес, подсеть (CIDR) или домен и находит хосты с TLS 1.3, показывая домен из их сертификата — кандидаты под dest рядом с вашим сервером. Рукопожатие идёт без SNI, как в RealiTLScanner. Только поиск, без обхода блокировок."
         case .xrayCheck:
             "Делает настоящий handshake к вашему инбаунду (VLESS/Trojan) и пробный запрос через сервер, чтобы подтвердить, что он работает, и назвать причину при сбое."
         case .geoData:
@@ -96,10 +102,9 @@ enum VPNTool: String, CaseIterable, Identifiable {
     /// as a placeholder.
     var isImplemented: Bool {
         switch self {
-        case .happRouting, .happDecrypt, .incyLink, .subscription:
+        case .happRouting, .happDecrypt, .incyLink, .subscription, .sniCheck, .realityScanner,
+             .clientHeaders, .geoData, .xrayCheck, .mrsViewer:
             return true
-        case .sniCheck, .xrayCheck, .geoData, .mrsViewer, .clientHeaders:
-            return false
         }
     }
 }
@@ -116,7 +121,7 @@ enum VPNCatalog {
         VPNSection(id: "links", title: "Ссылки и подписки",
                    tools: [.happRouting, .subscription, .happDecrypt, .incyLink]),
         VPNSection(id: "server", title: "Проверки сервера",
-                   tools: [.sniCheck, .xrayCheck]),
+                   tools: [.sniCheck, .realityScanner, .xrayCheck]),
         VPNSection(id: "data", title: "Списки и данные",
                    tools: [.geoData, .mrsViewer, .clientHeaders]),
     ]

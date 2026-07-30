@@ -57,6 +57,27 @@ enum XrayProxyRunner {
         #endif
     }
 
+    /// Brings the core up in-process for `node` and returns the live local SOCKS
+    /// port, leaving it running. The caller owns teardown — call `XrayCore.stop()`
+    /// when finished (e.g. after streaming egress checks through the port).
+    static func startInProcess(node: ProxyNode) async throws -> Int {
+        guard XrayCore.isAvailable else { throw RunError.noCore }
+        let port = freePort()
+        let config: String
+        do { config = try XrayTestConfig.build(for: node, socksPort: port) }
+        catch { throw RunError.buildFailed((error as? XrayTestConfig.BuildError).map(String.init(describing:)) ?? "\(error)") }
+
+        XrayCore.stop()                                     // clear any previous global instance
+        do { try XrayCore.run(configJSON: config) }
+        catch { throw RunError.coreFailedToStart((error as? XrayCore.CoreError)?.message ?? "\(error)") }
+
+        guard await waitForPort(port, deadline: 5) else {
+            XrayCore.stop()
+            throw RunError.coreFailedToStart("SOCKS-порт \(port) не открылся")
+        }
+        return port
+    }
+
     // MARK: - helpers
 
     /// Ask the kernel for a free TCP port by binding to :0.
