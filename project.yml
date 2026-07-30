@@ -57,6 +57,11 @@ targets:
           - ar
           - hi
         ITSAppUsesNonExemptEncryption: false
+        # Expose the app's Documents folder in Files ("On My iPhone/CheckNet") and
+        # let it open documents in place — so users can open geosite/geoip .dat and
+        # mihomo .mrs files, and get at exported lists.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
         # ip-api.com's key-less geolocation tier is HTTP-only. Scope a cleartext
         # exception to just that host — only a public IP is ever sent to it.
         NSAppTransportSecurity:
