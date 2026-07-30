@@ -14,7 +14,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
     // Performance
     case speedTest, bufferbloat, mtuDiscovery
     // Wi-Fi
-    case wifiAnalysis, wifiSignal
+    case wifiAnalysis, currentWiFi
     // Advanced
     case worldPing, cgnatDetect, monitoring
 
@@ -44,7 +44,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .bufferbloat: return "Bufferbloat"
         case .mtuDiscovery: return "MTU discovery"
         case .wifiAnalysis: return "Wi-Fi анализ"
-        case .wifiSignal: return "Сигнал Wi-Fi"
+        case .currentWiFi: return "Текущая сеть Wi-Fi"
         case .worldPing: return "World Ping"
         case .cgnatDetect: return "CGNAT / Double NAT"
         case .monitoring: return "Мониторинг хостов"
@@ -75,7 +75,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .bufferbloat: return "Рост задержки под нагрузкой"
         case .mtuDiscovery: return "Максимальный размер пакета"
         case .wifiAnalysis: return "RSSI, канал, роуминг"
-        case .wifiSignal: return "Уровень сигнала и потери"
+        case .currentWiFi: return "SSID, BSSID, защита · на Mac ещё сигнал и канал"
         case .worldPing: return "Доступность из разных точек"
         case .cgnatDetect: return "Тип NAT и внешний IP"
         case .monitoring: return "Фоновый аптайм-монитор"
@@ -106,7 +106,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .bufferbloat: return "waveform.path.ecg"
         case .mtuDiscovery: return "ruler"
         case .wifiAnalysis: return "wifi"
-        case .wifiSignal: return "wifi.circle"
+        case .currentWiFi: return "wifi"
         case .worldPing: return "globe"
         case .cgnatDetect: return "arrow.triangle.branch"
         case .monitoring: return "bell.badge"
@@ -140,7 +140,7 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .bufferbloat: return ["bufferbloat", "буфер", "задержка под нагрузкой", "latency under load"]
         case .mtuDiscovery: return ["mtu", "фрагментация", "fragmentation", "pmtud", "размер пакета", "packet size"]
         case .wifiAnalysis: return ["wifi", "вайфай", "каналы", "channels", "помехи"]
-        case .wifiSignal: return ["wifi", "сигнал", "signal", "rssi", "уровень"]
+        case .currentWiFi: return ["wifi", "вайфай", "сеть", "ssid", "bssid", "защита", "сигнал", "signal", "rssi", "канал", "channel"]
         case .worldPing: return ["world ping", "мировой пинг", "из разных точек", "global"]
         case .cgnatDetect: return ["cgnat", "nat", "серый ip", "carrier grade", "двойной nat"]
         case .monitoring: return ["monitoring", "мониторинг", "непрерывно", "уведомления", "alerts", "падение"]
@@ -201,8 +201,8 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
             return "Находит максимальный размер пакета, проходящий без фрагментации (Path MTU). Помогает диагностировать обрывы и залипания соединений."
         case .wifiAnalysis:
             return "Анализ Wi-Fi: уровень сигнала, канал, роуминг. Ограничено политиками iOS."
-        case .wifiSignal:
-            return "Уровень сигнала Wi-Fi и потери. Ограничено политиками iOS."
+        case .currentWiFi:
+            return "Показывает сеть Wi-Fi, к которой устройство подключено прямо сейчас: имя (SSID), BSSID точки доступа и тип защиты. На Mac дополнительно — уровень сигнала, канал, ширина полосы, скорость и стандарт. Соседние сети не сканируются — для этого есть «Wi-Fi анализ»."
         case .worldPing:
             return "Проверяет доступность хоста с узлов по всему миру — ping, HTTP, TCP, DNS или UDP, с выбором стран. Видно, откуда ресурс доступен, а откуда нет. Проверка выполняется через внешний сервис."
         case .cgnatDetect:
@@ -237,10 +237,13 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         case .ping, .traceroute, .mtr, .dns, .dnsCompare, .dnsTamper, .portScan, .tlsInspector,
              .hostToIP, .reverseDns, .interfaces, .whois, .blacklist, .wakeOnLan,
              .mtuDiscovery, .ipScanner, .bonjour, .cgnatDetect, .monitoring, .networkBrowser,
-             .speedTest, .bufferbloat, .ipLocation, .worldPing:
+             .speedTest, .bufferbloat, .ipLocation, .worldPing, .currentWiFi:
+            // Current-network identity (SSID/BSSID/security) is available on iOS
+            // too now that Access Wi-Fi Information is signed; the full RF detail
+            // is macOS-only inside the same screen.
             return true
-        case .wifiAnalysis, .wifiSignal:
-            // iOS doesn't expose Wi-Fi channels/RSSI/scan; these run on macOS via CoreWLAN.
+        case .wifiAnalysis:
+            // A scan of neighbouring networks — iOS gives apps no such API.
             #if os(macOS)
             return true
             #else
@@ -281,8 +284,6 @@ enum Tool: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .wifiAnalysis:
             return .platformLimit("iOS не отдаёт приложениям данные о Wi-Fi-каналах и соседних сетях — это доступно только в версии для Mac (CoreWLAN).")
-        case .wifiSignal:
-            return .platformLimit("iOS не отдаёт приложениям уровень сигнала Wi-Fi (RSSI) — измерить его можно только на Mac.")
         default:
             return nil
         }
@@ -303,7 +304,7 @@ enum ToolCatalog {
         ToolSection(id: "discovery", title: "Обнаружение", tools: [.networkBrowser, .ipScanner, .bonjour, .wakeOnLan]),
         ToolSection(id: "info", title: "Информация", tools: [.interfaces, .hostToIP, .ipLocation, .whois, .blacklist]),
         ToolSection(id: "perf", title: "Производительность", tools: [.speedTest, .bufferbloat, .mtuDiscovery]),
-        ToolSection(id: "wifi", title: "Wi-Fi", tools: [.wifiAnalysis, .wifiSignal]),
+        ToolSection(id: "wifi", title: "Wi-Fi", tools: [.currentWiFi, .wifiAnalysis]),
         ToolSection(id: "advanced", title: "Продвинутое", tools: [.worldPing, .cgnatDetect, .monitoring])
     ]
 

@@ -10,10 +10,10 @@ struct NetworkProfilesView: View {
     enum RunState: Equatable {
         case idle
         case reading
-        case noMatch(ssid: String)
+        case noMatch(WiFiIdentity)
         case unavailable(reason: String)
-        case running(ssid: String)
-        case done(ssid: String, summary: String)
+        case running(WiFiIdentity)
+        case done(WiFiIdentity, summary: String)
     }
 
     var body: some View {
@@ -98,18 +98,46 @@ struct NetworkProfilesView: View {
             EmptyView()
         case .reading:
             HStack { ProgressView(); Text("Определяем сеть…").font(.caption).foregroundStyle(.secondary) }
-        case .noMatch(let ssid):
-            Text("Сеть «\(ssid)» без профиля.").font(.caption).foregroundStyle(.secondary)
+        case .noMatch(let info):
+            VStack(alignment: .leading, spacing: 6) {
+                networkIdentity(info)
+                Text("Для этой сети нет профиля.").font(.caption).foregroundStyle(.secondary)
+            }
         case .unavailable(let reason):
             Text(LocalizedStringKey(reason)).font(.caption).foregroundStyle(.orange)
-        case .running(let ssid):
-            HStack { ProgressView(); Text("Проверяем «\(ssid)»…").font(.caption).foregroundStyle(.secondary) }
-        case .done(let ssid, let summary):
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Сеть «\(ssid)»").font(.caption).foregroundStyle(.secondary)
+        case .running(let info):
+            VStack(alignment: .leading, spacing: 6) {
+                networkIdentity(info)
+                HStack { ProgressView(); Text("Проверяем профиль…").font(.caption).foregroundStyle(.secondary) }
+            }
+        case .done(let info, let summary):
+            VStack(alignment: .leading, spacing: 6) {
+                networkIdentity(info)
                 Text(summary).font(.caption)
             }
         }
+    }
+
+    /// The App-Store-safe Wi-Fi identity iOS exposes: name, BSSID, security.
+    /// (Signal level and channel are not available to apps on iOS — those live
+    /// in the macOS Wi-Fi tools.)
+    private func networkIdentity(_ info: WiFiIdentity) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            LabeledContent("Сеть", value: info.ssid)
+            if let bssid = info.bssidDisplay {
+                LabeledContent("BSSID") { Text(bssid).monospaced() }
+            }
+            LabeledContent("Защита") {
+                Label {
+                    Text(LocalizedStringKey(info.securityLabel))
+                } icon: {
+                    Image(systemName: info.isSecure ? "lock.fill" : "lock.open")
+                }
+                .labelStyle(.titleAndIcon)
+                .foregroundStyle(info.isSecure ? AnyShapeStyle(.secondary) : AnyShapeStyle(.orange))
+            }
+        }
+        .font(.caption)
     }
 
     private func profileRow(_ profile: NetworkProfile) -> some View {
@@ -128,21 +156,21 @@ struct NetworkProfilesView: View {
     private func runForCurrentNetwork() async {
         runState = .reading
         let result = await CurrentNetwork.current()
-        let ssid: String
+        let info: WiFiIdentity
         switch result {
-        case .ssid(let name):
-            ssid = name
+        case .connected(let network):
+            info = network
         case .restricted(let reason), .unavailable(let reason):
             runState = .unavailable(reason: reason)
             return
         }
 
-        guard let profile = store.profile(forSSID: ssid) else {
-            runState = .noMatch(ssid: ssid)
+        guard let profile = store.profile(forSSID: info.ssid) else {
+            runState = .noMatch(info)
             return
         }
 
-        runState = .running(ssid: ssid)
+        runState = .running(info)
         var restricted = 0
         for id in profile.checkIDs {
             guard let check = BlockingCheck(rawValue: id) else { continue }
@@ -154,7 +182,7 @@ struct NetworkProfilesView: View {
         let summary = restricted == 0
             ? "Ограничений не найдено (\(profile.checkIDs.count) проверок)."
             : "Найдено ограничений: \(restricted) из \(profile.checkIDs.count)."
-        runState = .done(ssid: ssid, summary: summary)
+        runState = .done(info, summary: summary)
     }
 }
 

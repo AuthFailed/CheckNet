@@ -42,6 +42,10 @@ targets:
       properties:
         CFBundleDisplayName: CheckNet
         CFBundleDevelopmentRegion: ru
+        # Track the build settings so bumping CURRENT_PROJECT_VERSION / MARKETING_VERSION
+        # actually changes the shipped version (XcodeGen otherwise writes literal defaults).
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleLocalizations:
           - ru
           - en
@@ -56,6 +60,11 @@ targets:
           - tr
           - ar
           - hi
+        # All cryptography is standard, published algorithms via Apple frameworks
+        # (TLS, plus config-link decoding: RSA/ChaCha20-Poly1305/AES-GCM). That
+        # qualifies for the export exemption, so this is false. The annual
+        # mass-market self-classification report to BIS/ENC (15 CFR 740.17) is a
+        # separate obligation. See docs/appstore/export-compliance.md.
         ITSAppUsesNonExemptEncryption: false
         # Expose the app's Documents folder in Files ("On My iPhone/CheckNet") and
         # let it open documents in place — so users can open geosite/geoip .dat and
@@ -86,8 +95,16 @@ targets:
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
+        # iPhone: no upside-down (the platform norm). iPad: all four, which App
+        # Store validation requires for multitasking (an iPad build missing
+        # PortraitUpsideDown is rejected at ingest).
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSCameraUsageDescription: "Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются."
@@ -118,8 +135,13 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet
         PRODUCT_NAME: CheckNet
+        # App icon lives in App/Resources/Assets.xcassets/AppIcon.appiconset.
+        # A single 1024×1024 (no alpha) drives every size on iOS 26. Until the
+        # designed PNG lands the set has an empty slot (builds with a warning);
+        # dropping icon-1024.png in clears it.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
@@ -192,7 +214,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.chrsnv.checknet.widgets
         PRODUCT_NAME: CheckNetWidgets
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        CURRENT_PROJECT_VERSION: "2"
         SWIFT_VERSION: "6.0"
         SWIFT_APPROACHABLE_CONCURRENCY: YES
         TARGETED_DEVICE_FAMILY: "1,2"

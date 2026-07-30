@@ -26,10 +26,12 @@ enum CurrentNetwork {
     /// Without it `NEHotspotNetwork.fetchCurrent` always reports no network, so
     /// the app must not pretend otherwise — and must not ask for location, which
     /// is only a prerequisite for a lookup that cannot succeed.
-    static let isSSIDReadable = false
+    static let isSSIDReadable = true
 
     enum Result: Sendable, Equatable {
-        case ssid(String)
+        /// Connected to Wi-Fi — the App-Store-safe identity iOS exposes
+        /// (SSID/BSSID/security). RF metrics aren't available to apps on iOS.
+        case connected(WiFiIdentity)
         /// Connected to Wi-Fi, but the SSID is withheld (permission/entitlement).
         case restricted(reason: String)
         /// Not on Wi-Fi, or the platform can't report it.
@@ -56,7 +58,18 @@ enum CurrentNetwork {
         return await withCheckedContinuation { continuation in
             NEHotspotNetwork.fetchCurrent { network in
                 if let network {
-                    continuation.resume(returning: .ssid(network.ssid))
+                    let security: WiFiIdentity.Security
+                    switch network.securityType {
+                    case .open: security = .open
+                    case .WEP: security = .wep
+                    case .personal: security = .personal
+                    case .enterprise: security = .enterprise
+                    case .unknown: security = .unknown
+                    @unknown default: security = .unknown
+                    }
+                    let info = WiFiIdentity(ssid: network.ssid, bssid: network.bssid,
+                                            security: security)
+                    continuation.resume(returning: .connected(info))
                 } else {
                     // No network object means either not on Wi-Fi or the app
                     // lacks the Access Wi-Fi Information entitlement.

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4AA3FF"></stop><stop offset="0.44" stop-color="#1D74EE"></stop><stop offset="1" stop-color="#0B3FBE"></stop>
+    </linearGradient>
+    <radialGradient id="top" cx="0.5" cy="-0.14" r="0.85">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.62"></stop><stop offset="0.42" stop-color="#ffffff" stop-opacity="0.12"></stop><stop offset="0.62" stop-color="#ffffff" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="bot" cx="0.5" cy="1.14" r="0.8">
+      <stop offset="0" stop-color="#031148" stop-opacity="0.55"></stop><stop offset="0.62" stop-color="#031148" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="glyph" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"></stop><stop offset="1" stop-color="#ffffff" stop-opacity="0.83"></stop>
+    </linearGradient>
+    <filter id="sh" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#04164A" flood-opacity="0.42"></feDropShadow>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"></rect>
+  <rect width="1024" height="1024" fill="url(#top)"></rect>
+  <rect width="1024" height="1024" fill="url(#bot)"></rect>
+  <g filter="url(#sh)">
+    <circle cx="512" cy="512" r="86" fill="url(#glyph)"></circle>
+    <circle cx="512" cy="512" r="212" fill="none" stroke="url(#glyph)" stroke-width="62" stroke-opacity="0.9"></circle>
+    <circle cx="512" cy="512" r="348" fill="none" stroke="url(#glyph)" stroke-width="52" stroke-opacity="0.6"></circle>
+  </g>
+</svg>

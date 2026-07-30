@@ -444,9 +444,9 @@ struct ToolDestinationView: View {
             IPLocationView(presetHost: route.presetHost, autostart: route.autostart)
         case .worldPing:
             WorldPingView(presetHost: route.presetHost, autostart: route.autostart)
+        case .currentWiFi:
+            CurrentWiFiView()
         #if os(macOS)
-        case .wifiSignal:
-            WiFiSignalView()
         case .wifiAnalysis:
             WiFiAnalysisView()
         #endif
