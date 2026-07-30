@@ -1,9 +1,6 @@
 # Политика конфиденциальности CheckNet
 
-_Дата вступления в силу: <ДАТА>. Контакт: <SUPPORT_EMAIL>._
-
-> Черновик для публикации через GitHub Pages (#82/#111). Перед публикацией заполни `<ДАТА>` и
-> `<SUPPORT_EMAIL>` (не хардкодим личную почту в репозиторий без твоего решения).
+_Дата вступления в силу: 30 июля 2026 г. Контакт: roman@chrsnv.ru._
 
 CheckNet — приложение сетевой диагностики. Оно спроектировано так, чтобы **не собирать о вас
 никаких данных**.
@@ -55,13 +52,13 @@ CheckNet — это инструмент диагностики: он по ва�
 
 ## Контакт
 
-Вопросы по конфиденциальности: <SUPPORT_EMAIL>.
+Вопросы по конфиденциальности: roman@chrsnv.ru.
 
 ---
 
 # CheckNet Privacy Policy (English)
 
-_Effective date: <DATE>. Contact: <SUPPORT_EMAIL>._
+_Effective date: July 30, 2026. Contact: roman@chrsnv.ru._
 
 CheckNet is a network-diagnostics app designed to **collect no data about you**.
 
@@ -83,4 +80,4 @@ saved hosts); Notifications (host-monitoring alerts, if enabled).
 
 **Children:** the app collects no data from anyone, including children.
 
-**Contact:** <SUPPORT_EMAIL>.
+**Contact:** roman@chrsnv.ru.

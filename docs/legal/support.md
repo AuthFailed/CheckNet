@@ -1,14 +1,12 @@
 # Поддержка CheckNet
 
-_Черновик страницы поддержки для GitHub Pages (#82). Support URL обязателен для App Store._
-
 CheckNet — приложение сетевой диагностики для iPhone, iPad и Mac.
 
 ## Как получить помощь
 
 - **Вопросы и сообщения об ошибках:** заведите issue —
   [github.com/AuthFailed/CheckNet/issues](https://github.com/AuthFailed/CheckNet/issues)
-- **Почта:** <SUPPORT_EMAIL>
+- **Почта:** roman@chrsnv.ru
 
 При обращении по ошибке полезно указать: версию приложения (Настройки → «О приложении»), модель
 устройства и версию iOS/macOS, какой инструмент и с какими данными вы запускали.
@@ -40,7 +38,7 @@ iOS не отдаёт приложениям данные о Wi-Fi-канала�
 CheckNet is a network-diagnostics app for iPhone, iPad, and Mac.
 
 - **Issues / bug reports:** [github.com/AuthFailed/CheckNet/issues](https://github.com/AuthFailed/CheckNet/issues)
-- **Email:** <SUPPORT_EMAIL>
+- **Email:** roman@chrsnv.ru
 
 Include your app version (Settings → About), device model and OS version, and which tool you ran.
 
