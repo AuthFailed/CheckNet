@@ -20,10 +20,10 @@ public struct ProbeTarget: Sendable, Codable, Hashable, Identifiable {
 
         public var label: String {
             switch self {
-            case .foreignInfrastructure: "Зарубежные провайдеры"
-            case .russianInfrastructure: "Российские провайдеры"
-            case .webService: "Популярные сервисы"
-            case .pushNotification: "Push-уведомления"
+            case .foreignInfrastructure: "International providers"
+            case .russianInfrastructure: "Russian providers"
+            case .webService: "Popular services"
+            case .pushNotification: "Push notifications"
             }
         }
     }
@@ -56,7 +56,7 @@ public struct ProbeTarget: Sendable, Codable, Hashable, Identifiable {
 ///
 /// These hostnames go stale — sites move providers and disappear. Every probe
 /// therefore reports liveness separately from interference, so a dead host reads
-/// as "не проверено", never as "заблокировано".
+/// as "not checked", never as "blocked".
 public enum ProbeCatalog {
     /// When this list was last reconciled with upstream. Surfaced in the UI so a
     /// stale catalogue is visible rather than silently misleading.
@@ -137,12 +137,12 @@ public enum ProbeCatalog {
         .init(id: "SVC.GH", provider: "GitHub", country: nil, host: "github.com", category: .webService),
         .init(id: "SVC.GH-RAW", provider: "GitHub", country: nil, host: "raw.githubusercontent.com", category: .webService),
         .init(id: "SVC.WIKI", provider: "Wikipedia", country: nil, host: "ru.wikipedia.org", category: .webService),
-        .init(id: "SVC.GOSUSLUGI", provider: "Госуслуги", country: "RU", host: "www.gosuslugi.ru", category: .webService)
+        .init(id: "SVC.GOSUSLUGI", provider: "Gosuslugi", country: "RU", host: "www.gosuslugi.ru", category: .webService)
     ]
 
     // MARK: - Push notification endpoints
 
-    /// Users report "уведомления не приходят" constantly and almost never link it
+    /// Users report "notifications aren't arriving" constantly and almost never link it
     /// to network filtering. On iOS the APNs endpoints are the ones that matter.
     static let push: [ProbeTarget] = [
         .init(id: "PUSH.APNS", provider: "Apple APNs", country: nil, host: "api.push.apple.com", category: .pushNotification),

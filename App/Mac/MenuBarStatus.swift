@@ -13,14 +13,14 @@ struct MenuBarStatus: View {
     var body: some View {
         Group {
             if snapshots.isEmpty {
-                Text("Пока нет результатов")
+                Text("No results yet")
             } else {
                 ForEach(snapshots, id: \.host) { snapshot in
                     Text(label(for: snapshot))
                 }
                 Divider()
             }
-            Button("Открыть CheckNet") {
+            Button("Open CheckNet") {
                 openWindow(id: MacWindow.main)
                 NSApp.activate(ignoringOtherApps: true)
             }
@@ -39,7 +39,7 @@ struct MenuBarStatus: View {
     }
 
     private func label(for snapshot: PingSnapshot) -> String {
-        let latency = snapshot.latencyMillis.map { String(format: "%.0f мс", $0) } ?? "нет ответа"
+        let latency = snapshot.latencyMillis.map { String(format: "%.0f ms", $0) } ?? "no response"
         return "\(snapshot.host) — \(latency)"
     }
 }

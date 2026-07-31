@@ -1,7 +1,7 @@
 import SwiftUI
 import NetworkKit
 
-/// The censorship / local-restriction checks shown in the Блокировки tab.
+/// The censorship / local-restriction checks shown in the Blocking tab.
 enum BlockingCheck: String, CaseIterable, Identifiable {
     case dnsSpoofing, httpBlock, sniBlocking, ipBlocking, whitelist, siberian, transferCutoff
 
@@ -9,25 +9,25 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .dnsSpoofing: return "Подмена DNS"
-        case .httpBlock: return "Страница-заглушка"
-        case .sniBlocking: return "Блокировка по SNI"
-        case .ipBlocking: return "Блокировка по IP"
-        case .whitelist: return "Белые списки"
-        case .siberian: return "«Сибирская» блокировка"
-        case .transferCutoff: return "Обрыв на 16–20 КБ"
+        case .dnsSpoofing: return "DNS spoofing"
+        case .httpBlock: return "Stub page"
+        case .sniBlocking: return "SNI-based block"
+        case .ipBlocking: return "IP-based block"
+        case .whitelist: return "Whitelists"
+        case .siberian: return "“Siberian” block"
+        case .transferCutoff: return "Cut off at 16–20 KB"
         }
     }
 
     var subtitle: String {
         switch self {
-        case .dnsSpoofing: return "ISP подменяет DNS-ответы"
-        case .httpBlock: return "Вставка страницы «Доступ ограничен»"
-        case .sniBlocking: return "DPI рвёт TLS по имени сайта"
-        case .ipBlocking: return "IP закрыт на уровне сети"
-        case .whitelist: return "Доступны только «разрешённые» сайты"
-        case .siberian: return "Троттлинг параллельных TLS"
-        case .transferCutoff: return "Передача замирает на середине"
+        case .dnsSpoofing: return "ISP spoofs DNS responses"
+        case .httpBlock: return "Injected “Access restricted” page"
+        case .sniBlocking: return "DPI breaks TLS by site name"
+        case .ipBlocking: return "IP blocked at network level"
+        case .whitelist: return "Only “allowed” sites are reachable"
+        case .siberian: return "Parallel TLS throttling"
+        case .transferCutoff: return "Transfer stalls midway"
         }
     }
 
@@ -55,19 +55,19 @@ enum BlockingCheck: String, CaseIterable, Identifiable {
     var explanation: String {
         switch self {
         case .dnsSpoofing:
-            return "Сравниваем ответ вашего DNS с доверенным DoH-резолвером (1.1.1.1). Если адреса различаются или ваш провайдер вернул чужой/приватный адрес — это подмена DNS."
+            return "We compare your DNS response with a trusted DoH resolver (1.1.1.1). If the addresses differ or your provider returned a foreign/private address, that's DNS spoofing."
         case .httpBlock:
-            return "Запрашиваем сайт по HTTP и ищем в ответе маркеры страницы блокировки («Доступ ограничен», «Роскомнадзор», 149-ФЗ)."
+            return "We request the site over HTTP and look for block-page markers in the response (“Access restricted”, “Roskomnadzor”, Federal Law 149-FZ)."
         case .sniBlocking:
-            return "Открываем TLS к одному и тому же IP с «запрещённым» именем и с контрольным. Если рвётся только «запрещённое» — это DPI-фильтрация по SNI."
+            return "We open TLS to the same IP twice: once with a “restricted” name and once with a control name. If only the “restricted” one is cut off, the network filters by SNI (DPI)."
         case .ipBlocking:
-            return "Подключаемся напрямую к реальному IP сайта и к контрольному адресу. Если цель недоступна, а контроль доступен — IP заблокирован."
+            return "We connect directly to the site’s real IP and to a control address. If the target is unreachable while the control is reachable, the IP is blocked."
         case .whitelist:
-            return "Проверяем доступность «разрешённых» ресурсов (Госуслуги, Яндекс, VK) и зарубежных контролей. Если работают только первые — вероятен режим белого списка при региональном шатдауне."
+            return "We check the reachability of “allowed” resources (Gosuslugi, Yandex, VK) and foreign controls. If only the former work, whitelist mode during a regional shutdown is likely."
         case .siberian:
-            return "Открываем много параллельных TLS-соединений к одному хосту. Если часть срывается — это троттлинг по числу TLS-сессий, характерный для некоторых операторов."
+            return "Opens many parallel TLS connections to a single host. If some drop, that's throttling by number of TLS sessions, typical of some carriers."
         case .transferCutoff:
-            return "Соединения с зарубежными серверами часто замирают, когда передача расходится — обычно в районе 16–20 КБ. Проверяем тремя способами: наращиваем объём по 4 КБ, отправляем крошечный запрос множеством мелких пакетов и его же одним пакетом. Если мелкими пакетами замирает, а одним проходит — считаются пакеты, а не килобайты. Для сравнения та же проба идёт к российскому серверу."
+            return "Connections to servers abroad often freeze once the transfer gets going — usually around 16–20 KB. We test this three ways: growing the volume in 4 KB steps, sending a tiny request as many small packets, and sending the same request as a single packet. If it freezes with small packets but goes through as one, packets are being counted, not kilobytes. For comparison, the same probe runs against a Russian server."
         }
     }
 
@@ -111,7 +111,7 @@ struct BlockingCheckView: View {
                 .card()
 
             if check.needsTarget {
-                HostInputBar(text: $target, placeholder: "Домен для проверки",
+                HostInputBar(text: $target, placeholder: "Domain to check",
                              icon: check.systemImage, disabled: run.isRunning,
                              savedHostTool: .dnsTamper) {
                     start()
@@ -123,7 +123,7 @@ struct BlockingCheckView: View {
             } else if run.isRunning {
                 VStack(spacing: 10) {
                     ProgressView()
-                    Text("Проверяем ваше соединение…").font(.caption).foregroundStyle(.secondary)
+                    Text("Checking your connection…").font(.caption).foregroundStyle(.secondary)
                 }
                 .padding(.top, 40)
             }
@@ -132,7 +132,7 @@ struct BlockingCheckView: View {
                 evidenceCard(finding)
             }
         } bottom: {
-            RunButton(title: "Проверить", running: run.isRunning,
+            RunButton(title: "Check", running: run.isRunning,
                       disabled: check.needsTarget && target.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if run.isRunning { return }
                 start()
@@ -148,13 +148,13 @@ struct BlockingCheckView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button { showSchedule = true } label: {
-                    Image(systemName: "clock.arrow.2.circlepath").accessibilityLabel("Расписание")
+                    Image(systemName: "clock.arrow.2.circlepath").accessibilityLabel("Schedule")
                 }
             }
             if webhooks.isEnabled {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showWebhookFields = true } label: {
-                        Image(systemName: "paperplane").accessibilityLabel("Данные вебхука")
+                        Image(systemName: "paperplane").accessibilityLabel("Webhook data")
                     }
                 }
             }
@@ -182,11 +182,11 @@ struct BlockingCheckView: View {
                         }
                     )
                 }
-                .navigationTitle("Расписание · \(check.title)")
+                .navigationTitle("Schedule · \(check.title)")
                 #if os(iOS)
                 .toolbarTitleDisplayMode(.inline)
                 #endif
-                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { showSchedule = false } } }
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showSchedule = false } } }
             }
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
@@ -208,7 +208,7 @@ struct BlockingCheckView: View {
 
     private func evidenceCard(_ finding: CensorshipFinding) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "Данные проверки")
+            SectionCaption(text: "Check data")
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(finding.evidence.enumerated()), id: \.offset) { idx, line in
                     HStack(alignment: .top, spacing: 8) {

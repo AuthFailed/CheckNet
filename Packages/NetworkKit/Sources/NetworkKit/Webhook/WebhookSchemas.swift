@@ -16,23 +16,23 @@ public enum WebhookCatalog {
         toolKey: "ping",
         toolLabel: "Ping",
         fields: [
-            WebhookField("host", "Адрес"),
-            WebhookField("resolvedIP", "IP-адрес"),
-            WebhookField("avgMillis", "Средний пинг"),
-            WebhookField("minMillis", "Минимум"),
-            WebhookField("maxMillis", "Максимум"),
-            WebhookField("jitterMillis", "Джиттер"),
-            WebhookField("stddevMillis", "Стд. отклонение"),
-            WebhookField("lossPercent", "Потери, %"),
-            WebhookField("transmitted", "Отправлено"),
-            WebhookField("received", "Получено"),
+            WebhookField("host", "Address"),
+            WebhookField("resolvedIP", "IP address"),
+            WebhookField("avgMillis", "Average ping"),
+            WebhookField("minMillis", "Minimum"),
+            WebhookField("maxMillis", "Maximum"),
+            WebhookField("jitterMillis", "Jitter"),
+            WebhookField("stddevMillis", "Std. deviation"),
+            WebhookField("lossPercent", "Loss, %"),
+            WebhookField("transmitted", "Sent"),
+            WebhookField("received", "Received"),
             // Intermediate results — off nothing by default, but the whole list
             // and each of its sub-fields can be dropped independently.
-            WebhookField("samples", "Промежуточные результаты", children: [
-                WebhookField("sequence", "Номер"),
-                WebhookField("rttMillis", "Пинг"),
+            WebhookField("samples", "Intermediate results", children: [
+                WebhookField("sequence", "Number"),
+                WebhookField("rttMillis", "Ping"),
                 WebhookField("ttl", "TTL"),
-                WebhookField("sourceIP", "Источник")
+                WebhookField("sourceIP", "Source")
             ])
         ]
     )
@@ -70,15 +70,15 @@ public enum WebhookCatalog {
 
     public static let blocking = WebhookSchema(
         toolKey: "blocking",
-        toolLabel: "Блокировки",
+        toolLabel: "Blocks",
         fields: [
-            WebhookField("check", "Проверка"),
-            WebhookField("target", "Цель"),
-            WebhookField("verdict", "Вердикт"),
-            WebhookField("headline", "Заголовок"),
-            WebhookField("detail", "Подробности"),
-            WebhookField("evidence", "Данные проверки", children: [
-                WebhookField("line", "Строка")
+            WebhookField("check", "Check"),
+            WebhookField("target", "Target"),
+            WebhookField("verdict", "Verdict"),
+            WebhookField("headline", "Title"),
+            WebhookField("detail", "Details"),
+            WebhookField("evidence", "Check data", children: [
+                WebhookField("line", "Row")
             ])
         ]
     )
@@ -98,18 +98,18 @@ public enum WebhookCatalog {
 
     public static let reachability = WebhookSchema(
         toolKey: "reachability",
-        toolLabel: "Доступность",
+        toolLabel: "Availability",
         fields: [
-            WebhookField("scope", "Группа"),
-            WebhookField("verdict", "Вердикт"),
-            WebhookField("reachable", "Доступно"),
-            WebhookField("obstructed", "Обрывов"),
-            WebhookField("total", "Всего"),
-            WebhookField("nodes", "Узлы", children: [
-                WebhookField("host", "Хост"),
-                WebhookField("provider", "Провайдер"),
-                WebhookField("status", "Статус"),
-                WebhookField("handshakeMillis", "Рукопожатие, мс")
+            WebhookField("scope", "Group"),
+            WebhookField("verdict", "Verdict"),
+            WebhookField("reachable", "Available"),
+            WebhookField("obstructed", "Drops"),
+            WebhookField("total", "Total"),
+            WebhookField("nodes", "Hosts", children: [
+                WebhookField("host", "Host"),
+                WebhookField("provider", "Provider"),
+                WebhookField("status", "Status"),
+                WebhookField("handshakeMillis", "Handshake, ms")
             ])
         ]
     )

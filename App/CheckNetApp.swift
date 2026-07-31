@@ -116,7 +116,7 @@ struct CheckNetApp: App {
     }
 
     /// Wires the notification delegate and routes its actions. A tapped alert
-    /// opens the host in Ping; "Проверить снова" re-runs the check pass.
+    /// opens the host in Ping; "Recheck" re-runs the check pass.
     private func configureNotifications() {
         monitoring.useLiveActivity = settings.liveActivitiesEnabled
         HostNotifier.shared.configure()

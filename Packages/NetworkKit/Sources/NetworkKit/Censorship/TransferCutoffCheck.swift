@@ -12,9 +12,9 @@ public struct CutoffProbe: Sendable, Codable, Hashable {
 
         public var label: String {
             switch self {
-            case .byteAccumulation: "по объёму (накопление КБ)"
-            case .packetCount: "по числу пакетов"
-            case .singleSegment: "контроль: один сегмент"
+            case .byteAccumulation: "by volume (KB accumulated)"
+            case .packetCount: "by packet count"
+            case .singleSegment: "control: single segment"
             }
         }
     }
@@ -34,7 +34,7 @@ public struct CutoffProbe: Sendable, Codable, Hashable {
     public let detail: String
 }
 
-/// The "16–20 КБ" check.
+/// The "16–20 KB" check.
 ///
 /// The user-facing name describes the symptom — connections to foreign hosts die
 /// once a transfer gets going, historically around 16–20 KB. The measured cause
@@ -126,14 +126,14 @@ public struct TransferCutoffCheck: Sendable {
                     variant: .byteAccumulation, outcome: .failed,
                     bytesSent: bytesSent, segmentsSent: segments,
                     elapsedMillis: MonoClock.millisSince(start), failure: .eof,
-                    detail: "сервер закрыл соединение после \(bytesSent / 1024) КБ"
+                    detail: "server closed the connection after \(bytesSent / 1024) KB"
                 )
             }
             return CutoffProbe(
                 variant: .byteAccumulation, outcome: .passed,
                 bytesSent: bytesSent, segmentsSent: segments,
                 elapsedMillis: MonoClock.millisSince(start), failure: nil,
-                detail: "передано \(bytesSent / 1024) КБ без обрыва"
+                detail: "sent \(bytesSent / 1024) KB without a cutoff"
             )
         } catch {
             let kind = ProbeFailureKind.classify(error)
@@ -145,8 +145,8 @@ public struct TransferCutoffCheck: Sendable {
                 bytesSent: bytesSent, segmentsSent: segments,
                 elapsedMillis: MonoClock.millisSince(start), failure: kind,
                 detail: frozen
-                    ? "оборвалось на \(bytesSent / 1024) КБ — \(kind.label)"
-                    : "не удалось выполнить пробу — \(kind.label)"
+                    ? "cut off at \(bytesSent / 1024) KB — \(kind.label)"
+                    : "probe failed — \(kind.label)"
             )
         }
     }
@@ -205,13 +205,13 @@ public struct TransferCutoffCheck: Sendable {
                 return CutoffProbe(
                     variant: variant, outcome: .frozen, bytesSent: request.count,
                     segmentsSent: segments, elapsedMillis: elapsed, failure: .eof,
-                    detail: "соединение закрыто после \(request.count) байт в \(segments) пакетах"
+                    detail: "connection closed after \(request.count) bytes in \(segments) packets"
                 )
             }
             return CutoffProbe(
                 variant: variant, outcome: .passed, bytesSent: request.count,
                 segmentsSent: segments, elapsedMillis: elapsed, failure: nil,
-                detail: "ответ получен: \(request.count) байт в \(segments) пакетах"
+                detail: "response received: \(request.count) bytes in \(segments) packets"
             )
         } catch {
             let kind = ProbeFailureKind.classify(error)
@@ -222,8 +222,8 @@ public struct TransferCutoffCheck: Sendable {
                 segmentsSent: segments, elapsedMillis: MonoClock.millisSince(start),
                 failure: kind,
                 detail: outcome == .frozen
-                    ? "замерло на \(segments) пакетах (\(request.count) байт) — \(kind.label)"
-                    : "не удалось выполнить пробу — \(kind.label)"
+                    ? "stalled at \(segments) packets (\(request.count) bytes) — \(kind.label)"
+                    : "probe failed — \(kind.label)"
             )
         }
     }
@@ -245,15 +245,15 @@ public struct TransferCutoffCheck: Sendable {
             "\(target): \(single.variant.label) → \(single.detail)",
             "\(target): \(packets.variant.label) → \(packets.detail)",
             "\(target): \(bytes.variant.label) → \(bytes.detail)",
-            "\(control) (контроль): \(controlPackets.detail)"
+            "\(control) (control): \(controlPackets.detail)"
         ]
 
         // Nothing to say if we couldn't establish a baseline at all.
         guard single.outcome != .failed || packets.outcome != .failed else {
             return CensorshipFinding(
                 verdict: .inconclusive,
-                headline: "Проверка не выполнена",
-                detail: "Не удалось установить соединение с \(target). Возможно, сеть недоступна целиком.",
+                headline: "Check not completed",
+                detail: "Couldn't establish a connection to \(target). The whole network may be unreachable.",
                 evidence: evidence
             )
         }
@@ -262,15 +262,15 @@ public struct TransferCutoffCheck: Sendable {
         let byteThresholdSuspected = bytes.outcome == .frozen
 
         if packetCounterSuspected {
-            evidence.append("Те же \(packets.bytesSent) байт одним сегментом прошли, а \(packets.segmentsSent) пакетами — нет.")
+            evidence.append("The same \(packets.bytesSent) bytes went through as one segment, but not as \(packets.segmentsSent) packets.")
             if controlPackets.outcome == .passed {
-                evidence.append("Российский контроль не затронут — ограничение зависит от назначения.")
+                evidence.append("The Russian control is unaffected — the restriction depends on the destination.")
             }
             return CensorshipFinding(
                 verdict: .restricted,
-                headline: "Соединение обрывают по числу пакетов",
-                detail: "Мелкий запрос (\(packets.bytesSent) байт) прошёл одним пакетом, но замер, когда те же байты отправлены \(packets.segmentsSent) пакетами. Считаются пакеты, а не объём — обычная перегрузка сети так себя не ведёт."
-                    + (byteThresholdSuspected ? " Обрыв по объёму зафиксирован на \(bytes.bytesSent / 1024) КБ." : ""),
+                headline: "The connection is cut off by packet count",
+                detail: "A small request (\(packets.bytesSent) bytes) went through as a single packet but stalled when the same bytes were sent as \(packets.segmentsSent) packets. Packets are counted, not volume — ordinary network congestion doesn't behave this way."
+                    + (byteThresholdSuspected ? " A volume-based cutoff was observed at \(bytes.bytesSent / 1024) KB." : ""),
                 evidence: evidence
             )
         }
@@ -278,16 +278,16 @@ public struct TransferCutoffCheck: Sendable {
         if byteThresholdSuspected {
             return CensorshipFinding(
                 verdict: .restricted,
-                headline: "Передача обрывается на \(bytes.bytesSent / 1024) КБ",
-                detail: "Соединение с \(target) замерло после \(bytes.bytesSent / 1024) КБ, хотя короткие запросы проходят. Пакетная проба обрыв не воспроизвела, поэтому порог похож на объёмный.",
+                headline: "Transfer cuts off at \(bytes.bytesSent / 1024) KB",
+                detail: "The connection to \(target) stalled after \(bytes.bytesSent / 1024) KB, even though short requests go through. The packet probe didn't reproduce the cutoff, so the threshold looks volume-based.",
                 evidence: evidence
             )
         }
 
         return CensorshipFinding(
             verdict: .clean,
-            headline: "Обрыв передачи не обнаружен",
-            detail: "Все три пробы к \(target) дошли до конца: и короткий запрос по пакетам, и накопление до \(bytes.bytesSent / 1024) КБ.",
+            headline: "No transfer cutoff detected",
+            detail: "All three probes to \(target) completed: the short packet-split request and the accumulation up to \(bytes.bytesSent / 1024) KB.",
             evidence: evidence
         )
     }

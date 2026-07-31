@@ -1,6 +1,6 @@
 import Foundation
 
-/// Guesses a country flag emoji from a server remark (e.g. "Швеция", "US · YT",
+/// Guesses a country flag emoji from a server remark (e.g. "Sweden", "US · YT",
 /// "Netherlands | Reserve"). Node remarks rarely carry a machine-readable code,
 /// so we match known country names (RU + EN) and ISO codes.
 public enum CountryFlag {
@@ -53,7 +53,7 @@ public enum CountryFlag {
         return iso
     }
 
-    /// A flag with its country name for display: "🇩🇪" → "🇩🇪 Германия"
+    /// A flag with its country name for display: "🇩🇪" → "🇩🇪 Germany"
     /// (localized to `locale`). Falls back to the bare flag if unknown.
     public static func label(forFlag flag: String, locale: Locale = .current) -> String {
         guard let iso = iso(fromFlag: flag),

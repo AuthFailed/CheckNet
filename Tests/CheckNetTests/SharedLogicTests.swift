@@ -114,9 +114,9 @@ final class SharedLogicTests: XCTestCase {
     func testCSVEmptyOptionalFields() {
         let record = CheckRecord(tool: "ping", host: "1.1.1.1", timestamp: Date(timeIntervalSince1970: 0),
                                  latencyMillis: nil, lossPercent: nil, succeeded: false,
-                                 detail: "нет ответа", source: .manual)
+                                 detail: "no response", source: .manual)
         let line = HistoryCSV.line(record, formatter: ISO8601DateFormatter())
         XCTAssertTrue(line.contains(",,"), line)   // empty latency and loss
-        XCTAssertTrue(line.hasSuffix("false,нет ответа"), line)
+        XCTAssertTrue(line.hasSuffix("false,no response"), line)
     }
 }

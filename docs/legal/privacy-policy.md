@@ -1,83 +1,56 @@
-# Политика конфиденциальности CheckNet
-
-_Дата вступления в силу: 30 июля 2026 г. Контакт: roman@chrsnv.ru._
-
-CheckNet — приложение сетевой диагностики. Оно спроектировано так, чтобы **не собирать о вас
-никаких данных**.
-
-## Что мы собираем
-
-**Ничего.** У CheckNet нет серверов, аккаунтов, аналитики, рекламы и трекинга. Мы не собираем,
-не храним и не передаём ваши персональные данные. Результаты проверок остаются на вашем устройстве.
-
-## Данные на устройстве
-
-Настройки, сохранённые хосты и история проверок хранятся **локально** на устройстве (и, если вы
-включите синхронизацию iCloud, в вашем личном хранилище iCloud — оно принадлежит вам, не нам).
-Вы можете очистить историю в настройках приложения в любой момент.
-
-## Сетевые запросы, которые вы инициируете
-
-CheckNet — это инструмент диагностики: он по вашей команде обращается к хостам и сервисам, которые
-**вы указываете**. При использовании отдельных проверок запросы уходят к сторонним сервисам —
-например:
-
-- геолокация IP (внешний геосервис) — отправляется только публичный IP, который вы проверяете;
-- «World Ping» и списки серверов скорости — обращение к сторонним каталогам;
-- проверка версий инструментов — публичные релизы на GitHub;
-- DNS-over-HTTPS резолверы — при проверках DNS/цензуры.
-
-Эти запросы нужны для работы соответствующей проверки. Мы не добавляем к ним идентификаторов и не
-получаем их результаты — они идут напрямую с вашего устройства.
-
-Если вы **сами** настроите вебхук, CheckNet отправит результат проверки на **ваш** сервер по
-указанному вами адресу. Это выключено по умолчанию.
-
-## Разрешения
-
-- **Локальная сеть** — для обнаружения устройств и Bonjour-сервисов в вашей сети.
-- **Геопозиция** (только iOS, если включена соответствующая функция) — нужна исключительно для того,
-  чтобы iOS отдала имя текущей Wi-Fi-сети; координаты не используются и никуда не отправляются.
-- **Камера** — только для сканирования QR-кода со списком сохранённых хостов; изображения никуда
-  не отправляются.
-- **Уведомления** — для оповещений мониторинга хостов, если вы его включите.
-
-## Дети
-
-Приложение не предназначено для сбора данных о ком-либо, включая детей, и не собирает их.
-
-## Изменения
-
-Актуальная версия политики публикуется на этой странице; дата вступления в силу указана вверху.
-
-## Контакт
-
-Вопросы по конфиденциальности: roman@chrsnv.ru.
-
----
-
-# CheckNet Privacy Policy (English)
+# CheckNet Privacy Policy
 
 _Effective date: July 30, 2026. Contact: roman@chrsnv.ru._
 
-CheckNet is a network-diagnostics app designed to **collect no data about you**.
+CheckNet is a network-diagnostics app. It is designed to **collect no data about you
+whatsoever**.
 
-**What we collect:** nothing. CheckNet has no servers, accounts, analytics, ads, or tracking.
-Results stay on your device.
+## What We Collect
 
-**On-device data:** settings, saved hosts, and check history are stored locally (and, if you turn
-on iCloud sync, in your own iCloud — which belongs to you, not us). You can clear history anytime.
+**Nothing.** CheckNet has no servers, accounts, analytics, ads, or tracking. We do not collect,
+store, or transmit your personal data. Check results stay on your device.
 
-**Requests you start:** CheckNet is a diagnostic tool — on your command it contacts hosts and
-services you specify. Some checks send requests to third parties (IP geolocation, world-ping and
-speed-test server lists, GitHub Releases for version checks, DNS-over-HTTPS resolvers). These go
-directly from your device; we attach no identifiers and receive no results. If you configure a
-webhook yourself, CheckNet posts a result to your own server (off by default).
+## On-Device Data
 
-**Permissions:** Local Network (device/Bonjour discovery); Location (iOS, only to let iOS return
-the current Wi-Fi SSID — coordinates are never used or sent); Camera (only to scan a QR code of
-saved hosts); Notifications (host-monitoring alerts, if enabled).
+Settings, saved hosts, and check history are stored **locally** on your device (and, if you
+enable iCloud sync, in your personal iCloud storage — which belongs to you, not to us).
+You can clear the history in the app's settings at any time.
 
-**Children:** the app collects no data from anyone, including children.
+## Network Requests You Initiate
 
-**Contact:** roman@chrsnv.ru.
+CheckNet is a diagnostic tool: on your command it contacts the hosts and services that
+**you specify**. When you use certain checks, requests are sent to third-party services —
+for example:
+
+- IP geolocation (an external geo-service) — only the public IP you are checking is sent;
+- "World Ping" and speed-test server lists — requests to third-party catalogs;
+- tool version checks — public releases on GitHub;
+- DNS-over-HTTPS resolvers — during DNS/censorship checks.
+
+These requests are required for the corresponding check to work. We do not attach any
+identifiers to them and do not receive their results — they go directly from your device.
+
+If **you yourself** configure a webhook, CheckNet will send the check result to **your** server
+at the address you specify. This is off by default.
+
+## Permissions
+
+- **Local Network** — to discover devices and Bonjour services on your network.
+- **Location** (iOS only, if the corresponding feature is enabled) — needed solely so that
+  iOS returns the name of the current Wi-Fi network; coordinates are not used and are not sent
+  anywhere.
+- **Camera** — only to scan a QR code containing your list of saved hosts; images are not sent
+  anywhere.
+- **Notifications** — for host-monitoring alerts, if you enable it.
+
+## Children
+
+The app is not intended to collect data about anyone, including children, and does not collect it.
+
+## Changes
+
+The current version of this policy is published on this page; the effective date is shown at the top.
+
+## Contact
+
+Privacy questions: roman@chrsnv.ru.

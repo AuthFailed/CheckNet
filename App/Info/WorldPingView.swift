@@ -20,7 +20,7 @@ final class WorldPingModel {
     var reportedCount: Int { results.filter { $0.status != .pending }.count }
 
     private func activityView() -> CheckActivityView {
-        ScanActivityContent.view(foundLabel: "Доступно", found: reachableCount,
+        ScanActivityContent.view(foundLabel: "Available", found: reachableCount,
                                  scanned: reportedCount, total: results.count, isRunning: isRunning)
     }
 
@@ -98,15 +98,15 @@ struct WorldPingView: View {
                 } else if !model.isRunning {
                     ToolIdleHint(
                         icon: "globe.badge.chevron.backward",
-                        title: "Доступность со всего мира",
-                        message: "Проверим хост с узлов в разных странах — ping, HTTP, TCP, DNS или UDP. Видно, откуда ресурс доступен, а откуда нет. Проверка идёт через внешний сервис.",
+                        title: "Reachability worldwide",
+                        message: "We test a host from nodes in different countries — ping, HTTP, TCP, DNS or UDP. You see where the resource is reachable and where it isn’t. The check runs through an external service.",
                         example: "google.com",
                         current: model.host
                     ) { model.host = "google.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning) { model.toggle() }
+            RunButton(title: "Check", running: model.isRunning) { model.toggle() }
         }
         .navigationTitle("World Ping")
         .toolTitleDisplayMode()
@@ -124,8 +124,8 @@ struct WorldPingView: View {
     private var hostPlaceholder: String {
         switch model.type {
         case .tcp, .udp: "host:port"
-        case .http: "домен или URL"
-        default: "домен или IP"
+        case .http: "domain or URL"
+        default: "domain or IP"
         }
     }
 
@@ -134,14 +134,14 @@ struct WorldPingView: View {
     private var controlsCard: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Тип проверки").foregroundStyle(.secondary)
+                Text("Test type").foregroundStyle(.secondary)
                 Spacer()
-                Picker("Тип проверки", selection: $model.type) {
+                Picker("Test type", selection: $model.type) {
                     Text("Ping").tag(WorldProbe.CheckType.ping)
                     Text("HTTP").tag(WorldProbe.CheckType.http)
-                    Text("TCP-порт").tag(WorldProbe.CheckType.tcp)
+                    Text("TCP port").tag(WorldProbe.CheckType.tcp)
                     Text("DNS").tag(WorldProbe.CheckType.dns)
-                    Text("UDP-порт").tag(WorldProbe.CheckType.udp)
+                    Text("UDP port").tag(WorldProbe.CheckType.udp)
                 }
                 .labelsHidden()
                 .disabled(model.isRunning)
@@ -150,7 +150,7 @@ struct WorldPingView: View {
             Divider().padding(.leading, 14)
             Button { showNodePicker = true } label: {
                 HStack {
-                    Text("Узлы").foregroundStyle(.secondary)
+                    Text("Hosts").foregroundStyle(.secondary)
                     Spacer()
                     Text(nodeSelectionLabel).foregroundStyle(.tint)
                     Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
@@ -164,9 +164,9 @@ struct WorldPingView: View {
     }
 
     private var nodeSelectionLabel: String {
-        if model.selectedCountries.isEmpty { return "Авто" }
+        if model.selectedCountries.isEmpty { return "Auto" }
         if model.selectedCountries.count == 1 { return model.selectedCountries.first! }
-        return "\(model.selectedCountries.count) стран"
+        return "\(model.selectedCountries.count) countries"
     }
 
     // MARK: Summary
@@ -181,8 +181,8 @@ struct WorldPingView: View {
                 .font(.title2)
                 .foregroundStyle(reachable == total ? .green : reachable == 0 ? .red : .orange)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Доступен с \(reachable) из \(total)").font(.headline)
-                Text(allReported ? "Проверка завершена" : "Проверка идёт…")
+                Text("Available from \(reachable) of \(total)").font(.headline)
+                Text(allReported ? "Test complete" : "Testing…")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -220,14 +220,14 @@ struct WorldPingView: View {
             ProgressView().controlSize(.small)
         case .ok:
             if let rtt = result.rttMillis {
-                Text("\(Int(rtt)) мс").font(.callout.monospacedDigit()).foregroundStyle(.green)
+                Text("\(Int(rtt)) ms").font(.callout.monospacedDigit()).foregroundStyle(.green)
             } else {
-                StatusDot(level: .ok, label: "Доступен")
+                StatusDot(level: .ok, label: "Reachable")
             }
         case .failed:
-            StatusDot(level: .bad, label: "Недоступен")
+            StatusDot(level: .bad, label: "Unreachable")
         case .error:
-            StatusDot(level: .warning, label: "Ошибка")
+            StatusDot(level: .warning, label: "Error")
         }
     }
 }
@@ -270,7 +270,7 @@ private struct NodeSelectionSheet: View {
                 Section {
                     Button { model.selectedCountries = [] } label: {
                         HStack {
-                            Label("Случайные узлы по миру", systemImage: "dice")
+                            Label("Random nodes worldwide", systemImage: "dice")
                             Spacer()
                             if model.selectedCountries.isEmpty {
                                 Image(systemName: "checkmark").foregroundStyle(.tint)
@@ -292,18 +292,18 @@ private struct NodeSelectionSheet: View {
                     }
                 }
             }
-            .searchable(text: $query, prompt: "Поиск страны")
-            .navigationTitle("Откуда проверять")
+            .searchable(text: $query, prompt: "Search for a country")
+            .navigationTitle("Where to test from")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     if !model.selectedCountries.isEmpty {
-                        Button("Сбросить") { model.selectedCountries = [] }
+                        Button("Reset") { model.selectedCountries = [] }
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) { Button("Готово") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
         }
         .presentationDetents([.medium, .large])
@@ -328,7 +328,7 @@ private struct NodeSelectionSheet: View {
             }
             .buttonStyle(.plain)
             Spacer()
-            Button(allSelected ? "Снять" : "Все") {
+            Button(allSelected ? "Clear" : "All") {
                 let names = group.countries.map(\.country)
                 if allSelected { names.forEach { model.selectedCountries.remove($0) } }
                 else { names.forEach { model.selectedCountries.insert($0) } }
@@ -362,31 +362,31 @@ private struct NodeSelectionSheet: View {
 
 /// Coarse ISO country-code → continent mapping for grouping the node picker.
 enum Continent {
-    static let order = ["Европа", "Азия", "Северная Америка", "Южная Америка", "Африка", "Океания", "Другие"]
+    static let order = ["Europe", "Asia", "North America", "South America", "Africa", "Oceania", "Other"]
 
     static func of(_ code: String) -> String {
         switch code.lowercased() {
         case "at", "be", "bg", "by", "ch", "cz", "de", "dk", "ee", "es", "fi", "fr", "gb", "gr", "hr",
              "hu", "ie", "is", "it", "lt", "lu", "lv", "md", "me", "mk", "nl", "no", "pl", "pt", "ro",
              "rs", "ru", "se", "si", "sk", "ua", "ba", "al", "mt", "cy", "li", "mc", "sm", "va", "ad", "xk":
-            return "Европа"
+            return "Europe"
         case "ae", "am", "az", "bd", "bh", "bn", "bt", "cn", "ge", "hk", "id", "il", "in", "iq", "ir",
              "jo", "jp", "kg", "kh", "kr", "kw", "kz", "la", "lb", "lk", "mm", "mn", "mo", "mv", "my",
              "np", "om", "ph", "pk", "qa", "sa", "sg", "sy", "th", "tj", "tm", "tr", "tw", "uz", "vn", "ye":
-            return "Азия"
+            return "Asia"
         case "ca", "us", "mx", "cr", "pa", "do", "gt", "hn", "ni", "sv", "jm", "cu", "ht", "bs", "bz",
              "tt", "bb", "pr":
-            return "Северная Америка"
+            return "North America"
         case "ar", "bo", "br", "cl", "co", "ec", "gy", "py", "pe", "sr", "uy", "ve", "gf":
-            return "Южная Америка"
+            return "South America"
         case "dz", "ao", "bj", "bw", "cd", "cg", "ci", "cm", "eg", "et", "gh", "ke", "ma", "mg", "ml",
              "mu", "mz", "ng", "rw", "sc", "sn", "so", "tn", "tz", "ug", "za", "zm", "zw", "sd", "ly",
              "gm", "gn", "bf", "ne", "td", "cf", "ga", "gq", "cv", "dj", "er", "ls", "sz", "na", "bi", "mw":
-            return "Африка"
+            return "Africa"
         case "au", "nz", "fj", "pg", "nc", "pf", "ws", "to", "vu", "sb":
-            return "Океания"
+            return "Oceania"
         default:
-            return "Другие"
+            return "Other"
         }
     }
 }

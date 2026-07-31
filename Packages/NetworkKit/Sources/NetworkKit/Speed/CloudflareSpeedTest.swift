@@ -11,11 +11,11 @@ public final class CloudflareSpeedTest: Sendable {
                 var result = SpeedResult(downloadMbps: nil, uploadMbps: nil, server: "speed.cloudflare.com", latencyMillis: nil)
                 if let latency = await Self.latency() { result.latencyMillis = latency }
                 if download {
-                    continuation.yield(.phase("Загрузка (download)…"))
+                    continuation.yield(.phase("Download…"))
                     result.downloadMbps = await Self.measureDownload(seconds: duration / 2, continuation: continuation)
                 }
                 if upload && !Task.isCancelled {
-                    continuation.yield(.phase("Отдача (upload)…"))
+                    continuation.yield(.phase("Upload…"))
                     result.uploadMbps = await Self.measureUpload(seconds: duration / 2, continuation: continuation)
                 }
                 continuation.yield(.finished(result))

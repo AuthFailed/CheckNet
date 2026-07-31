@@ -10,19 +10,19 @@ struct SensitiveConsentModifier: ViewModifier {
     @Environment(AppSettings.self) private var settings
 
     func body(content: Content) -> some View {
-        content.confirmationDialog("Запустить «\(tool.title)»?",
+        content.confirmationDialog("Run “\(tool.title)”?",
                                    isPresented: $isPresented, titleVisibility: .visible) {
-            Button("Понимаю, запустить") {
+            Button("I understand, run") {
                 settings.grantConsent(for: tool)
                 onProceed()
             }
-            Button("Запускать без подтверждений") {
+            Button("Run without confirmation") {
                 settings.disableSensitivePrompts()
                 onProceed()
             }
-            Button("Отмена", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text(tool.sensitivityNote ?? "Эта проверка активно опрашивает сеть.")
+            Text(tool.sensitivityNote ?? "This check actively probes the network.")
         }
     }
 }

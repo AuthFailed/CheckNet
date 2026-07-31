@@ -1,14 +1,14 @@
 import SwiftUI
 import NetworkKit
 
-/// Incy deep-link: разбор `incy://crypt1/…` в URL подписки и генерация такой
-/// ссылки (+ QR) из своего URL — чтобы отдавать пользователям ссылку вместо
-/// «голого» адреса (issue #78).
+/// Incy deep-link: decode `incy://crypt1/…` into a subscription URL and generate
+/// such a link (+ QR) from your own URL — so you can hand users a link instead of
+/// a "bare" address (issue #78).
 struct IncyLinkView: View {
     private enum Mode: String, CaseIterable, Identifiable {
         case decode, encode
         var id: String { rawValue }
-        var title: LocalizedStringKey { self == .decode ? "Разобрать" : "Собрать" }
+        var title: LocalizedStringKey { self == .decode ? "Parse" : "Build" }
     }
 
     @State private var mode: Mode = .decode
@@ -25,7 +25,7 @@ struct IncyLinkView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Режим", selection: $mode) {
+                Picker("Mode", selection: $mode) {
                     ForEach(Mode.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented)
@@ -35,7 +35,7 @@ struct IncyLinkView: View {
 
             if mode == .decode { decodeContent } else { encodeContent }
         }
-        .navigationTitle("Incy-ссылка")
+        .navigationTitle("Incy link")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -59,10 +59,10 @@ struct IncyLinkView: View {
                 #endif
             HStack {
                 Button { if let s = clipboard() { link = s } } label: {
-                    Label("Вставить", systemImage: "doc.on.clipboard")
+                    Label("Paste", systemImage: "doc.on.clipboard")
                 }
                 Spacer()
-                Button { runDecode() } label: { Label("Разобрать", systemImage: "arrow.right.circle.fill") }
+                Button { runDecode() } label: { Label("Parse", systemImage: "arrow.right.circle.fill") }
                     .buttonStyle(.borderedProminent)
                     .disabled(link.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
@@ -74,11 +74,11 @@ struct IncyLinkView: View {
         }
 
         if let decoded {
-            Section("Подписка") {
-                if let n = decoded.name { InfoRow(label: "Имя", value: n) }
+            Section("Subscription") {
+                if let n = decoded.name { InfoRow(label: "Name", value: n) }
                 Text(decoded.url).font(.callout.monospaced()).textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Button { copy(decoded.url) } label: { Label("Скопировать URL", systemImage: "doc.on.doc") }
+                Button { copy(decoded.url) } label: { Label("Copy URL", systemImage: "doc.on.doc") }
             }
         }
     }
@@ -91,11 +91,11 @@ struct IncyLinkView: View {
 
     private func decodeMessage(_ error: Error) -> String {
         switch error as? IncyLink.LinkError {
-        case .notAnIncyLink: "Это не ссылка incy://crypt1/…"
-        case .invalidPayload: "Повреждённый payload"
-        case .authenticationFailed: "Не прошла проверка подлинности"
-        case .badJSON: "Внутри нет URL подписки"
-        case .emptyURL, .none: "Не удалось разобрать ссылку"
+        case .notAnIncyLink: "Not an incy://crypt1/… link"
+        case .invalidPayload: "Corrupted payload"
+        case .authenticationFailed: "Authentication failed"
+        case .badJSON: "No subscription URL inside"
+        case .emptyURL, .none: "Couldn't parse the link"
         }
     }
 
@@ -103,15 +103,15 @@ struct IncyLinkView: View {
 
     @ViewBuilder private var encodeContent: some View {
         Section {
-            TextField("URL подписки (https://…)", text: $url)
+            TextField("Subscription URL (https://…)", text: $url)
                 .font(.callout.monospaced())
                 .autocorrectionDisabled()
                 #if os(iOS)
                 .textInputAutocapitalization(.never)
                 .keyboardType(.URL)
                 #endif
-            TextField("Название (необязательно)", text: $name)
-            Button { runEncode() } label: { Label("Создать ссылку", systemImage: "link.badge.plus") }
+            TextField("Name (optional)", text: $name)
+            Button { runEncode() } label: { Label("Create link", systemImage: "link.badge.plus") }
                 .buttonStyle(.borderedProminent)
                 .disabled(url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         } footer: {
@@ -122,17 +122,17 @@ struct IncyLinkView: View {
         }
 
         if let built {
-            Section("Ссылка") {
+            Section("Link") {
                 Text(built).font(.callout.monospaced()).textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Button { copy(built) } label: { Label("Скопировать", systemImage: "doc.on.doc") }
+                Button { copy(built) } label: { Label("Copy", systemImage: "doc.on.doc") }
             }
             Section {
                 QRCodeView(text: built)
                     .frame(maxWidth: 260)
                     .frame(maxWidth: .infinity)
             } footer: {
-                Text("Откройте ссылку или отсканируйте QR на устройстве с установленным INCY.")
+                Text("Open the link or scan the QR on a device with INCY installed.")
             }
         }
     }
@@ -142,7 +142,7 @@ struct IncyLinkView: View {
         let u = url.trimmingCharacters(in: .whitespacesAndNewlines)
         let n = name.trimmingCharacters(in: .whitespacesAndNewlines)
         do { built = try IncyLink.encode(url: u, name: n.isEmpty ? nil : n) }
-        catch { built = nil; encodeError = "Не удалось создать ссылку" }
+        catch { built = nil; encodeError = "Couldn't create the link" }
     }
 
     // MARK: - Clipboard

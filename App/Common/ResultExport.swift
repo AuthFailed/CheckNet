@@ -77,26 +77,26 @@ struct ResultShareMenu<Content: View>: View {
         Menu {
             ShareLink(
                 item: ResultImage(name: name) { ResultExport.png(snapshot()) },
-                preview: SharePreview("Результат проверки")
+                preview: SharePreview("Check result")
             ) {
-                Label("Поделиться картинкой", systemImage: "photo")
+                Label("Share as Image", systemImage: "photo")
             }
             ShareLink(item: text) {
-                Label("Поделиться текстом", systemImage: "text.alignleft")
+                Label("Share as Text", systemImage: "text.alignleft")
             }
             #if os(macOS)
             Divider()
             Button {
                 saveImage()
             } label: {
-                Label("Сохранить картинку…", systemImage: "square.and.arrow.down")
+                Label("Save Image…", systemImage: "square.and.arrow.down")
             }
             #endif
         } label: {
-            Label("Поделиться", systemImage: "square.and.arrow.up")
+            Label("Share", systemImage: "square.and.arrow.up")
         }
-        .alert("Не удалось сохранить картинку", isPresented: .constant(failure != nil)) {
-            Button("Ок") { failure = nil }
+        .alert("Couldn’t Save Image", isPresented: .constant(failure != nil)) {
+            Button("OK") { failure = nil }
         } message: {
             Text(failure ?? "")
         }
@@ -107,7 +107,7 @@ struct ResultShareMenu<Content: View>: View {
     /// people expect a save panel.
     private func saveImage() {
         guard let data = ResultExport.png(snapshot()) else {
-            failure = "Не удалось построить изображение."
+            failure = "Unable to create the image."
             return
         }
         let panel = NSSavePanel()

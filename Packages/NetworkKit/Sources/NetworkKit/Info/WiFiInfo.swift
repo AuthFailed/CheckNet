@@ -104,9 +104,9 @@ public enum WiFiBand: String, Sendable, Codable, Hashable {
     case ghz24, ghz5, ghz6, unknown
     public var label: String {
         switch self {
-        case .ghz24: "2,4 ГГц"
-        case .ghz5: "5 ГГц"
-        case .ghz6: "6 ГГц"
+        case .ghz24: "2.4 GHz"
+        case .ghz5: "5 GHz"
+        case .ghz6: "6 GHz"
         case .unknown: "—"
         }
     }
@@ -126,10 +126,10 @@ public enum WiFiWidth: String, Sendable, Codable, Hashable {
     case mhz20, mhz40, mhz80, mhz160, unknown
     public var label: String {
         switch self {
-        case .mhz20: "20 МГц"
-        case .mhz40: "40 МГц"
-        case .mhz80: "80 МГц"
-        case .mhz160: "160 МГц"
+        case .mhz20: "20 MHz"
+        case .mhz40: "40 MHz"
+        case .mhz80: "80 MHz"
+        case .mhz160: "160 MHz"
         case .unknown: "—"
         }
     }
@@ -190,10 +190,10 @@ public enum WiFiQuality: String, Sendable, Codable, Hashable {
 
     public var label: String {
         switch self {
-        case .excellent: "Отличный"
-        case .good: "Хороший"
-        case .fair: "Средний"
-        case .poor: "Слабый"
+        case .excellent: "Excellent"
+        case .good: "Good"
+        case .fair: "Fair"
+        case .poor: "Weak"
         }
     }
     /// Bars 0–3 for an icon.

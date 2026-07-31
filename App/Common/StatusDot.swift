@@ -31,7 +31,7 @@ struct StatusDot: View {
     }
 
     let level: Level
-    /// What this marker means here — "порт открыт", "хост отвечает". Read by
+    /// What this marker means here — "port open", "host responds". Read by
     /// VoiceOver in place of the shape.
     let label: LocalizedStringKey
     /// Matches the marker to the text beside it instead of a fixed 8 pt.
@@ -60,10 +60,10 @@ extension StatusDot.Level {
 
 #Preview {
     VStack(alignment: .leading, spacing: 12) {
-        StatusDot(level: .ok, label: "Хост отвечает")
-        StatusDot(level: .warning, label: "Есть потери")
-        StatusDot(level: .bad, label: "Хост недоступен")
-        StatusDot(level: .unknown, label: "Нет данных")
+        StatusDot(level: .ok, label: "Host responds")
+        StatusDot(level: .warning, label: "Packet loss")
+        StatusDot(level: .bad, label: "Host unreachable")
+        StatusDot(level: .unknown, label: "No data")
     }
     .padding()
 }

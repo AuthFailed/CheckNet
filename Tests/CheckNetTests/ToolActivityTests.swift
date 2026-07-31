@@ -28,7 +28,7 @@ final class ToolActivityTests: XCTestCase {
 
     func testUnionKeepsBothAndDedupesByAddress() {
         let local = [
-            SavedHost(name: "Роутер", value: "192.168.1.1", toolID: nil),
+            SavedHost(name: "Router", value: "192.168.1.1", toolID: nil),
             SavedHost(name: "CF", value: "1.1.1.1", toolID: nil)
         ]
         let remote = [

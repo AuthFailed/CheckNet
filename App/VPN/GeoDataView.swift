@@ -21,7 +21,7 @@ final class GeoDataModel {
             let data = try Data(contentsOf: url)
             load(data, name: url.lastPathComponent, kind: nil)
         } catch {
-            self.error = "Не удалось открыть файл: \(error.localizedDescription)"
+            self.error = "Couldn't open file: \(error.localizedDescription)"
         }
     }
 
@@ -31,9 +31,9 @@ final class GeoDataModel {
         isLoading = true; error = nil
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            await parse(data, name: "\(name) · загружен", kind: kind)
+            await parse(data, name: "\(name) · downloaded", kind: kind)
         } catch {
-            self.error = "Не удалось загрузить: \(error.localizedDescription)"
+            self.error = "Couldn't download: \(error.localizedDescription)"
             isLoading = false
         }
     }
@@ -49,7 +49,7 @@ final class GeoDataModel {
             document = doc; sourceName = name
             lookupResults = nil; lookupQuery = ""
         } else {
-            error = "Не удалось разобрать файл — это не geosite.dat / geoip.dat?"
+            error = "Couldn't parse the file — is it not geosite.dat / geoip.dat?"
         }
         isLoading = false
     }
@@ -69,9 +69,9 @@ final class GeoDataModel {
     }
 }
 
-/// Просмотр geosite/geoip `.dat` (#73): открыть файл (или загрузить стандартный),
-/// увидеть категории и их правила, искать домен/IP по категориям. Чистая
-/// диагностика — разбор ваших списков на устройстве.
+/// Viewer for geosite/geoip `.dat` (#73): open a file (or download the standard one),
+/// see the categories and their rules, search for a domain/IP across categories. Pure
+/// diagnostics — parsing your own lists on the device.
 struct GeoDataView: View {
     @State private var model = GeoDataModel()
     @State private var showImporter = false
@@ -98,7 +98,7 @@ struct GeoDataView: View {
             if model.document != nil {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showImporter = true } label: {
-                        Label("Открыть файл", systemImage: "folder")
+                        Label("Open file", systemImage: "folder")
                     }
                 }
             }
@@ -115,19 +115,19 @@ struct GeoDataView: View {
         List {
             Section {
                 Button { showImporter = true } label: {
-                    Label("Открыть .dat файл", systemImage: "folder")
+                    Label("Open .dat file", systemImage: "folder")
                 }
                 Button { Task { await model.download(.geosite) } } label: {
-                    Label("Загрузить стандартный geosite.dat", systemImage: "arrow.down.circle")
+                    Label("Load default geosite.dat", systemImage: "arrow.down.circle")
                 }
                 Button { Task { await model.download(.geoip) } } label: {
-                    Label("Загрузить стандартный geoip.dat", systemImage: "arrow.down.circle")
+                    Label("Load default geoip.dat", systemImage: "arrow.down.circle")
                 }
             } footer: {
-                Text("Откройте свой geosite.dat / geoip.dat или загрузите сборку Loyalsoldier. Тип определяется автоматически.")
+                Text("Open your own geosite.dat / geoip.dat or load a Loyalsoldier build. The type is detected automatically.")
             }
             if model.isLoading {
-                HStack { ProgressView(); Text("Загрузка…").foregroundStyle(.secondary) }
+                HStack { ProgressView(); Text("Loading…").foregroundStyle(.secondary) }
             }
             if let error = model.error {
                 Text(LocalizedStringKey(error)).foregroundStyle(.red).font(.callout)
@@ -144,7 +144,7 @@ struct GeoDataView: View {
                     Label(doc.kind == .geosite ? "geosite" : "geoip",
                           systemImage: doc.kind == .geosite ? "globe" : "network")
                     Spacer()
-                    Text("\(doc.categories.count) кат. · \(doc.totalRules) правил")
+                    Text("\(doc.categories.count) cat. · \(doc.totalRules) rules")
                         .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                 }
                 if let name = model.sourceName {
@@ -155,7 +155,7 @@ struct GeoDataView: View {
             Section {
                 HStack {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField(doc.kind == .geosite ? "Домен: в каких категориях?" : "IPv4: в какой категории?",
+                    TextField(doc.kind == .geosite ? "Domain: which categories?" : "IPv4: which category?",
                               text: $model.lookupQuery)
                         .autocorrectionDisabled()
                         #if os(iOS)
@@ -166,17 +166,17 @@ struct GeoDataView: View {
                 }
                 if let results = model.lookupResults {
                     if results.isEmpty {
-                        Text("Не найдено ни в одной категории").font(.caption).foregroundStyle(.secondary)
+                        Text("Not found in any category").font(.caption).foregroundStyle(.secondary)
                     } else {
                         Text(results.joined(separator: ", "))
                             .font(.callout).textSelection(.enabled)
                     }
                 }
             } header: {
-                Text("Поиск по категориям")
+                Text("Search by category")
             }
 
-            Section("Категории") {
+            Section("Categories") {
                 ForEach(filteredCategories) { cat in
                     NavigationLink {
                         GeoCategoryDetailView(document: doc, category: cat)
@@ -190,7 +190,7 @@ struct GeoDataView: View {
                 }
             }
         }
-        .searchable(text: $categorySearch, prompt: "Категория")
+        .searchable(text: $categorySearch, prompt: "Category")
     }
 }
 
@@ -240,7 +240,7 @@ struct GeoCategoryDetailView: View {
                 }
             }
         }
-        .searchable(text: $search, prompt: document.kind == .geosite ? "Домен" : "Подсеть")
+        .searchable(text: $search, prompt: document.kind == .geosite ? "Domain" : "Subnet")
         .navigationTitle(category.code)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

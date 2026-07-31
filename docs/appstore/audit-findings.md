@@ -1,126 +1,128 @@
-# Технический аудит перед подачей (#88 / #93 / #94 / #95 / #97)
+# Technical pre-submission audit (#88 / #93 / #94 / #95 / #97)
 
-Фактические выводы по коду на ветке M8. Где нужен собранный бинарь — помечено «pending build».
+Actual findings from the code on the M8 branch. Where a built binary is needed, it's marked "pending
+build".
 
 ## #94 · PrivacyInfo.xcprivacy (required-reason API)
 
-Манифесты есть: `App/Resources/PrivacyInfo.xcprivacy` и `Widgets/PrivacyInfo.xcprivacy`. Оба:
-`NSPrivacyTracking=false`, нет собираемых типов, объявлен только UserDefaults (`CA92.1`).
+The manifests exist: `App/Resources/PrivacyInfo.xcprivacy` and `Widgets/PrivacyInfo.xcprivacy`. Both:
+`NSPrivacyTracking=false`, no collected types, only UserDefaults declared (`CA92.1`).
 
-Аудит использования required-reason API в **Swift-коде** (App/Shared/NetworkKit):
+Audit of required-reason API usage in the **Swift code** (App/Shared/NetworkKit):
 
-| Категория | Найдено | Нужно объявлять? |
+| Category | Found | Needs declaring? |
 |---|---|---|
-| UserDefaults | да | **да — уже есть `CA92.1`** ✅ |
-| File timestamp | нет (`modificationDate/creationDate/getattrlist/stat` не встречаются) | нет |
-| System boot time | `MonoClock` → `clock_gettime(CLOCK_MONOTONIC_RAW)` — **не в списке Apple** (там `systemUptime`/`mach_absolute_time`) | нет |
-| Disk space | только `.fileSizeKey` в `XrayCoreStore` — это размер файла, **не** volume-capacity/`statfs` | нет |
-| Active keyboard | нет | нет |
+| UserDefaults | yes | **yes — already `CA92.1`** ✅ |
+| File timestamp | no (`modificationDate/creationDate/getattrlist/stat` not present) | no |
+| System boot time | `MonoClock` → `clock_gettime(CLOCK_MONOTONIC_RAW)` — **not on Apple's list** (that lists `systemUptime`/`mach_absolute_time`) | no |
+| Disk space | only `.fileSizeKey` in `XrayCoreStore` — that's file size, **not** volume-capacity/`statfs` | no |
+| Active keyboard | no | no |
 
-**Вывод:** для Swift-кода манифест корректен и полон. Предположение из ROADMAP (file timestamp /
-boot time / disk space) на деле не подтверждается — эти API не используются.
+**Conclusion:** for the Swift code the manifest is correct and complete. The assumption from the
+ROADMAP (file timestamp / boot time / disk space) doesn't actually hold — those APIs aren't used.
 
-**Открытый пункт — libXray (pending build).** `Frameworks/LibXray.xcframework` — статический Go-core,
-**без своего privacy-манифеста**. Go-рантайм может вызывать `stat`/`statfs`/`mach_absolute_time`.
-Apple сканирует символы бинаря (ITMS-91053). Нужно после сборки:
+**Open item — libXray (pending build).** `Frameworks/LibXray.xcframework` — a static Go core, **with
+no privacy manifest of its own**. The Go runtime may call `stat`/`statfs`/`mach_absolute_time`. Apple
+scans the binary's symbols (ITMS-91053). After building, run:
 ```sh
-# по iOS-бинарю приложения:
+# over the app's iOS binary:
 nm -u "$APP/CheckNet" | grep -E '\b(stat|fstat|lstat|statfs|fstatfs|mach_absolute_time|getattrlist)\b'
 ```
-Если символы есть — добавить в `App/Resources/PrivacyInfo.xcprivacy` reason-коды:
-- File timestamp → `DDA9.1` (файлы в контейнере приложения);
-- Disk space → `E174.1` (проверка места перед записью core-файла);
-- System boot time → `35F9.1` (измерение интервалов).
-Reason-коды заготовлены; вставлю по факту `nm`.
+If the symbols are present — add reason codes to `App/Resources/PrivacyInfo.xcprivacy`:
+- File timestamp → `DDA9.1` (files in the app container);
+- Disk space → `E174.1` (checking space before writing the core file);
+- System boot time → `35F9.1` (measuring intervals).
+The reason codes are staged; I'll insert them based on the actual `nm` result.
 
-## #88 · Приватные API (2.5.1)
+## #88 · Private APIs (2.5.1)
 
-Рискованные места и их гейтинг:
+Risky spots and their gating:
 
-| API | Файл | Гейт | В iOS-бинаре? |
+| API | File | Gate | In the iOS binary? |
 |---|---|---|---|
-| `rt_msghdr2`, `sysctl(NET_RT_FLAGS)` | `NetworkKit/Browser/ARPTable.swift` | `#if os(macOS)` | **нет** ✅ |
-| CoreWLAN (`CWWiFiClient`) | `NetworkKit/Info/WiFiInfo.swift` | `#if canImport(CoreWLAN)` (macOS-only) | **нет** ✅ |
-| `NEHotspotNetwork.fetchCurrent` | `App/Network/CurrentNetwork.swift` | публичный API (не приватный); за флагом `isSSIDReadable` | да, но это публичный API |
-| ICMP `SOCK_DGRAM` | `NetworkKit/Support` | публичный, непривилегированный | да, ок |
+| `rt_msghdr2`, `sysctl(NET_RT_FLAGS)` | `NetworkKit/Browser/ARPTable.swift` | `#if os(macOS)` | **no** ✅ |
+| CoreWLAN (`CWWiFiClient`) | `NetworkKit/Info/WiFiInfo.swift` | `#if canImport(CoreWLAN)` (macOS-only) | **no** ✅ |
+| `NEHotspotNetwork.fetchCurrent` | `App/Network/CurrentNetwork.swift` | public API (not private); behind the `isSSIDReadable` flag | yes, but it's a public API |
+| ICMP `SOCK_DGRAM` | `NetworkKit/Support` | public, unprivileged | yes, fine |
 
-**Вывод:** статически чисто — оба macOS-only символа компилируются вне iOS. Финальное
-подтверждение — pending build:
+**Conclusion:** statically clean — both macOS-only symbols compile out of the iOS build. Final
+confirmation is pending build:
 ```sh
-nm "$APP/CheckNet" | grep -iE 'rt_msghdr2|CWWiFiClient|CoreWLAN'   # ожидаем пусто
+nm "$APP/CheckNet" | grep -iE 'rt_msghdr2|CWWiFiClient|CoreWLAN'   # expect empty
 ```
 
-## #97 · Санити Info.plist
+## #97 · Info.plist sanity
 
-Проверено в `App/Info.plist` / `project.yml`:
-- Usage-строки на месте: `NSLocalNetworkUsageDescription`, `NSLocationWhenInUseUsageDescription`
-  (объясняет, что только для SSID), `NSCameraUsageDescription`. ✅
-- `NSBonjourServices` — полный список типов (иначе mDNS молча не работает). ✅
-- Ориентации: iPhone — portrait + оба landscape; **iPad — все 4** (`UISupportedInterfaceOrientations~ipad`
-  с `PortraitUpsideDown`). Изначально было только 3 → App Store отбивал на ingest'е «iPad multitasking
-  requires all four». Исправлено. `TARGETED_DEVICE_FAMILY=1,2`.
-- Background: `UIBackgroundModes=[fetch]` + `BGTaskSchedulerPermittedIdentifiers` — обоснованно
-  (мониторинг хостов). ✅ Обоснование для ревью — в `review-notes.md`.
-- Deep links (`checknet`), Live Activities, Handoff (`NSUserActivityTypes`) объявлены. ✅
+Checked in `App/Info.plist` / `project.yml`:
+- Usage strings in place: `NSLocalNetworkUsageDescription`, `NSLocationWhenInUseUsageDescription`
+  (explains it's only for SSID), `NSCameraUsageDescription`. ✅
+- `NSBonjourServices` — the full list of types (otherwise mDNS silently fails). ✅
+- Orientations: iPhone — portrait + both landscape; **iPad — all 4** (`UISupportedInterfaceOrientations~ipad`
+  with `PortraitUpsideDown`). Originally only 3 → the App Store rejected it at ingest, "iPad
+  multitasking requires all four". Fixed. `TARGETED_DEVICE_FAMILY=1,2`.
+- Background: `UIBackgroundModes=[fetch]` + `BGTaskSchedulerPermittedIdentifiers` — justified (host
+  monitoring). ✅ The review justification is in `review-notes.md`.
+- Deep links (`checknet`), Live Activities, Handoff (`NSUserActivityTypes`) declared. ✅
 - Min deployment iOS 26 / macOS 26. ✅
-- ATS: единственное исключение — `ip-api.com` (HTTP-only геосервис), обосновано комментарием. ✅
-- ✅ `ITSAppUsesNonExemptEncryption=true` (решено) — крипта Happ/Incy декларируется, exemption
-  740.17 в ASC + годовой self-classification. Выставлено в `project.yml` и `App/Info.plist`.
-  См. `export-compliance.md`.
+- ATS: the only exception is `ip-api.com` (an HTTP-only geo service), justified with a comment. ✅
+- ✅ `ITSAppUsesNonExemptEncryption=true` (decided) — the Happ/Incy crypto is declared, exemption
+  740.17 in ASC + an annual self-classification. Set in `project.yml` and `App/Info.plist`.
+  See `export-compliance.md`.
 
-## #95 · Версия / debug-логи / тестовые хосты / dSYM
+## #95 · Version / debug logs / test hosts / dSYM
 
-- **Debug-логи:** нет `#if DEBUG`, нет отладочных `print()`. Единственный логгер — структурный
-  `os.Logger` в `SpotlightIndexer` (норм для релиза). ✅
-- **Тестовые хосты:** `example.com` / `8.8.8.8` — это UI-плейсхолдеры и дефолты полей ввода,
-  `127.0.0.1` — локальный SOCKS-бинд теста. Не артефакты, удалять не нужно. ✅
-- **Версия:** `MARKETING_VERSION=1.0`, `CURRENT_PROJECT_VERSION=1` — корректно для первой подачи.
-- **dSYM (pending build):** для Release `DEBUG_INFORMATION_FORMAT=dwarf-with-dsym` (дефолт Release) —
-  dSYM попадёт в архив; выгрузится вместе с бинарём. Проверить после `xcodebuild archive`.
+- **Debug logs:** no `#if DEBUG`, no debug `print()`. The only logger is the structured `os.Logger`
+  in `SpotlightIndexer` (fine for release). ✅
+- **Test hosts:** `example.com` / `8.8.8.8` are UI placeholders and input-field defaults,
+  `127.0.0.1` is the local SOCKS bind of a test. Not artifacts, no need to remove. ✅
+- **Version:** `MARKETING_VERSION=1.0`, `CURRENT_PROJECT_VERSION=1` — correct for a first submission.
+- **dSYM (pending build):** for Release, `DEBUG_INFORMATION_FORMAT=dwarf-with-dsym` (the Release
+  default) — the dSYM ends up in the archive and is uploaded with the binary. Verify after
+  `xcodebuild archive`.
 
 ## #93 · Entitlements audit
 
-- **iOS** (`App/CheckNet.entitlements`): сейчас только app-group. Дормантные (`wifi-info`,
-  `ubiquity-kvstore-identifier`, `usernotifications.time-sensitive`) намеренно отсутствуют — с ними
-  без Team ID/capabilities сборка не подписывается. Добавляю **вместе** с Team ID и включением
-  capability на App ID (иначе ломается и локальная, и CI-сборка).
-- **macOS** (`App/CheckNet-macOS.entitlements`): sandbox + network client/server — верно, ad-hoc
-  сборка проходит.
-- **Widgets**: app-group — верно.
-- **Вывод:** текущий набор собирается. Приведение к App ID (включение дормантных) — шаг с Team ID,
-  автоматическая подпись Xcode до-создаст профиль.
+- **iOS** (`App/CheckNet.entitlements`): currently only the app-group. Dormant ones (`wifi-info`,
+  `ubiquity-kvstore-identifier`, `usernotifications.time-sensitive`) are intentionally absent — with
+  them, the build won't sign without a Team ID/capabilities. I add them **together** with the Team ID
+  and enabling the capability on the App ID (otherwise both the local and the CI build break).
+- **macOS** (`App/CheckNet-macOS.entitlements`): sandbox + network client/server — correct, the
+  ad-hoc build passes.
+- **Widgets**: app-group — correct.
+- **Conclusion:** the current set builds. Aligning with the App ID (enabling the dormant ones) is a
+  step with the Team ID; Xcode's automatic signing creates the profile.
 
-## #92 · Релизный архив — Team ID `A63H349525`
+## #92 · Release archive — Team ID `A63H349525`
 
-**Про capabilities (из документации Apple, Adding capabilities / Configuring iCloud services):**
-при **автоматической подписи** Xcode сам включает capability на App ID в аккаунте разработчика.
-Мы пишем entitlements через XcodeGen, поэтому регистрацию делает автоподпись при архиве с флагом
-`-allowProvisioningUpdates`. Значит **ручное включение в портале для этих четырёх, как правило, не
-нужно** — они авто-провижнятся: App Groups (`group.com.chrsnv.checknet`), iCloud **Key-Value storage**
-(контейнер НЕ нужен — контейнеры только у Documents/CloudKit), **Access Wi-Fi Information**,
+**On capabilities (from Apple's docs, Adding capabilities / Configuring iCloud services):** with
+**automatic signing**, Xcode itself enables the capability on the App ID in the developer account.
+We write entitlements via XcodeGen, so registration is done by automatic signing at archive time with
+the `-allowProvisioningUpdates` flag. So **manually enabling these four in the portal is generally not
+needed** — they auto-provision: App Groups (`group.com.chrsnv.checknet`), iCloud **Key-Value storage**
+(a container is NOT needed — containers are only for Documents/CloudKit), **Access Wi-Fi Information**,
 **Time Sensitive Notifications**.
 
-**Что нужно для авторизации автоподписи (одно из):**
-- Apple ID с командой `A63H349525` добавлен в Xcode (Settings → Accounts), **или**
-- App Store Connect API key (`-authenticationKeyPath *.p8 -authenticationKeyID <id>
+**What's needed to authorize automatic signing (one of):**
+- An Apple ID on team `A63H349525` added to Xcode (Settings → Accounts), **or**
+- An App Store Connect API key (`-authenticationKeyPath *.p8 -authenticationKeyID <id>
   -authenticationKeyIssuerID <issuer>`).
 
-**Порядок (один координированный шаг):** добавляю 3 entitlements + флипаю 2 флага → `xcodebuild
-archive` c автоподписью (регистрирует capabilities на App ID) → проверяю на устройстве, что фичи
-реально работают. Флаги НЕ флипаю раньше архива: иначе в подписанной сборке покажется контрол,
-который ещё не может подписаться (ровно то, против чего сделаны `isAvailable`/`isSSIDReadable`).
+**Order (one coordinated step):** I add 3 entitlements + flip 2 flags → `xcodebuild archive` with
+automatic signing (registers capabilities on the App ID) → verify on-device that the features
+actually work. I don't flip the flags before the archive: otherwise the signed build would show a
+control that can't yet be signed (exactly what `isAvailable`/`isSSIDReadable` were built to prevent).
 
-**Готовый патч дормантных фич** (применяю в одном коммите после включения capabilities) —
-в `App/CheckNet.entitlements`:
+**Ready patch for the dormant features** (applied in one commit after enabling capabilities) —
+in `App/CheckNet.entitlements`:
 ```xml
 <key>com.apple.developer.networking.wifi-info</key><true/>
 <key>com.apple.developer.usernotifications.time-sensitive</key><true/>
 <key>com.apple.developer.ubiquity-kvstore-identifier</key>
 <string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>
 ```
-+ `CloudHostSync.isAvailable = true`, `CurrentNetwork.isSSIDReadable = true` (HostNotifier уже готов).
++ `CloudHostSync.isAvailable = true`, `CurrentNetwork.isSSIDReadable = true` (HostNotifier is ready).
 
-**Команда архива:**
+**Archive command:**
 ```sh
 export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
 xcodegen generate
@@ -130,38 +132,38 @@ xcodebuild -project CheckNet.xcodeproj -scheme CheckNet \
   DEVELOPMENT_TEAM=A63H349525 CODE_SIGN_STYLE=Automatic \
   -allowProvisioningUpdates archive
 ```
-Нужно от тебя для прогона: (1) Apple ID с этим Team залогинен в Xcode **или** ASC API key в среде;
-(2) capabilities включены; (3) разрешить локальную сборку в сессии. После архива — `nm`-аудит
-(#88/#94-libXray) и проверка dSYM (#95).
+What I need from you for the run: (1) an Apple ID on this team logged into Xcode **or** an ASC API key
+in the environment; (2) capabilities enabled; (3) permission to build locally in the session. After
+the archive — the `nm` audit (#88/#94-libXray) and a dSYM check (#95).
 
-## ✅ Проверено на подписанном архиве (Release, dev-signed, `-allowProvisioningUpdates`)
+## ✅ Verified on the signed archive (Release, dev-signed, `-allowProvisioningUpdates`)
 
-`ARCHIVE SUCCEEDED`. Автоподпись зарегистрировала App ID + capabilities без ручного портала.
+`ARCHIVE SUCCEEDED`. Automatic signing registered the App ID + capabilities with no manual portal work.
 
-- **#93 — entitlements подписаны** (проверено `codesign -d --entitlements`): `wifi-info`,
+- **#93 — entitlements signed** (verified with `codesign -d --entitlements`): `wifi-info`,
   `usernotifications.time-sensitive`, `ubiquity-kvstore-identifier`
-  (`A63H349525.com.chrsnv.checknet`), `application-groups`. Три дормантные фичи включены.
-- **#88 — чисто**: `nm` по iOS-бинарю не показал `rt_msghdr2`/`CWWiFiClient`/CoreWLAN.
-- **#94 — libXray**: бинарь импортирует `_stat`/`_fstat`/`_lstat` (file-timestamp) и
-  `_mach_absolute_time` (boot-time). Добавлены reason-коды `DDA9.1` и `35F9.1` в
-  `App/Resources/PrivacyInfo.xcprivacy`. Disk-space (`statfs`) не найден — не декларируем.
-- **#100 — иконка** компилируется в архив (`AppIcon60x60@2x.png`, `AppIcon76x76@2x~ipad.png`,
+  (`A63H349525.com.chrsnv.checknet`), `application-groups`. The three dormant features are enabled.
+- **#88 — clean**: `nm` over the iOS binary showed no `rt_msghdr2`/`CWWiFiClient`/CoreWLAN.
+- **#94 — libXray**: the binary imports `_stat`/`_fstat`/`_lstat` (file-timestamp) and
+  `_mach_absolute_time` (boot-time). Reason codes `DDA9.1` and `35F9.1` added to
+  `App/Resources/PrivacyInfo.xcprivacy`. Disk-space (`statfs`) not found — not declared.
+- **#100 — icon** compiles into the archive (`AppIcon60x60@2x.png`, `AppIcon76x76@2x~ipad.png`,
   `Assets.car`).
 
-**Дистрибуционный `.ipa` собран ✅.** `xcodebuild archive` (automatic) → `xcodebuild -exportArchive`
-с `Scripts/ExportOptions-AppStore.plist` (`method: app-store-connect`, `signingStyle: automatic`,
-`-allowProvisioningUpdates`). Результат: `build/export-store/CheckNet.ipa` (~19 МБ), подписан
-**Cloud Managed Apple Distribution** (Team A63H349525), автосозданы App Store профили для
-`com.chrsnv.checknet` и `.widgets`. #92 закрыт целиком.
+**Distribution `.ipa` built ✅.** `xcodebuild archive` (automatic) → `xcodebuild -exportArchive` with
+`Scripts/ExportOptions-AppStore.plist` (`method: app-store-connect`, `signingStyle: automatic`,
+`-allowProvisioningUpdates`). Result: `build/export-store/CheckNet.ipa` (~19 MB), signed with
+**Cloud Managed Apple Distribution** (Team A63H349525), App Store profiles auto-created for
+`com.chrsnv.checknet` and `.widgets`. #92 fully closed.
 
-**✅ Билд загружен в App Store Connect (2026-07-30).** Запись приложения — `com.chrsnv.checknet`,
-SKU `checknet-ios`, app id 6796268067; загружен через `xcodebuild -exportArchive destination: upload`
-+ ASC API key. `Upload succeeded`. Билд проходит обработку (~5–15 мин), затем появляется в TestFlight.
+**✅ Build uploaded to App Store Connect (2026-07-30).** The app record — `com.chrsnv.checknet`,
+SKU `checknet-ios`, app id 6796268067; uploaded via `xcodebuild -exportArchive destination: upload`
++ ASC API key. `Upload succeeded`. The build is processing (~5–15 min), then it appears in TestFlight.
 
-Два блокера ingest'а по пути (оба исправлены и в бинаре):
-- iPad-ориентации (нужны все 4) — см. #97 выше.
-- `ITSAppUsesNonExemptEncryption` → `false` (exemption; `true` требует compliance-код из ASC) — #83.
+Two ingest blockers along the way (both fixed and in the binary):
+- iPad orientations (all 4 needed) — see #97 above.
+- `ITSAppUsesNonExemptEncryption` → `false` (exemption; `true` requires a compliance code from ASC) — #83.
 
-**Остаётся:** дождаться обработки билда → заполнить метаданные (`store-metadata.md`), App Privacy
-(`app-privacy.md`), Age Rating (`age-rating.md`), reviewer notes (`review-notes.md`), скриншоты
-(#99) → отправить на ревью. Годовой BIS self-classification (#83) — отдельно.
+**Remaining:** wait for the build to finish processing → fill in the metadata (`store-metadata.md`),
+App Privacy (`app-privacy.md`), Age Rating (`age-rating.md`), reviewer notes (`review-notes.md`),
+screenshots (#99) → submit for review. The annual BIS self-classification (#83) — separately.

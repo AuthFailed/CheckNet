@@ -1,7 +1,7 @@
 import SwiftUI
 import NetworkKit
 
-/// "Текущая сеть Wi-Fi" — the network the device is on right now.
+/// "Current Wi-Fi network" — the network the device is on right now.
 ///
 /// The data set differs by platform, and that is the point of the screen:
 /// - **iOS/iPadOS**: only the identity iOS exposes to apps — SSID, BSSID,
@@ -86,7 +86,7 @@ struct CurrentWiFiView: View {
         } bottom: {
             bottomBar
         }
-        .navigationTitle("Текущая сеть Wi-Fi")
+        .navigationTitle("Current Wi-Fi network")
         .toolTitleDisplayMode()
         .task { await model.refresh() }
         #if os(macOS)
@@ -102,21 +102,21 @@ struct CurrentWiFiView: View {
         case .idle:
             ToolIdleHint(
                 icon: "wifi",
-                title: "Текущая сеть Wi-Fi",
-                message: "Покажем сеть, к которой устройство подключено прямо сейчас: имя, BSSID точки доступа и тип защиты. Соседние сети не сканируются."
+                title: "Current Wi-Fi network",
+                message: "We'll show the network the device is connected to right now: name, access point BSSID and security type. Neighboring networks aren't scanned."
             )
         case .running:
             VStack(spacing: 12) {
                 ProgressView()
-                Text("Определяем сеть…").font(.subheadline).foregroundStyle(.secondary)
+                Text("Detecting network…").font(.subheadline).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 40)
         case .offline:
             ContentUnavailableView {
-                Label("Вы не подключены к Wi-Fi", systemImage: "wifi.slash")
+                Label("You're not connected to Wi-Fi", systemImage: "wifi.slash")
             } description: {
-                Text("Подключитесь к сети Wi-Fi и нажмите «Обновить». Инструмент читает только текущее подключение.")
+                Text("Connect to a Wi-Fi network and tap \"Refresh\". The tool reads only the current connection.")
             }
             .padding(.top, 24)
         case .noAccess:
@@ -150,16 +150,16 @@ struct CurrentWiFiView: View {
 
     @ViewBuilder private var bottomBar: some View {
         VStack(spacing: 12) {
-            RunButton(title: "Обновить", running: model.phase == .running) {
+            RunButton(title: "Refresh", running: model.phase == .running) {
                 Task { await model.refresh() }
             }
             #if os(macOS)
             if model.status != nil {
                 Toggle(isOn: Binding(get: { model.live }, set: { model.live = $0 })) {
                     HStack {
-                        Text("Живое обновление")
+                        Text("Live update")
                         Spacer()
-                        Text("каждые 2 с").font(.caption).foregroundStyle(.secondary)
+                        Text("every 2 s").font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 .toggleStyle(.switch)
@@ -183,7 +183,7 @@ struct CurrentWiFiView: View {
                     Text("\(status.rssi) dBm · ")
                         .font(.title3.weight(.bold))
                     + Text(LocalizedStringKey(status.quality.label)).font(.title3.weight(.bold))
-                    Text(status.ssid ?? "Имя сети — нужен доступ к геопозиции")
+                    Text(status.ssid ?? "Network name — location access required")
                         .font(.caption2).foregroundStyle(.secondary)
                 }
             }
@@ -194,7 +194,7 @@ struct CurrentWiFiView: View {
                     .foregroundStyle(.tint)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(info.ssid).font(.title3.weight(.bold))
-                    Text("Подключено · Wi-Fi").font(.caption2).foregroundStyle(.secondary)
+                    Text("Connected · Wi-Fi").font(.caption2).foregroundStyle(.secondary)
                 }
             }
             #endif
@@ -210,7 +210,7 @@ struct CurrentWiFiView: View {
     #if os(iOS)
     private func iosConnectionCard(_ info: WiFiIdentity) -> some View {
         VStack(spacing: 0) {
-            InfoRow(label: "Сеть", value: info.ssid)
+            InfoRow(label: "Network", value: info.ssid)
             if let bssid = info.bssidDisplay {
                 divider
                 InfoRow(label: "BSSID", value: bssid, mono: true)
@@ -225,7 +225,7 @@ struct CurrentWiFiView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "info.circle")
                 .foregroundStyle(.secondary)
-            Text("Уровень сигнала и канал iOS приложениям не сообщает — они доступны в версии для Mac.")
+            Text("iOS doesn't report signal level and channel to apps — they're available in the Mac version.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -240,25 +240,25 @@ struct CurrentWiFiView: View {
     #if os(macOS)
     private func macConnectionCard(_ status: WiFiStatus) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "Подключение")
+            SectionCaption(text: "Connection")
             VStack(spacing: 0) {
-                InfoRow(label: "Сеть",
-                        value: status.ssid ?? "— нужен доступ",
+                InfoRow(label: "Network",
+                        value: status.ssid ?? "— access required",
                         valueColor: status.ssid == nil ? .secondary : .primary)
                 divider
-                InfoRow(label: "Канал", value: "\(status.channel) · \(status.band.label) · \(status.width.label)")
+                InfoRow(label: "Channel", value: "\(status.channel) · \(status.band.label) · \(status.width.label)")
                 divider
-                InfoRow(label: "Скорость", value: "\(Int(status.txRateMbps)) Мбит/с")
+                InfoRow(label: "Speed", value: "\(Int(status.txRateMbps)) Mbps")
                 divider
-                InfoRow(label: "Сигнал / шум", value: "\(status.rssi) / \(status.noise) dBm (SNR \(status.snr))")
+                InfoRow(label: "Signal / noise", value: "\(status.rssi) / \(status.noise) dBm (SNR \(status.snr))")
                 divider
-                InfoRow(label: "Стандарт", value: status.phyMode.label)
+                InfoRow(label: "Standard", value: status.phyMode.label)
                 if let bssid = status.bssid {
                     divider
                     InfoRow(label: "BSSID", value: bssid, mono: true)
                 }
                 divider
-                InfoRow(label: "Интерфейс", value: status.interfaceName, mono: true)
+                InfoRow(label: "Interface", value: status.interfaceName, mono: true)
             }
             .card()
         }
@@ -269,13 +269,13 @@ struct CurrentWiFiView: View {
 
     private var accessCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Нужен доступ к геопозиции", systemImage: "location")
+            Label("Location access required", systemImage: "location")
                 .font(.subheadline.weight(.semibold))
             Text(accessBody)
                 .font(.callout)
-            Text("Геопозиция нужна только для чтения имени сети — координаты не сохраняются и не отправляются.")
+            Text("Location is only needed to read the network name — coordinates are not stored or sent.")
                 .font(.caption).foregroundStyle(.secondary)
-            Button("Разрешить доступ") {
+            Button("Grant access") {
                 #if os(macOS)
                 auth.request()
                 #endif
@@ -290,9 +290,9 @@ struct CurrentWiFiView: View {
 
     private var accessBody: LocalizedStringKey {
         #if os(macOS)
-        "macOS отдаёт имя сети (SSID) только с доступом к геопозиции. Радио-метрики читаются и без него."
+        "macOS reveals the network name (SSID) only with location access. Radio metrics are readable without it."
         #else
-        "iOS отдаёт имя сети (SSID) только приложениям с доступом к геопозиции. Разрешите доступ, чтобы увидеть, к какой сети вы подключены."
+        "iOS only gives the network name (SSID) to apps with location access. Grant access to see which network you're connected to."
         #endif
     }
 
@@ -304,7 +304,7 @@ struct CurrentWiFiView: View {
     /// plain `InfoRow` can't express.
     private func securityRow(label: String, isSecure: Bool) -> some View {
         HStack(alignment: .top) {
-            Text("Защита").foregroundStyle(.secondary)
+            Text("Security").foregroundStyle(.secondary)
             Spacer(minLength: 12)
             Label {
                 Text(LocalizedStringKey(label))

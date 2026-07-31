@@ -11,7 +11,7 @@ struct ScheduledTasksView: View {
         Form {
             Section {
                 if store.tasks.isEmpty {
-                    Text("Нет задач. Добавьте расписание из карточки теста.")
+                    Text("No tasks. Add a schedule from a test’s card.")
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(store.tasks) { task in
@@ -22,27 +22,27 @@ struct ScheduledTasksView: View {
                     }
                 }
             } header: {
-                Text("Задачи")
+                Text("Tasks")
             } footer: {
-                Text("Работают, пока приложение открыто: iOS не запускает приложение по таймеру в фоне. Для фона настройте автоматизацию в «Командах».")
+                Text("These run only while the app is open: iOS doesn’t launch apps on a timer in the background. For background runs, set up an automation in Shortcuts.")
             }
 
             Section {
                 Button {
                     showHistory = true
                 } label: {
-                    Label("История автозапусков", systemImage: "clock.arrow.circlepath")
+                    Label("Scheduled run history", systemImage: "clock.arrow.circlepath")
                 }
             } footer: {
-                Text("Отдельная история результатов, запущенных по расписанию.")
+                Text("A separate history of results from scheduled runs.")
             }
         }
-        .navigationTitle("Расписание")
+        .navigationTitle("Schedule")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
         .sheet(isPresented: $showHistory) {
-            HistoryView(source: .scheduled, title: "История автозапусков")
+            HistoryView(source: .scheduled, title: "Scheduled run history")
                 .presentationDetents([.large])
         }
     }
@@ -53,12 +53,12 @@ struct ScheduledTasksView: View {
                 .foregroundStyle(task.isEnabled ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title).font(.callout)
-                Text("каждые \(intervalLabel(task.intervalMinutes))"
+                Text("every \(intervalLabel(task.intervalMinutes))"
                      + (task.lastSummary.map { " · \($0)" } ?? ""))
                     .font(.caption).foregroundStyle(.secondary).lineLimit(1)
             }
             Spacer()
-            Toggle("Запускать по расписанию", isOn: Binding(
+            Toggle("Run on a schedule", isOn: Binding(
                 get: { task.isEnabled },
                 set: { var t = task; t.isEnabled = $0; store.update(t) }
             ))
@@ -67,11 +67,11 @@ struct ScheduledTasksView: View {
     }
 
     private func intervalLabel(_ minutes: Int) -> String {
-        minutes < 60 ? "\(minutes) мин" : "\(minutes / 60) ч"
+        minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h"
     }
 }
 
-/// A reusable "Расписание" section for a test card. Independent of webhooks — it
+/// A reusable "Schedule" section for a test card. Independent of webhooks — it
 /// just schedules the test to run and record to the scheduled history.
 struct SchedulingSection: View {
     /// Builds the task kind from the card's current target.
@@ -89,25 +89,25 @@ struct SchedulingSection: View {
     var body: some View {
         Section {
             if let existing {
-                Toggle("Автозапуск включён", isOn: Binding(
+                Toggle("Auto-run enabled", isOn: Binding(
                     get: { existing.isEnabled },
                     set: { var t = existing; t.isEnabled = $0; store.update(t) }
                 ))
-                Picker("Интервал", selection: Binding(
+                Picker("Interval", selection: Binding(
                     get: { existing.intervalMinutes },
                     set: { var t = existing; t.intervalMinutes = $0; store.update(t) }
                 )) {
                     ForEach(intervals, id: \.self) { Text(label($0)).tag($0) }
                 }
                 if let summary = existing.lastSummary, let last = existing.lastRun {
-                    Text("Последний: \(last.formatted(date: .omitted, time: .shortened)) — \(summary)")
+                    Text("Last: \(last.formatted(date: .omitted, time: .shortened)) — \(summary)")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                Button("Убрать из расписания", role: .destructive) {
+                Button("Remove from schedule", role: .destructive) {
                     store.remove(existing)
                 }
             } else {
-                Picker("Интервал", selection: $interval) {
+                Picker("Interval", selection: $interval) {
                     ForEach(intervals, id: \.self) { Text(label($0)).tag($0) }
                 }
                 Button {
@@ -115,18 +115,18 @@ struct SchedulingSection: View {
                         store.add(ScheduledTask(kind: kind, intervalMinutes: interval))
                     }
                 } label: {
-                    Label("Запускать по расписанию", systemImage: "clock.arrow.2.circlepath")
+                    Label("Run on a schedule", systemImage: "clock.arrow.2.circlepath")
                 }
                 .disabled(makeKind() == nil)
             }
         } header: {
-            Text("Расписание")
+            Text("Schedule")
         } footer: {
-            Text("Тест будет запускаться сам, пока приложение открыто, и попадать в историю автозапусков. Не зависит от вебхуков.")
+            Text("The test runs on its own while the app is open and lands in the scheduled run history. Independent of webhooks.")
         }
     }
 
     private func label(_ minutes: Int) -> String {
-        minutes < 60 ? "\(minutes) мин" : "\(minutes / 60) ч"
+        minutes < 60 ? "\(minutes) min" : "\(minutes / 60) h"
     }
 }

@@ -22,7 +22,7 @@ struct HostToIPView: View {
         run.activity = settings.liveActivitiesEnabled ? .init(
             kind: .lookup, title: target, subtitle: "Host → IP",
             content: { LookupActivityContent.view($0, running: target) { r in
-                (r.lookup.addresses.first?.ip ?? "нет адресов", "\(r.lookup.addresses.count) адресов") } }
+                (r.lookup.addresses.first?.ip ?? "no addresses", "\(r.lookup.addresses.count) addresses") } }
         ) : nil
         run.start {
             let res = try await HostLookup.resolve(host: target)
@@ -36,7 +36,7 @@ struct HostToIPView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $host, placeholder: "Домен", icon: "arrow.right.circle",
+            HostInputBar(text: $host, placeholder: "Domain", icon: "arrow.right.circle",
                          disabled: run.isRunning, savedHostTool: .hostToIP) { start() }
             if let error = run.errorMessage {
                 ErrorCard(message: error) { start() }
@@ -48,7 +48,7 @@ struct HostToIPView: View {
                 addressCard(resolved)
             }
         } bottom: {
-            RunButton(title: "Разрешить", running: run.isRunning,
+            RunButton(title: "Allow", running: run.isRunning,
                       disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
@@ -65,7 +65,7 @@ struct HostToIPView: View {
     private func addressCard(_ resolved: Resolved) -> some View {
         let result = resolved.lookup
         return VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "\(result.addresses.count) адресов")
+            SectionCaption(text: "\(result.addresses.count) addresses")
             VStack(spacing: 0) {
                 ForEach(Array(result.addresses.enumerated()), id: \.element.id) { idx, addr in
                     HStack {
@@ -107,16 +107,16 @@ struct ReverseDNSView: View {
         let target = ip.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, !run.isRunning else { return }
         run.activity = settings.liveActivitiesEnabled ? .init(
-            kind: .lookup, title: target, subtitle: "Обратный DNS",
+            kind: .lookup, title: target, subtitle: "Reverse DNS",
             content: { LookupActivityContent.view($0, running: target) { name in
-                (name ?? "нет записи", "PTR") } }
+                (name ?? "no record", "PTR") } }
         ) : nil
         run.start { try await ReverseDNS.lookup(ip: target) }
     }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $ip, placeholder: "IP-адрес", icon: "arrow.uturn.backward",
+            HostInputBar(text: $ip, placeholder: "IP address", icon: "arrow.uturn.backward",
                          disabled: run.isRunning, savedHostTool: .reverseDns) { start() }
             if let error = run.errorMessage {
                 ErrorCard(message: error) { start() }
@@ -128,18 +128,18 @@ struct ReverseDNSView: View {
                 VStack(spacing: 0) {
                     InfoRow(label: "IP", value: ip, mono: true)
                     Divider().padding(.leading, 14)
-                    InfoRow(label: "PTR", value: name ?? "нет записи", mono: true,
+                    InfoRow(label: "PTR", value: name ?? "no record", mono: true,
                             valueColor: name == nil ? .secondary : .primary)
                 }
                 .card()
             }
         } bottom: {
-            RunButton(title: "Найти PTR", running: run.isRunning,
+            RunButton(title: "Find PTR", running: run.isRunning,
                       disabled: ip.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
         }
-        .navigationTitle("Обратный DNS")
+        .navigationTitle("Reverse DNS")
         .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { ip = presetHost }
@@ -161,25 +161,25 @@ struct InterfacesView: View {
                         Text(iface.friendlyName).font(.headline)
                         Spacer()
                         StatusDot(level: iface.isUp ? .ok : .unknown,
-                                  label: iface.isUp ? "Интерфейс активен" : "Интерфейс не активен")
+                                  label: iface.isUp ? "Interface up" : "Interface down")
                     }
-                    LabeledContent("Адрес") { Text(iface.address).monospaced().textSelection(.enabled) }
+                    LabeledContent("Address") { Text(iface.address).monospaced().textSelection(.enabled) }
                         .font(.callout)
                     if let mask = iface.netmask {
-                        LabeledContent("Маска") { Text(mask).monospaced() }.font(.callout)
+                        LabeledContent("Mask") { Text(mask).monospaced() }.font(.callout)
                     }
-                    LabeledContent("Семейство") { Text(iface.family == .ipv4 ? "IPv4" : "IPv6") }.font(.callout)
+                    LabeledContent("Family") { Text(iface.family == .ipv4 ? "IPv4" : "IPv6") }.font(.callout)
                 }
                 .padding(.vertical, 4)
             }
         }
-        .navigationTitle("Интерфейсы")
+        .navigationTitle("Interfaces")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
         .overlay {
             if interfaces.isEmpty {
-                ContentUnavailableView("Нет активных интерфейсов", systemImage: "network.slash")
+                ContentUnavailableView("No active interfaces", systemImage: "network.slash")
             }
         }
         .task { interfaces = NetworkInterfaces.list() }

@@ -54,12 +54,12 @@ final class SpeedTestModel {
         var groups: [ServerGroup] = []
         let nearby = nearbyServers
         if !nearby.isEmpty {
-            let label = Self.deviceRegion.isEmpty ? "Рядом с вами" : "Рядом с вами (\(Self.deviceRegion))"
+            let label = Self.deviceRegion.isEmpty ? "Near you" : "Near you (\(Self.deviceRegion))"
             groups.append(ServerGroup(id: "nearby", title: label, servers: nearby))
         }
         let nearbyHosts = Set(nearby.map(\.host))
         let rest = sorted.filter { !nearbyHosts.contains($0.host) }
-        let byContinent = Dictionary(grouping: rest) { $0.continent.isEmpty ? "Другие регионы" : $0.continent }
+        let byContinent = Dictionary(grouping: rest) { $0.continent.isEmpty ? "Other regions" : $0.continent }
         for key in byContinent.keys.sorted() {
             groups.append(ServerGroup(id: key, title: key, servers: byContinent[key] ?? []))
         }
@@ -83,7 +83,7 @@ final class SpeedTestModel {
                 phase = .ready
                 await pingServers()
             } else {
-                phase = .failed("Не удалось загрузить список серверов: \(error.localizedDescription)")
+                phase = .failed("Failed to load server list: \(error.localizedDescription)")
             }
         }
     }
@@ -142,7 +142,7 @@ final class SpeedTestModel {
         // let an old run's teardown end the new activity.
         let activity = useLiveActivity ? CheckActivityController() : nil
         activity?.start(kind: .speed, title: server.site.isEmpty ? server.host : server.site,
-                        subtitle: "Скорость", view: speedActivityView(isRunning: true))
+                        subtitle: "Speed", view: speedActivityView(isRunning: true))
         runTask = Task { [weak self] in
             guard let self else { return }
             let config = IperfClient.Config(duration: 12, streams: 6, download: true, upload: true)
@@ -154,7 +154,7 @@ final class SpeedTestModel {
             }
             // Fall back to Cloudflare HTTP if iperf3 produced nothing.
             if !gotResult && fallbackToCloudflare && !Task.isCancelled {
-                currentPhaseLabel = "iperf3 недоступен — переключаюсь на HTTP-тест…"
+                currentPhaseLabel = "iperf3 unavailable — switching to HTTP test…"
                 for await event in CloudflareSpeedTest().run(duration: 12) {
                     if Task.isCancelled { break }
                     _ = handle(event)
@@ -168,7 +168,7 @@ final class SpeedTestModel {
 
     private func speedActivityView(isRunning: Bool) -> CheckActivityView {
         SpeedActivityContent.view(
-            liveMbps: liveMbps, directionLabel: liveDirection == .download ? "Загрузка" : "Отдача",
+            liveMbps: liveMbps, directionLabel: liveDirection == .download ? "Download" : "Upload",
             download: downloadMbps, upload: uploadMbps, phaseLabel: currentPhaseLabel, isRunning: isRunning)
     }
 

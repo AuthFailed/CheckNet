@@ -51,7 +51,7 @@ public struct BufferbloatTest: Sendable {
         let idle = await pingLoop(phase: .idle, seconds: config.idleSeconds, config: config,
                                   startNanos: start, continuation: continuation)
         guard !idle.isEmpty else {
-            continuation.yield(.failed("Хост \(config.latencyHost) не отвечает на пинг — не с чем сравнивать."))
+            continuation.yield(.failed("Host \(config.latencyHost) doesn't respond to ping — nothing to compare against."))
             continuation.finish()
             return
         }

@@ -35,7 +35,7 @@ public struct IperfServer: Sendable, Hashable, Codable, Identifiable {
     }
 
     /// Advertised link capacity, number only (e.g. "1", "10"). Nil when unknown.
-    /// Display it as `Text("\(bandwidthValue) Гбит/с")` so the unit localizes.
+    /// Display it as `Text("\(bandwidthValue) Gbit/s")` so the unit localizes.
     public var bandwidthValue: String? {
         let g = gbps.trimmingCharacters(in: .whitespaces)
         guard !g.isEmpty, g != "0" else { return nil }
@@ -44,9 +44,9 @@ public struct IperfServer: Sendable, Hashable, Codable, Identifiable {
         return number.isEmpty ? g : number
     }
 
-    /// Advertised link capacity as a display string, e.g. "1 Гбит/с". Nil when unknown.
+    /// Advertised link capacity as a display string, e.g. "1 Gbit/s". Nil when unknown.
     public var bandwidthLabel: String? {
-        bandwidthValue.map { "\($0) Гбит/с" }
+        bandwidthValue.map { "\($0) Gbps" }
     }
 }
 
@@ -57,35 +57,35 @@ public struct IperfServerList: Sendable {
 
     public static let endpoint = "https://export.iperf3serverlist.net/listed_iperf3_servers.json"
 
-    /// Curated iperf3 endpoints of the Russian operator «ЭР-Телеком» (Дом.ру),
+    /// Curated iperf3 endpoints of the Russian operator ER-Telecom (Dom.ru),
     /// which are usually not present in the international public list. Named
     /// `st.<city>.ertelecom.ru`. Unreachable entries simply fail the ping probe
     /// and show no latency, so a stale hostname degrades gracefully.
     public static let ertelecomServers: [IperfServer] = {
         let cities: [(host: String, site: String)] = [
-            ("st.perm.ertelecom.ru", "Пермь"),
-            ("st.tyumen.ertelecom.ru", "Тюмень"),
-            ("st.ekb.ertelecom.ru", "Екатеринбург"),
-            ("st.chelyabinsk.ertelecom.ru", "Челябинск"),
-            ("st.izhevsk.ertelecom.ru", "Ижевск"),
-            ("st.kirov.ertelecom.ru", "Киров"),
-            ("st.kazan.ertelecom.ru", "Казань"),
-            ("st.samara.ertelecom.ru", "Самара"),
-            ("st.volgograd.ertelecom.ru", "Волгоград"),
-            ("st.nnov.ertelecom.ru", "Нижний Новгород"),
-            ("st.krasnodar.ertelecom.ru", "Краснодар"),
-            ("st.rostov.ertelecom.ru", "Ростов-на-Дону"),
-            ("st.spb.ertelecom.ru", "Санкт-Петербург"),
-            ("st.omsk.ertelecom.ru", "Омск"),
-            ("st.novosibirsk.ertelecom.ru", "Новосибирск"),
-            ("st.ufa.ertelecom.ru", "Уфа"),
-            ("st.voronezh.ertelecom.ru", "Воронеж"),
-            ("st.krasnoyarsk.ertelecom.ru", "Красноярск")
+            ("st.perm.ertelecom.ru", "Perm"),
+            ("st.tyumen.ertelecom.ru", "Tyumen"),
+            ("st.ekb.ertelecom.ru", "Yekaterinburg"),
+            ("st.chelyabinsk.ertelecom.ru", "Chelyabinsk"),
+            ("st.izhevsk.ertelecom.ru", "Izhevsk"),
+            ("st.kirov.ertelecom.ru", "Kirov"),
+            ("st.kazan.ertelecom.ru", "Kazan"),
+            ("st.samara.ertelecom.ru", "Samara"),
+            ("st.volgograd.ertelecom.ru", "Volgograd"),
+            ("st.nnov.ertelecom.ru", "Nizhny Novgorod"),
+            ("st.krasnodar.ertelecom.ru", "Krasnodar"),
+            ("st.rostov.ertelecom.ru", "Rostov-on-Don"),
+            ("st.spb.ertelecom.ru", "Saint Petersburg"),
+            ("st.omsk.ertelecom.ru", "Omsk"),
+            ("st.novosibirsk.ertelecom.ru", "Novosibirsk"),
+            ("st.ufa.ertelecom.ru", "Ufa"),
+            ("st.voronezh.ertelecom.ru", "Voronezh"),
+            ("st.krasnoyarsk.ertelecom.ru", "Krasnoyarsk")
         ]
         return cities.map {
             IperfServer(host: $0.host, portRange: "5201-5210", options: "-R,-4",
                         gbps: "10", continent: "Europe", country: "RU",
-                        site: $0.site, provider: "ЭР-Телеком (Дом.ру)")
+                        site: $0.site, provider: "ErTelecom (Dom.ru)")
         }
     }()
 
@@ -101,7 +101,7 @@ public struct IperfServerList: Sendable {
             throw NetworkError.protocolError("HTTP \((response as? HTTPURLResponse)?.statusCode ?? -1)")
         }
         guard let rows = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
-            throw NetworkError.protocolError("некорректный JSON списка серверов")
+            throw NetworkError.protocolError("invalid server-list JSON")
         }
         let parsed: [IperfServer] = rows.compactMap { row in
             func s(_ keys: String...) -> String {

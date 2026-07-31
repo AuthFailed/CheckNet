@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Управление сохранёнными подписками VPN — тот же принцип, что у сохранённых
-/// доменов и IP, но отдельным списком: подписка не является целью для пинга.
+/// Manages saved VPN subscriptions — same idea as saved domains and IPs, but as
+/// a separate list: a subscription is not a ping target.
 struct SavedSubscriptionsEditor: View {
     @Environment(SavedSubscriptionsStore.self) private var store
     @State private var name = ""
@@ -10,8 +10,8 @@ struct SavedSubscriptionsEditor: View {
     var body: some View {
         List {
             Section {
-                TextField("Название (необязательно)", text: $name)
-                TextField("URL, happ:// или incy:// ссылка", text: $value, axis: .vertical)
+                TextField("Name (optional)", text: $name)
+                TextField("URL, happ:// or incy:// link", text: $value, axis: .vertical)
                     .lineLimit(1...3)
                     .font(.callout.monospaced())
                     .autocorrectionDisabled()
@@ -20,29 +20,29 @@ struct SavedSubscriptionsEditor: View {
                     #endif
                 HStack {
                     Button { if let s = clipboard() { value = s } } label: {
-                        Label("Вставить", systemImage: "doc.on.clipboard")
+                        Label("Paste", systemImage: "doc.on.clipboard")
                     }
                     Spacer()
                     Button {
                         store.add(name: name, value: value)
                         name = ""; value = ""
-                    } label: { Label("Добавить", systemImage: "plus.circle.fill") }
+                    } label: { Label("Add", systemImage: "plus.circle.fill") }
                         .buttonStyle(.borderedProminent)
                         .disabled(value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                                   || store.contains(value))
                 }
             } header: {
-                Text("Новая подписка")
+                Text("New subscription")
             } footer: {
                 if store.contains(value) && !value.isEmpty {
-                    Text("Такая подписка уже сохранена.")
+                    Text("This subscription is already saved.")
                 }
             }
 
-            Section("Сохранённые") {
+            Section("Saved") {
                 if store.items.isEmpty {
-                    ContentUnavailableView("Пока пусто", systemImage: "list.bullet.rectangle",
-                                           description: Text("Сохраняйте подписки прямо из «Парсинга подписки» — они появятся здесь и в быстром выборе."))
+                    ContentUnavailableView("Empty for now", systemImage: "list.bullet.rectangle",
+                                           description: Text("Save subscriptions right from \"Subscription parsing\" — they'll appear here and in quick select."))
                 } else {
                     ForEach(store.items) { item in
                         VStack(alignment: .leading, spacing: 3) {
@@ -62,7 +62,7 @@ struct SavedSubscriptionsEditor: View {
                 }
             }
         }
-        .navigationTitle("Подписки VPN")
+        .navigationTitle("VPN subscriptions")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         .toolbar { EditButton() }

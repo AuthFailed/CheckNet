@@ -8,7 +8,7 @@ struct MonitoringView: View {
     var body: some View {
         ToolScaffold {
             HStack {
-                HostInputBar(text: $newHost, placeholder: "Добавить хост", icon: "plus.circle") {
+                HostInputBar(text: $newHost, placeholder: "Add host", icon: "plus.circle") {
                     manager.add(newHost); newHost = ""
                 } trailing: {
                     AnyView(
@@ -23,8 +23,8 @@ struct MonitoringView: View {
             }
 
             if manager.entries.isEmpty {
-                ContentUnavailableView("Нет хостов", systemImage: "bell.badge",
-                                       description: Text("Добавьте хосты для непрерывного мониторинга и уведомлений о падении."))
+                ContentUnavailableView("No hosts", systemImage: "bell.badge",
+                                       description: Text("Add hosts for continuous monitoring and downtime alerts."))
                 .padding(.top, 40)
             } else {
                 statusBanner
@@ -36,7 +36,7 @@ struct MonitoringView: View {
             }
         } bottom: {
             if !manager.entries.isEmpty {
-                RunButton(title: "Запустить мониторинг", running: manager.isMonitoring) {
+                RunButton(title: "Start monitoring", running: manager.isMonitoring) {
                     manager.toggleMonitoring()
                 }
             }
@@ -47,7 +47,7 @@ struct MonitoringView: View {
         // Monitoring is the one screen people leave running while doing
         // something else, so a host going down is worth feeling.
         .haptic(.failure, trigger: manager.entries.filter { $0.status == .down }.count) { $0 > 0 }
-        .navigationTitle("Мониторинг")
+        .navigationTitle("Monitoring")
         .toolTitleDisplayMode()
         .onAppear {
             if autostart, !manager.isMonitoring, !manager.entries.isEmpty { manager.start() }
@@ -59,11 +59,11 @@ struct MonitoringView: View {
         return HStack(spacing: 10) {
             Image(systemName: manager.isMonitoring ? "dot.radiowaves.left.and.right" : "pause.circle")
                 .foregroundStyle(manager.isMonitoring ? .green : .secondary)
-            Text(manager.isMonitoring ? LocalizedStringKey("Мониторинг активен") : LocalizedStringKey("Остановлен"))
+            Text(manager.isMonitoring ? LocalizedStringKey("Monitoring active") : LocalizedStringKey("Stopped"))
                 .font(.subheadline.weight(.medium))
             Spacer()
             if down > 0 {
-                Text("\(down) недоступно").font(.caption.weight(.semibold)).foregroundStyle(.red)
+                Text("\(down) unavailable").font(.caption.weight(.semibold)).foregroundStyle(.red)
             }
         }
         .padding(14).card()
@@ -77,31 +77,31 @@ struct MonitoringView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(entry.host).font(.callout.weight(.medium))
                         if let checked = entry.lastChecked {
-                            Text("проверено \(checked, style: .relative) назад")
+                            Text("checked \(checked, style: .relative) ago")
                                 .font(.caption2).foregroundStyle(.secondary)
                         } else {
-                            Text("ожидание…").font(.caption2).foregroundStyle(.secondary)
+                            Text("waiting…").font(.caption2).foregroundStyle(.secondary)
                         }
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
                         Group {
                             if entry.status == .down {
-                                Text("недоступен")
+                                Text("unreachable")
                             } else {
-                                Text(entry.lastLatency.map { "\(Int($0)) мс" } ?? "—")
+                                Text(entry.lastLatency.map { "\(Int($0)) ms" } ?? "—")
                             }
                         }
                         .font(.callout.monospaced())
                         .foregroundStyle(StatusStyle.color(entry.status))
                         if entry.status != .down && entry.lossPercent > 0 {
-                            Text("\(Int(entry.lossPercent))% потерь").font(.caption2).foregroundStyle(.orange)
+                            Text("\(Int(entry.lossPercent))% loss").font(.caption2).foregroundStyle(.orange)
                         }
                     }
                 }
                 .padding(.horizontal, 14).padding(.vertical, 11)
                 .contextMenu {
-                    Button("Удалить", role: .destructive) {
+                    Button("Delete", role: .destructive) {
                         if let index = manager.entries.firstIndex(where: { $0.id == entry.id }) {
                             manager.remove(at: IndexSet(integer: index))
                         }
@@ -117,13 +117,13 @@ struct MonitoringView: View {
         @Bindable var manager = manager
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Интервал проверки")
+                Text("Check interval")
                 Spacer()
-                Text("\(Int(manager.intervalSeconds)) с").monospaced().foregroundStyle(.secondary)
+                Text("\(Int(manager.intervalSeconds)) s").monospaced().foregroundStyle(.secondary)
             }
             Slider(value: $manager.intervalSeconds, in: 15...300, step: 15)
             if !manager.notificationsAuthorized {
-                Text("Уведомления о падении будут запрошены при запуске.")
+                Text("Downtime notifications will be requested on launch.")
                     .font(.caption2).foregroundStyle(.secondary)
             }
         }

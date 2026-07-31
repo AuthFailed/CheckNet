@@ -12,9 +12,9 @@ public struct ReachabilityResult: Sendable, Hashable, Identifiable {
 
         public var label: String {
             switch self {
-            case .reachable: "доступен"
-            case .obstructed: "обрыв"
-            case .unavailable: "нет ответа"
+            case .reachable: "reachable"
+            case .obstructed: "cut off"
+            case .unavailable: "no response"
             }
         }
     }
@@ -159,15 +159,15 @@ public struct ReachabilitySweep: Sendable {
         let domesticReachable = domestic.filter { $0.status == .reachable }
 
         var evidence = summarise(results).map { summary in
-            "\(summary.provider): доступно \(summary.reachable) из \(summary.total)"
-                + (summary.obstructed > 0 ? ", обрывов \(summary.obstructed)" : "")
+            "\(summary.provider): \(summary.reachable) of \(summary.total) reachable"
+                + (summary.obstructed > 0 ? ", \(summary.obstructed) cutoffs" : "")
         }
 
         guard !foreign.isEmpty else {
             return CensorshipFinding(
                 verdict: .inconclusive,
-                headline: "Недостаточно данных",
-                detail: "В прогоне не было зарубежных целей, сравнивать не с чем.",
+                headline: "Not enough data",
+                detail: "The run had no targets abroad, so there is nothing to compare.",
                 evidence: evidence
             )
         }
@@ -177,30 +177,30 @@ public struct ReachabilitySweep: Sendable {
         if foreignReachable.isEmpty && domesticReachable.isEmpty && !domestic.isEmpty {
             return CensorshipFinding(
                 verdict: .inconclusive,
-                headline: "Сеть недоступна",
-                detail: "Не удалось подключиться ни к зарубежным, ни к российским узлам. Похоже на общий обрыв связи, а не на фильтрацию.",
+                headline: "Network unreachable",
+                detail: "Neither the hosts abroad nor the Russian ones could be reached. This looks like a general loss of connectivity rather than filtering.",
                 evidence: evidence
             )
         }
 
         let obstructedProviders = Set(foreignObstructed.map(\.target.provider)).sorted()
         if !obstructedProviders.isEmpty {
-            evidence.append("Обрывы у: \(obstructedProviders.joined(separator: ", "))")
+            evidence.append("Cutoffs at: \(obstructedProviders.joined(separator: ", "))")
             if !domesticReachable.isEmpty {
-                evidence.append("Российские узлы при этом отвечают — ограничение зависит от назначения.")
+                evidence.append("Russian hosts do respond — the restriction depends on the destination.")
             }
             return CensorshipFinding(
                 verdict: .restricted,
-                headline: "Часть зарубежных провайдеров недоступна",
-                detail: "Соединения обрываются у \(obstructedProviders.count) провайдеров: \(obstructedProviders.joined(separator: ", ")). Доступно \(foreignReachable.count) из \(foreign.count) зарубежных узлов.",
+                headline: "Some providers abroad are unreachable",
+                detail: "Connections are cut off at \(obstructedProviders.count) providers: \(obstructedProviders.joined(separator: ", ")). \(foreignReachable.count) of \(foreign.count) hosts abroad are reachable.",
                 evidence: evidence
             )
         }
 
         return CensorshipFinding(
             verdict: .clean,
-            headline: "Все узлы доступны",
-            detail: "Проверено \(results.count) узлов, обрывов соединения не зафиксировано.",
+            headline: "All hosts are reachable",
+            detail: "Checked \(results.count) hosts, no connection cutoffs recorded.",
             evidence: evidence
         )
     }

@@ -27,11 +27,11 @@ final class IncyLinkTests: XCTestCase {
     }
 
     func testRoundTrip() throws {
-        let link = try IncyLink.encode(url: "https://sub.example.org/abc", name: "Провайдер")
+        let link = try IncyLink.encode(url: "https://sub.example.org/abc", name: "Provider")
         XCTAssertTrue(link.hasPrefix(IncyLink.scheme))
         let d = try IncyLink.decode(link)
         XCTAssertEqual(d.url, "https://sub.example.org/abc")
-        XCTAssertEqual(d.name, "Провайдер")
+        XCTAssertEqual(d.name, "Provider")
     }
 
     func testRoundTripWithoutName() throws {

@@ -15,7 +15,7 @@ final class BufferbloatModel {
 
     var isRunning: Bool { if case .running = phase { true } else { false } }
 
-    /// The phase currently under way, for the "Измеряем отдачу…" label.
+    /// The phase currently under way, for the "Measuring upload…" label.
     var activePhase: BufferbloatPhase? {
         if case .running(let p) = phase { return p }
         return nil
@@ -29,7 +29,7 @@ final class BufferbloatModel {
         result = nil
         phase = .running(.idle)
         let activity = useLiveActivity ? CheckActivityController() : nil
-        activity?.start(kind: .bufferbloat, title: "Bufferbloat", subtitle: "Задержка под нагрузкой",
+        activity?.start(kind: .bufferbloat, title: "Bufferbloat", subtitle: "Latency under load",
                         view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
@@ -55,9 +55,9 @@ final class BufferbloatModel {
 
     private static func phaseLabel(_ phase: BufferbloatPhase) -> String {
         switch phase {
-        case .idle: return "Простой"
-        case .download: return "Загрузка"
-        case .upload: return "Отдача"
+        case .idle: return "Idle"
+        case .download: return "Download"
+        case .upload: return "Upload"
         }
     }
 
@@ -102,12 +102,12 @@ struct BufferbloatView: View {
             if model.phase == .idle {
                 ToolIdleHint(
                     icon: "waveform.path.ecg",
-                    title: "Готово к проверке bufferbloat",
-                    message: "Замерим задержку в простое, затем под полной загрузкой и отдачей. Рост задержки под нагрузкой — то, из-за чего рвутся звонки и лагают игры при быстром интернете."
+                    title: "Ready to test bufferbloat",
+                    message: "We measure latency at idle, then under full download and upload load. The rise in latency under load is what breaks calls and lags games even on a fast connection."
                 )
             }
         } bottom: {
-            RunButton(title: "Проверить", running: model.isRunning) { model.toggle() }
+            RunButton(title: "Check", running: model.isRunning) { model.toggle() }
         }
         .animation(.snappy, value: model.phase)
         .haptic(.success, trigger: model.phase) { $0 == .done }
@@ -128,7 +128,7 @@ struct BufferbloatView: View {
             ProgressView()
             VStack(alignment: .leading, spacing: 2) {
                 Text(runningLabel).font(.headline)
-                Text("Не закрывайте экран — идёт нагрузка").font(.caption).foregroundStyle(.secondary)
+                Text("Keep the screen open — load in progress").font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
         }
@@ -138,10 +138,10 @@ struct BufferbloatView: View {
 
     private var runningLabel: LocalizedStringKey {
         switch model.activePhase {
-        case .idle: "Замеряем задержку в простое…"
-        case .download: "Нагружаем загрузку…"
-        case .upload: "Нагружаем отдачу…"
-        case nil: "Проверяем…"
+        case .idle: "Measuring idle latency…"
+        case .download: "Loading download…"
+        case .upload: "Loading upload…"
+        case nil: "Testing…"
         }
     }
 
@@ -153,10 +153,10 @@ struct BufferbloatView: View {
                 .font(.system(size: gradeSize, weight: .heavy, design: .rounded))
                 .foregroundStyle(gradeColor(result.grade))
                 .frame(minWidth: gradeSize + 12)
-                .accessibilityLabel("Оценка \(result.grade.letter)")
+                .accessibilityLabel("Rating \(result.grade.letter)")
             VStack(alignment: .leading, spacing: 4) {
                 Text(gradeVerdict(result.grade)).font(.headline)
-                Text("Задержка растёт на +\(Int(result.addedLatency.rounded())) мс под нагрузкой")
+                Text("Latency rises by +\(Int(result.addedLatency.rounded())) ms under load")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -169,22 +169,22 @@ struct BufferbloatView: View {
 
     private var chartCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "Задержка во времени")
+            SectionCaption(text: "Latency over time")
             Chart {
                 ForEach(Array(model.samples.enumerated()), id: \.offset) { _, sample in
                     LineMark(
-                        x: .value("Секунды", sample.elapsed),
+                        x: .value("Seconds", sample.elapsed),
                         y: .value("RTT", sample.rttMillis)
                     )
-                    .foregroundStyle(by: .value("Фаза", phaseName(sample.phase)))
+                    .foregroundStyle(by: .value("Phase", phaseName(sample.phase)))
                     .interpolationMethod(.catmullRom)
                 }
                 if let idle = model.result?.idleRTT {
-                    RuleMark(y: .value("Простой", idle))
+                    RuleMark(y: .value("Idle", idle))
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                         .foregroundStyle(.secondary)
                         .annotation(position: .top, alignment: .leading) {
-                            Text("простой").font(.caption2).foregroundStyle(.secondary)
+                            Text("idle").font(.caption2).foregroundStyle(.secondary)
                         }
                 }
             }
@@ -193,7 +193,7 @@ struct BufferbloatView: View {
                 phaseName(.download): Color.blue,
                 phaseName(.upload): Color.green
             ])
-            .chartYAxisLabel("мс")
+            .chartYAxisLabel("ms")
             .frame(height: chartHeight)
             .padding(14)
             .card()
@@ -204,20 +204,20 @@ struct BufferbloatView: View {
 
     private func numbersCard(_ result: BufferbloatResult) -> some View {
         VStack(spacing: 0) {
-            InfoRow(label: "Простой", value: "\(Int(result.idleRTT.rounded())) мс", mono: true)
+            InfoRow(label: "Idle", value: "\(Int(result.idleRTT.rounded())) ms", mono: true)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Под загрузкой", value: "\(Int(result.downloadRTT.rounded())) мс", mono: true,
+            InfoRow(label: "Under download", value: "\(Int(result.downloadRTT.rounded())) ms", mono: true,
                     valueColor: .blue)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Под отдачей", value: "\(Int(result.uploadRTT.rounded())) мс", mono: true,
+            InfoRow(label: "Under upload", value: "\(Int(result.uploadRTT.rounded())) ms", mono: true,
                     valueColor: .green)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Прирост под нагрузкой", value: "+\(Int(result.addedLatency.rounded())) мс", mono: true,
+            InfoRow(label: "Added under load", value: "+\(Int(result.addedLatency.rounded())) ms", mono: true,
                     valueColor: gradeColor(result.grade))
             if result.downloadMbps != nil || result.uploadMbps != nil {
                 Divider().padding(.leading, 14)
-                InfoRow(label: "Пропускная способность",
-                        value: "↓\(mbps(result.downloadMbps)) · ↑\(mbps(result.uploadMbps)) Мбит/с", mono: true)
+                InfoRow(label: "Throughput",
+                        value: "↓\(mbps(result.downloadMbps)) · ↑\(mbps(result.uploadMbps)) Mbps", mono: true)
             }
         }
         .card()
@@ -232,9 +232,9 @@ struct BufferbloatView: View {
 
     private func phaseName(_ phase: BufferbloatPhase) -> String {
         switch phase {
-        case .idle: "Простой"
-        case .download: "Загрузка"
-        case .upload: "Отдача"
+        case .idle: "Idle"
+        case .download: "Download"
+        case .upload: "Upload"
         }
     }
 
@@ -250,11 +250,11 @@ struct BufferbloatView: View {
 
     private func gradeVerdict(_ grade: BufferbloatGrade) -> LocalizedStringKey {
         switch grade {
-        case .a: "Отлично — задержка почти не растёт"
-        case .b: "Хорошо — звонки и игры стабильны"
-        case .c: "Заметно — возможны подлагивания"
-        case .d: "Плохо — видеозвонки будут рваться"
-        case .f: "Очень плохо — сеть захлёбывается под нагрузкой"
+        case .a: "Excellent — latency barely rises"
+        case .b: "Good — calls and games are stable"
+        case .c: "Noticeable — occasional stutter possible"
+        case .d: "Bad — video calls will break up"
+        case .f: "Very bad — the network chokes under load"
         }
     }
 }

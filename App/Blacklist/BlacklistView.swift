@@ -12,18 +12,18 @@ struct BlacklistView: View {
         let target = ip.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, !run.isRunning else { return }
         run.activity = settings.liveActivitiesEnabled ? .init(
-            kind: .lookup, title: target, subtitle: "Чёрные списки",
+            kind: .lookup, title: target, subtitle: "Blocklists",
             content: { LookupActivityContent.view($0, running: target,
                 status: { $0.listedCount > 0 ? .down : .ok }) { r in
-                (r.listedCount > 0 ? "В списках: \(r.listedCount)" : "Чисто",
-                 "проверено \(r.checkedCount)") } }
+                (r.listedCount > 0 ? "Listed: \(r.listedCount)" : "Clean",
+                 "\(r.checkedCount) checked") } }
         ) : nil
         run.start { await BlacklistChecker().check(ip: target) }
     }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $ip, placeholder: "IP-адрес", icon: "hand.raised.slash",
+            HostInputBar(text: $ip, placeholder: "IP address", icon: "hand.raised.slash",
                          disabled: run.isRunning, savedHostTool: .blacklist) { start() }
             if let error = run.errorMessage {
                 ErrorCard(message: error) { start() }
@@ -38,14 +38,14 @@ struct BlacklistView: View {
             } else if !run.isRunning, run.errorMessage == nil {
                 ToolIdleHint(
                     icon: "hand.raised.slash",
-                    title: "Готово к проверке списков",
-                    message: "Проверим IP по спискам DNSBL — тем самым, по которым почтовые серверы решают, принимать ли письмо.",
+                    title: "Ready to check the lists",
+                    message: "We'll check the IP against DNSBL lists — the ones mail servers use to decide whether to accept a message.",
                     example: "8.8.8.8",
                     current: ip
                 ) { ip = "8.8.8.8" }
             }
         } bottom: {
-            RunButton(title: "Проверить", running: run.isRunning,
+            RunButton(title: "Check", running: run.isRunning,
                       disabled: ip.trimmingCharacters(in: .whitespaces).isEmpty) {
                 if run.isRunning { return }; start()
             }
@@ -54,7 +54,7 @@ struct BlacklistView: View {
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
         .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
-        .navigationTitle("Блэклисты")
+        .navigationTitle("Blacklists")
         .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { ip = presetHost }
@@ -69,10 +69,10 @@ struct BlacklistView: View {
                 .font(.title)
                 .foregroundStyle(clean ? .green : .red)
             VStack(alignment: .leading, spacing: 2) {
-                let statusTitle: LocalizedStringKey = clean ? "Чисто" : "В \(report.listedCount) списках"
+                let statusTitle: LocalizedStringKey = clean ? "Clean" : "On \(report.listedCount) lists"
                 Text(statusTitle)
                     .font(.title3.weight(.bold))
-                Text("\(report.ip) · проверено \(report.checkedCount) провайдеров")
+                Text("\(report.ip) · \(report.checkedCount) providers checked")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -115,9 +115,9 @@ struct BlacklistView: View {
 
     private func statusText(_ status: BlacklistEntry.Status) -> String {
         switch status {
-        case .clean: return "чисто"
-        case .listed: return "в списке"
-        case .error: return "нет ответа"
+        case .clean: return "clean"
+        case .listed: return "listed"
+        case .error: return "no response"
         }
     }
 }

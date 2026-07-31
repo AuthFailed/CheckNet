@@ -107,7 +107,7 @@ public struct DNSClient: Sendable {
         let uniqueSets = Set(answerSets.map { $0.sorted().joined(separator: ",") })
         if uniqueSets.count > 1 {
             suspicious = true
-            findings.append("Резолверы вернули разные адреса — возможна подмена или split-horizon.")
+            findings.append("Resolvers returned different addresses — spoofing or split-horizon is possible.")
         }
 
         // NXDOMAIN / REFUSED from some but not all resolvers.
@@ -117,18 +117,18 @@ public struct DNSClient: Sendable {
         }
         if !blocked.isEmpty && blocked.count < rows.count {
             suspicious = true
-            findings.append("Часть резолверов заблокировала запрос (\(blocked.map { $0.resolver.name }.joined(separator: ", "))).")
+            findings.append("Some resolvers blocked the request (\(blocked.map { $0.resolver.name }.joined(separator: ", "))).")
         }
 
         // Private/loopback answers for a public host suggest injection.
         for row in answered {
             for ip in row.result?.normalizedAnswerSet ?? [] where Self.isPrivateOrLoopback(ip) {
                 suspicious = true
-                findings.append("\(row.resolver.name) вернул приватный адрес \(ip) для публичного хоста.")
+                findings.append("\(row.resolver.name) returned a private address \(ip) for a public host.")
             }
         }
 
-        if findings.isEmpty { findings.append("Ответы согласованы между резолверами.") }
+        if findings.isEmpty { findings.append("Responses are consistent across resolvers.") }
         return DNSTamperReport(name: name, rows: rows, suspicious: suspicious, findings: findings)
     }
 

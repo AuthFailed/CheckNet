@@ -8,27 +8,27 @@ import NetworkKit
 /// fields separately lets a user build "if loss > 20% then notify me" without
 /// parsing text.
 struct CheckOutcome: TransientAppEntity {
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Результат проверки")
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Check result")
 
-    @Property(title: "Успешно")
+    @Property(title: "Success")
     var succeeded: Bool
 
-    @Property(title: "Вердикт")
+    @Property(title: "Verdict")
     var verdict: String
 
-    @Property(title: "Заголовок")
+    @Property(title: "Title")
     var headline: String
 
-    @Property(title: "Подробности")
+    @Property(title: "Details")
     var detail: String
 
-    @Property(title: "Цель")
+    @Property(title: "Target")
     var target: String
 
-    @Property(title: "Задержка, мс")
+    @Property(title: "Latency, ms")
     var latencyMillis: Double?
 
-    @Property(title: "Потери, %")
+    @Property(title: "Loss, %")
     var lossPercent: Double?
 
     init() {}
@@ -51,16 +51,16 @@ struct CheckOutcome: TransientAppEntity {
 enum BlockingCheckChoice: String, AppEnum {
     case dnsSpoofing, httpBlock, sniBlocking, ipBlocking, whitelist, siberian, transferCutoff
 
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Проверка блокировок")
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Blocking check")
 
     static let caseDisplayRepresentations: [BlockingCheckChoice: DisplayRepresentation] = [
-        .dnsSpoofing: "Подмена DNS",
-        .httpBlock: "Страница-заглушка",
-        .sniBlocking: "Блокировка по SNI",
-        .ipBlocking: "Блокировка по IP",
-        .whitelist: "Белые списки",
-        .siberian: "«Сибирская» блокировка",
-        .transferCutoff: "Обрыв на 16–20 КБ"
+        .dnsSpoofing: "DNS spoofing",
+        .httpBlock: "Stub page",
+        .sniBlocking: "SNI-based block",
+        .ipBlocking: "IP-based block",
+        .whitelist: "Whitelists",
+        .siberian: "“Siberian” block",
+        .transferCutoff: "Cut off at 16–20 KB"
     ]
 
     /// Dispatch happens in NetworkKit; raw values match one-to-one.
@@ -71,13 +71,13 @@ enum BlockingCheckChoice: String, AppEnum {
 enum ReachabilityScope: String, AppEnum {
     case foreignProviders, russianProviders, webServices, pushNotifications
 
-    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Что проверять")
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "What to check")
 
     static let caseDisplayRepresentations: [ReachabilityScope: DisplayRepresentation] = [
-        .foreignProviders: "Зарубежные провайдеры",
-        .russianProviders: "Российские провайдеры",
-        .webServices: "Популярные сервисы",
-        .pushNotifications: "Push-уведомления"
+        .foreignProviders: "International providers",
+        .russianProviders: "Russian providers",
+        .webServices: "Popular services",
+        .pushNotifications: "Push notifications"
     ]
 
     var category: ProbeTarget.Category {

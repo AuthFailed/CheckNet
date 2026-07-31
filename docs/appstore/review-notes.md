@@ -1,14 +1,15 @@
-# Заметки ревьюеру и границы App Review (#85 / #86 / #87)
+# Reviewer notes and App Review boundaries (#85 / #86 / #87)
 
-Цель — снять два главных риска ревью: **5.4 (VPN)** и **чувствительные инструменты** (сетевые
-сканеры, крипто-разборщики). Приложение — диагностика и подготовка конфигов; оно **не** маршрутизирует
-трафик и **не** обходит блокировки.
+The goal is to remove the two main review risks: **5.4 (VPN)** and **sensitive tools** (network
+scanners, crypto decoders). The app is diagnostics and config preparation; it does **not** route
+traffic and does **not** circumvent restrictions.
 
 ---
 
-## A. Текст для App Review Information (App Store Connect → «Notes»)
+## A. Text for App Review Information (App Store Connect → "Notes")
 
-> Копипастить в поле Review Notes. Английский — ревьюер читает на нём. Держать коротким и прямым.
+> Paste into the Review Notes field. English — the reviewer reads it in English. Keep it short and
+> direct.
 
 ```
 CheckNet is a network-diagnostics utility (like Fing/iNet) with an extra section of read-only
@@ -25,7 +26,7 @@ Sensitive tools and why they are safe/legitimate:
 - Port scan / IP-range scan / Reality dest scanner: standard diagnostics. They run only after an
   explicit in-app consent dialog that explains what will happen. Intended for the user's own hosts
   and networks (same category as Fing, which is approved).
-- "Блокировки" (Censorship checks): transparency/diagnostics only — they DETECT what the local
+- "Blocking" (Censorship checks): transparency/diagnostics only — they DETECT what the local
   network blocks by comparing a probe to a control. They contain NO circumvention (no DPI bypass,
   no SNI fragmentation, no domain fronting).
 - Happ Decrypt / Incy link (crypt1): these decode the operator's OWN subscription links using
@@ -39,49 +40,49 @@ checks the user starts and, if the user configures one, a webhook to a server th
 Demo: no login required. See the "How to try the VPN section" steps below and the demo data.
 ```
 
-## B. Как ревьюеру прогнать VPN-раздел (демо-данные)
+## B. How the reviewer runs the VPN section (demo data)
 
-Ревьюер должен суметь нажать и увидеть результат без нашей инфраструктуры. Подготовить:
+The reviewer must be able to tap and see a result without our infrastructure. Prepare:
 
-1. **Демо-хост / подписка**, живущие на время ревью (можно поднять на дешёвом VPS или реюзнуть
-   тестовый). Указать в заметках прямо:
-   - `Тесты` → `Ping` / `TLS-инспектор`: `1.1.1.1`, `cloudflare.com` — работают без нашей инфры.
-   - `VPN` → проверка inbound/Reality: демо-адрес `<DEMO_HOST:PORT>`, SNI `<DEMO_SNI>`.
-   - `VPN` → Happ/Incy: приложить **пример ссылки** `incy://crypt1/<...>` и `happ://<...>` —
-     ревьюер вставит и увидит, что раскодировалось в обычный URL подписки.
-2. **Deep-link для быстрой демонстрации** (уже есть в приложении): `checknet://` +
-   `-openTool <tool> -host <h> -run` — можно дать ревьюеру пару готовых ссылок.
-3. Явно написать: «no account needed», чтобы не поставили 5.1.1 (login).
+1. **A demo host / subscription** that lives for the duration of the review (can be stood up on a
+   cheap VPS or a reused test one). State it directly in the notes:
+   - `Tests` → `Ping` / `TLS inspector`: `1.1.1.1`, `cloudflare.com` — work without our infra.
+   - `VPN` → inbound/Reality check: demo address `<DEMO_HOST:PORT>`, SNI `<DEMO_SNI>`.
+   - `VPN` → Happ/Incy: attach an **example link** `incy://crypt1/<...>` and `happ://<...>` — the
+     reviewer pastes it and sees that it decoded into a plain subscription URL.
+2. **A deep-link for a quick demo** (already in the app): `checknet://` +
+   `-openTool <tool> -host <h> -run` — you can give the reviewer a couple of ready links.
+3. Explicitly write "no account needed", so they don't apply 5.1.1 (login).
 
-> TODO для тебя: решить, поднимаем ли отдельный демо-хост на время ревью или даём публичные цели
-> (1.1.1.1 и т. п.) + статические примеры ссылок. Минимально достаточно публичных целей + примеров
-> ссылок; демо-хост усиливает шанс с первого раза.
+> TODO for you: decide whether we stand up a separate demo host for the review or give public targets
+> (1.1.1.1, etc.) + static example links. Public targets + example links are the minimum sufficient;
+> a demo host improves the chance of passing on the first try.
 
-## C. Граница 5.4 — что гарантируем кодом (для #87)
+## C. The 5.4 boundary — what the code guarantees (for #87)
 
-Проверяемые факты (можно показать ревьюеру и держать как самопроверку перед подачей):
+Verifiable facts (can be shown to the reviewer and kept as a self-check before submission):
 
-- **Нет** `NEVPNManager`, `NETunnelProvider*`, `NEPacketTunnelProvider`, Network Extension таргета.
-- **Нет** entitlement `com.apple.developer.networking.networkextension` / `packet-tunnel-provider`.
-- libXray используется **in-process** только чтобы поднять локальную проверку inbound/egress и
-  тут же погасить — не как системный туннель.
-- Прокси-раннер слушает на `127.0.0.1` для локального SOCKS-теста, не перехватывает системный трафик.
+- **No** `NEVPNManager`, `NETunnelProvider*`, `NEPacketTunnelProvider`, no Network Extension target.
+- **No** `com.apple.developer.networking.networkextension` / `packet-tunnel-provider` entitlement.
+- libXray is used **in-process** only to spin up a local inbound/egress check and immediately tear it
+  down — not as a system tunnel.
+- The proxy runner listens on `127.0.0.1` for a local SOCKS test, it doesn't intercept system traffic.
 
-Самопроверка (держать зелёной):
+Self-check (keep it green):
 
 ```sh
-# Должно быть пусто:
+# Should be empty:
 grep -rn "NEVPNManager\|NETunnelProvider\|NEPacketTunnel\|packet-tunnel" App Shared Packages Widgets \
   | grep -v "\.build/"
 ```
 
-**Митигация при риске:** если ревьюер цепляется к слову «VPN», переименовать раздел в
-«Инструменты оператора» (строка заголовка вкладки) — контент не меняется. Держать это как запасной
-ход, не делать превентивно (раздел честно про VPN-серверы).
+**Mitigation if at risk:** if the reviewer takes issue with the word "VPN", rename the section to
+"Operator Tools" (the tab-title string) — the content doesn't change. Keep this as a fallback, don't
+do it preemptively (the section is honestly about VPN servers).
 
-## D. Формулировки в описании стора (см. `store-metadata.md`)
+## D. Wording in the store description (see `store-metadata.md`)
 
-- Не писать «VPN» как категорию/фичу без слова «диагностика/инструменты».
-- Явная строка в описании: «CheckNet не является VPN, не маршрутизирует трафик и не обходит
-  блокировки — это диагностика и подготовка конфигов».
-- Не обещать обход блокировок нигде в метаданных (иначе 5.4 + вероятный реджект).
+- Don't write "VPN" as a category/feature without the word "diagnostics/tools".
+- An explicit line in the description: "CheckNet is not a VPN, it does not route traffic and does not
+  circumvent restrictions — it's diagnostics and config preparation."
+- Don't promise circumvention of blocks anywhere in the metadata (otherwise 5.4 + a likely reject).

@@ -119,9 +119,9 @@ public struct DNSResolverInfo: Sendable, Hashable, Identifiable, Codable {
 
         public var label: String {
             switch self {
-            case .foreign: "Зарубежные"
-            case .russian: "Российские"
-            case .national: "Национальные (НСДИ)"
+            case .foreign: "International"
+            case .russian: "Russian"
+            case .national: "National (NSDI)"
             }
         }
     }
@@ -147,11 +147,11 @@ public struct DNSResolverInfo: Sendable, Hashable, Identifiable, Codable {
         .init(name: "Quad9", address: "9.9.9.9", scope: .foreign),
         .init(name: "OpenDNS", address: "208.67.222.222", scope: .foreign, secondary: "208.67.220.220"),
         .init(name: "AdGuard", address: "94.140.14.14", scope: .foreign, secondary: "94.140.15.15"),
-        .init(name: "Яндекс", address: "77.88.8.8", scope: .russian, secondary: "77.88.8.1"),
+        .init(name: "Yandex", address: "77.88.8.8", scope: .russian, secondary: "77.88.8.1"),
         // Russia's national DNS. Operators holding an ASN have been required to
         // use it since 2021, so its answers are the reference for what the
         // national resolution layer returns.
-        .init(name: "НСДИ", address: "195.208.4.1", scope: .national, secondary: "195.208.5.1"),
+        .init(name: "NSDI", address: "195.208.4.1", scope: .national, secondary: "195.208.5.1"),
         .init(name: "MSK-IX", address: "62.76.76.62", scope: .national, secondary: "62.76.62.76")
     ]
 

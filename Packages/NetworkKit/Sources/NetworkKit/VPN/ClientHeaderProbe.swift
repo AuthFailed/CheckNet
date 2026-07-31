@@ -71,7 +71,7 @@ public enum ClientHeaderProbe {
         AsyncStream(bufferingPolicy: .unbounded) { continuation in
             guard let url = URL(string: urlString.trimmingCharacters(in: .whitespaces)),
                   url.scheme == "http" || url.scheme == "https" else {
-                continuation.yield(.failed("Некорректный URL подписки"))
+                continuation.yield(.failed("Invalid subscription URL"))
                 continuation.finish()
                 return
             }
@@ -113,7 +113,7 @@ public enum ClientHeaderProbe {
 
         do {
             let (data, response) = try await URLSession.shared.data(for: req)
-            guard let http = response as? HTTPURLResponse else { return failure("нет HTTP-ответа") }
+            guard let http = response as? HTTPURLResponse else { return failure("no HTTP response") }
             let headers = normalized(http.allHeaderFields)
             let body = String(data: data, encoding: .utf8) ?? ""
             let parsed = SubscriptionParser.parse(body)
@@ -135,7 +135,7 @@ public enum ClientHeaderProbe {
             )
         } catch {
             let ns = error as NSError
-            return failure(ns.code == NSURLErrorTimedOut ? "таймаут" : ns.localizedDescription)
+            return failure(ns.code == NSURLErrorTimedOut ? "timeout" : ns.localizedDescription)
         }
     }
 

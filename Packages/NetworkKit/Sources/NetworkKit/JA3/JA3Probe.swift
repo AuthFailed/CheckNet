@@ -20,12 +20,12 @@ public struct JA3ProbeResult: Sendable, Hashable {
 
         public var label: String {
             switch self {
-            case .serverHello: "рукопожатие принято"
-            case .tlsAlert: "TLS-alert (ответ сервера)"
-            case .reset: "сброс (RST)"
-            case .timeout: "тишина после ClientHello"
-            case .closed: "соединение закрыто"
-            case .tcpFailed: "TCP не установлен"
+            case .serverHello: "handshake accepted"
+            case .tlsAlert: "TLS alert (server response)"
+            case .reset: "reset (RST)"
+            case .timeout: "silence after ClientHello"
+            case .closed: "connection closed"
+            case .tcpFailed: "TCP not established"
             }
         }
 

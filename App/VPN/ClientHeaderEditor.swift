@@ -17,7 +17,7 @@ struct ClientEditorView: View {
                         Task { await model.loadVersionsFromGitHub() }
                     } label: {
                         HStack {
-                            Label("Подтянуть версии с GitHub", systemImage: "arrow.down.circle")
+                            Label("Fetch versions from GitHub", systemImage: "arrow.down.circle")
                             Spacer()
                             if model.loadingVersions { ProgressView() }
                         }
@@ -27,15 +27,15 @@ struct ClientEditorView: View {
                         Text(LocalizedStringKey(note)).font(.caption).foregroundStyle(.secondary)
                     }
                 } footer: {
-                    Text("Приложение и версия собирают User-Agent «Приложение/Версия». Версии с GitHub доступны для клиентов с открытым исходным кодом; остальные вводятся вручную.")
+                    Text("App and version build the User-Agent \"App/Version\". Versions from GitHub are available for open-source clients; the rest are entered manually.")
                 }
 
                 Section {
-                    Toggle("Передавать HWID", isOn: $model.sendHWID)
+                    Toggle("Send HWID", isOn: $model.sendHWID)
                         .onChange(of: model.sendHWID) { model.saveHWID() }
                     if model.sendHWID {
                         HStack(spacing: 8) {
-                            TextField("HWID устройства", text: $model.hwid)
+                            TextField("Device HWID", text: $model.hwid)
                                 .font(.system(.body, design: .monospaced))
                                 .autocorrectionDisabled()
                                 #if os(iOS)
@@ -46,16 +46,16 @@ struct ClientEditorView: View {
                                 Image(systemName: "wand.and.stars")
                             }
                             .buttonStyle(.borderless)
-                            .accessibilityLabel("Сгенерировать HWID")
+                            .accessibilityLabel("Generate HWID")
                         }
                     }
                 } header: {
                     Text("HWID")
                 } footer: {
-                    Text("Отправляется как заголовок X-HWID — некоторые панели привязывают подписку к устройству и лимитируют число HWID. Выключите, чтобы не передавать HWID вовсе.")
+                    Text("Sent as the X-HWID header — some panels bind the subscription to a device and limit the number of HWIDs. Turn off to not send HWID at all.")
                 }
 
-                Section("Клиенты") {
+                Section("Clients") {
                     ForEach($model.clients) { $client in
                         clientRow($client)
                     }
@@ -64,20 +64,20 @@ struct ClientEditorView: View {
 
                 Section {
                     Button { model.addClient() } label: {
-                        Label("Добавить клиента", systemImage: "plus")
+                        Label("Add client", systemImage: "plus")
                     }
                     Button(role: .destructive) { model.resetClients() } label: {
-                        Label("Сбросить к стандартным", systemImage: "arrow.uturn.backward")
+                        Label("Reset to defaults", systemImage: "arrow.uturn.backward")
                     }
                 }
             }
-            .navigationTitle("Клиенты и версии")
+            .navigationTitle("Clients and versions")
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { model.saveClients(); dismiss() }
+                    Button("Done") { model.saveClients(); dismiss() }
                 }
             }
             .onChange(of: model.clients) { model.saveClients() }
@@ -89,15 +89,15 @@ struct ClientEditorView: View {
             HStack(spacing: 10) {
                 Toggle(isOn: client.enabled) { EmptyView() }
                     .labelsHidden()
-                    .accessibilityLabel("Включить \(client.wrappedValue.app)")
-                TextField("Приложение", text: client.app)
+                    .accessibilityLabel("Enable \(client.wrappedValue.app)")
+                TextField("App", text: client.app)
                     .autocorrectionDisabled()
                     #if os(iOS)
                     .textInputAutocapitalization(.never)
                     #endif
             }
             HStack(spacing: 8) {
-                TextField("Версия", text: client.version)
+                TextField("Version", text: client.version)
                     .font(.system(.body, design: .monospaced))
                     .autocorrectionDisabled()
                     #if os(iOS)
@@ -121,7 +121,7 @@ struct ClientEditorView: View {
         let versions = model.githubVersions[repo] ?? []
         Menu {
             if versions.isEmpty {
-                Text("Сначала «Подтянуть версии с GitHub»")
+                Text("First \"Fetch versions from GitHub\"")
             } else {
                 ForEach(versions, id: \.self) { v in
                     Button(v) { client.version.wrappedValue = v; model.saveClients() }
@@ -131,6 +131,6 @@ struct ClientEditorView: View {
             Image(systemName: "chevron.down.circle")
                 .foregroundStyle(.tint)
         }
-        .accessibilityLabel("Версии с GitHub")
+        .accessibilityLabel("Versions from GitHub")
     }
 }

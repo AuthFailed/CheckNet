@@ -5,13 +5,13 @@
 > **[CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/)** — by submitting
 > one you agree to that.
 
-CheckNet is authored in **Russian** and translated into 12 more languages:
-English, 简体中文, Español, Français, Deutsch, 日本語, Português (BR), 한국어,
+CheckNet is authored in **English** and translated into 12 more languages:
+Русский, 简体中文, Español, Français, Deutsch, 日本語, Português (BR), 한국어,
 Italiano, Türkçe, العربية, हिन्दी.
 
 All translations live in one Apple **String Catalog**:
-`App/Resources/Localizable.xcstrings`. The Russian text is the *key*; every
-other language is a value under it.
+`App/Resources/Localizable.xcstrings`. The English text is the *key*; every
+other language — Russian included — is a value under it.
 
 ## How to contribute
 
@@ -34,7 +34,7 @@ hand) and open a PR. CI validates it (see below).
 ## The one rule that must never break
 
 Format placeholders — `%@`, `%lld`, `%1$@`, `%2$@` … — must appear in a
-translation **the same number and kind** as in the Russian key. Only their
+translation **the same number and kind** as in the English key. Only their
 *order* may change (use the positional `%1$…`, `%2$…` forms to reorder).
 
 Why it matters: Foundation formats the *translated* string against the arguments

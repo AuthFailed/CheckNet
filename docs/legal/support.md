@@ -1,47 +1,33 @@
-# Поддержка CheckNet
-
-CheckNet — приложение сетевой диагностики для iPhone, iPad и Mac.
-
-## Как получить помощь
-
-- **Вопросы и сообщения об ошибках:** заведите issue —
-  [github.com/AuthFailed/CheckNet/issues](https://github.com/AuthFailed/CheckNet/issues)
-- **Почта:** roman@chrsnv.ru
-
-При обращении по ошибке полезно указать: версию приложения (Настройки → «О приложении»), модель
-устройства и версию iOS/macOS, какой инструмент и с какими данными вы запускали.
-
-## Частые вопросы
-
-**CheckNet — это VPN?**
-Нет. CheckNet не создаёт VPN-подключение, не маршрутизирует ваш трафик и не обходит блокировки.
-Это набор диагностических проверок; раздел для операторов VPN проверяет **ваш собственный** сервер.
-
-**Приложение собирает мои данные?**
-Нет. См. [политику конфиденциальности](privacy-policy.md). Результаты остаются на устройстве.
-
-**Почему инструмент просит разрешение на локальную сеть / геопозицию / камеру?**
-Локальная сеть — для поиска устройств и Bonjour-сервисов; геопозиция — только чтобы iOS отдала имя
-текущей Wi-Fi-сети (координаты не используются); камера — для сканирования QR со списком хостов.
-
-**Некоторые Wi-Fi-инструменты пишут «доступно на Mac».**
-iOS не отдаёт приложениям данные о Wi-Fi-каналах и соседних сетях — это ограничение платформы,
-такие проверки работают в версии для Mac.
-
-**Как очистить историю?**
-Настройки → История → очистить.
-
----
-
-# CheckNet Support (English)
+# CheckNet Support
 
 CheckNet is a network-diagnostics app for iPhone, iPad, and Mac.
 
-- **Issues / bug reports:** [github.com/AuthFailed/CheckNet/issues](https://github.com/AuthFailed/CheckNet/issues)
+## How to Get Help
+
+- **Questions and bug reports:** open an issue —
+  [github.com/AuthFailed/CheckNet/issues](https://github.com/AuthFailed/CheckNet/issues)
 - **Email:** roman@chrsnv.ru
 
-Include your app version (Settings → About), device model and OS version, and which tool you ran.
+When reporting a bug, it helps to include: the app version (Settings → "About"), your device
+model and iOS/macOS version, and which tool you ran and with what data.
 
-**Is CheckNet a VPN?** No — it doesn't tunnel or route your traffic or bypass restrictions; it's
-diagnostics, and the operator section checks your own server.
-**Does it collect data?** No — see the Privacy Policy; results stay on device.
+## Frequently Asked Questions
+
+**Is CheckNet a VPN?**
+No. CheckNet does not create a VPN connection, does not route your traffic, and does not bypass
+restrictions. It is a set of diagnostic checks; the section for VPN operators checks **your own** server.
+
+**Does the app collect my data?**
+No. See the [privacy policy](privacy-policy.md). Results stay on your device.
+
+**Why does a tool ask for the local network / location / camera permission?**
+Local Network — to find devices and Bonjour services; Location — only so that iOS returns the name
+of the current Wi-Fi network (coordinates are not used); Camera — to scan a QR code containing your
+list of hosts.
+
+**Some Wi-Fi tools say "available on Mac."**
+iOS does not give apps data about Wi-Fi channels or neighboring networks — this is a platform
+limitation, so such checks work in the Mac version.
+
+**How do I clear the history?**
+Settings → History → clear.

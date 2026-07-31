@@ -6,7 +6,7 @@ enum VPNRoute: Hashable {
 }
 
 /// The **VPN** tab — operator tooling for the Xray / Reality / mihomo / Happ
-/// ecosystem. Mirrors the Блокировки tab: a system list of tools, each with an
+/// ecosystem. Mirrors the Blocking tab: a system list of tools, each with an
 /// ⓘ description; unbuilt tools push a plain placeholder rather than a
 /// half-working screen.
 struct VPNView: View {
@@ -26,7 +26,7 @@ struct VPNView: View {
                         Text(LocalizedStringKey(section.title))
                     } footer: {
                         if index == VPNCatalog.sections.count - 1 {
-                            Text("Диагностика и работа с конфигами для владельцев VPN. Приложение не обходит блокировки — оно помогает настроить и проверить свой сервер.")
+                            Text("Diagnostics and config tools for VPN owners. The app doesn't bypass blocks — it helps you set up and check your own server.")
                         }
                     }
                 }

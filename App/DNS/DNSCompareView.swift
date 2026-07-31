@@ -16,21 +16,21 @@ struct DNSCompareView: View {
         guard !name.isEmpty, !run.isRunning else { return }
         let type = recordType
         run.activity = settings.liveActivitiesEnabled ? .init(
-            kind: .lookup, title: name, subtitle: "Сравнение DNS",
+            kind: .lookup, title: name, subtitle: "DNS comparison",
             content: { LookupActivityContent.view($0, running: name) { rows in
-                ("\(rows.count) резолверов", "сравнение ответов") } }
+                ("\(rows.count) resolvers", "comparing answers") } }
         ) : nil
         run.start { await DNSClient().compareResolvers(name: name, type: type, resolvers: DNSResolverInfo.presets) }
     }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $host, placeholder: "Домен", icon: "arrow.left.arrow.right",
+            HostInputBar(text: $host, placeholder: "Domain", icon: "arrow.left.arrow.right",
                          disabled: run.isRunning, savedHostTool: .dnsCompare) { start() }
             HStack {
-                Text("Тип записи").foregroundStyle(.secondary)
+                Text("Record type").foregroundStyle(.secondary)
                 Spacer()
-                Picker("Тип записи", selection: $recordType) {
+                Picker("Record type", selection: $recordType) {
                     ForEach([DNSRecordType.a, .aaaa, .mx, .txt, .ns], id: \.self) { Text($0.label).tag($0) }
                 }.labelsHidden()
             }
@@ -45,20 +45,20 @@ struct DNSCompareView: View {
             } else if rows.isEmpty {
                 ToolIdleHint(
                     icon: "arrow.left.arrow.right",
-                    title: "Готово к сравнению",
-                    message: "Спросим один домен у нескольких публичных резолверов сразу — расхождение в ответах видно построчно.",
+                    title: "Ready to compare",
+                    message: "We'll ask several public resolvers about one domain at once — a disagreement shows up line by line.",
                     example: "wikipedia.org",
                     current: host
                 ) { host = "wikipedia.org" }
             }
         } bottom: {
-            RunButton(title: "Сравнить", running: run.isRunning,
+            RunButton(title: "Compare", running: run.isRunning,
                       disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
         }
         .animation(.snappy, value: rows.count)
-        .navigationTitle("Сравнение резолверов")
+        .navigationTitle("Resolver comparison")
         .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { host = presetHost }
@@ -73,7 +73,7 @@ struct DNSCompareView: View {
                 Text(row.resolver.address).font(.caption.monospaced()).foregroundStyle(.secondary)
                 Spacer()
                 if let r = row.result {
-                    Text("\(String(format: "%.0f", r.latencyMillis)) мс")
+                    Text("\(String(format: "%.0f", r.latencyMillis)) ms")
                         .font(.caption.monospaced())
                         .foregroundStyle(.blue)
                 }
@@ -112,17 +112,17 @@ struct DNSTamperView: View {
         let name = host.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty, !run.isRunning else { return }
         run.activity = settings.liveActivitiesEnabled ? .init(
-            kind: .lookup, title: name, subtitle: "Подмена DNS",
+            kind: .lookup, title: name, subtitle: "DNS spoofing",
             content: { LookupActivityContent.view($0, running: name,
                 status: { $0.suspicious ? .down : .ok }) { r in
-                (r.suspicious ? "Подозрительно" : "Чисто", "\(r.rows.count) резолверов") } }
+                (r.suspicious ? "Suspicious" : "Clean", "\(r.rows.count) resolvers") } }
         ) : nil
         run.start { await DNSClient().detectTampering(name: name) }
     }
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $host, placeholder: "Домен", icon: "exclamationmark.shield",
+            HostInputBar(text: $host, placeholder: "Domain", icon: "exclamationmark.shield",
                          disabled: run.isRunning, savedHostTool: .dnsTamper) { start() }
             if let report = run.value {
                 verdictCard(report)
@@ -134,13 +134,13 @@ struct DNSTamperView: View {
                 ProgressView().padding(.top, 40)
             }
         } bottom: {
-            RunButton(title: "Проверить", running: run.isRunning,
+            RunButton(title: "Check", running: run.isRunning,
                       disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
         }
         .animation(.snappy, value: run.value?.suspicious)
-        .navigationTitle("Детект DNS-подмены")
+        .navigationTitle("DNS spoofing detection")
         .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { host = presetHost }
@@ -154,9 +154,9 @@ struct DNSTamperView: View {
                 .font(.title)
                 .foregroundStyle(report.suspicious ? .orange : .green)
             VStack(alignment: .leading, spacing: 2) {
-                Text(report.suspicious ? LocalizedStringKey("Есть признаки подмены") : LocalizedStringKey("Подмены не обнаружено"))
+                Text(report.suspicious ? LocalizedStringKey("Signs of spoofing") : LocalizedStringKey("No spoofing detected"))
                     .font(.title3.weight(.bold))
-                Text("Сравнено \(report.rows.count) резолверов")
+                Text("\(report.rows.count) resolvers compared")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()

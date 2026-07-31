@@ -107,8 +107,8 @@ struct PulseRing: View {
         .onAppear { if !reduceMotion { animate = true } }
         // Read as one value, not as a stack of rings with a number in it.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Текущая задержка")
-        .accessibilityValue(value.map { "\(Int($0)) мс" } ?? "нет ответа")
+        .accessibilityLabel("Current latency")
+        .accessibilityValue(value.map { "\(Int($0)) ms" } ?? "no response")
     }
 }
 

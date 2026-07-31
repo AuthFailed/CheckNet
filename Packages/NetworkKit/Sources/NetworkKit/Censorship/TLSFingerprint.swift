@@ -33,21 +33,21 @@ public enum TLSFingerprint: String, Sendable, Codable, CaseIterable, Identifiabl
 
     public var label: String {
         switch self {
-        case .system: "Системный (Apple)"
+        case .system: "System (Apple)"
         case .tls12: "TLS 1.2"
         case .tls13: "TLS 1.3"
-        case .noALPN: "TLS 1.3 без ALPN"
-        case .minimalCiphers: "Узкий набор шифров"
+        case .noALPN: "TLS 1.3 without ALPN"
+        case .minimalCiphers: "Narrow cipher set"
         }
     }
 
     public var detail: String {
         switch self {
-        case .system: "Стандартное рукопожатие iOS с ALPN h2/http1.1."
-        case .tls12: "Ограничение до TLS 1.2 — так выглядят соединения старых клиентов."
-        case .tls13: "Только TLS 1.3."
-        case .noALPN: "TLS 1.3 без списка протоколов приложения."
-        case .minimalCiphers: "Минимальный список шифров — самое короткое рукопожатие."
+        case .system: "The standard iOS handshake with ALPN h2/http1.1."
+        case .tls12: "Capped at TLS 1.2 — this is how connections from older clients look."
+        case .tls13: "TLS 1.3 only."
+        case .noALPN: "TLS 1.3 without an application protocol list."
+        case .minimalCiphers: "A minimal cipher list — the shortest possible handshake."
         }
     }
 

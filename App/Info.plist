@@ -7,7 +7,7 @@
 		<string>com.chrsnv.checknet.monitor.refresh</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>ru</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>CheckNet</string>
 	<key>CFBundleExecutable</key>
@@ -94,11 +94,11 @@
 		<string>_rfb._tcp</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Камера нужна только для сканирования QR-кодов со списком сохранённых хостов. Изображения никуда не отправляются.</string>
+	<string>The camera is used only to scan QR codes containing your list of saved hosts. Images are not sent anywhere.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>CheckNet сканирует локальную сеть для обнаружения устройств, Bonjour-сервисов и проверки хостов.</string>
+	<string>CheckNet scans the local network to discover devices, Bonjour services, and check hosts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Доступ к геопозиции нужен только чтобы прочитать имя текущей Wi-Fi-сети — iOS отдаёт SSID лишь с этим разрешением. Координаты не используются и никуда не отправляются.</string>
+	<string>Location access is used only to read the name of the current Wi-Fi network — iOS provides the SSID only with this permission. Coordinates are not used or sent anywhere.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSUserActivityTypes</key>

@@ -60,12 +60,12 @@ final class ControlSupportTests: XCTestCase {
     func testSubtitleShowsLatencyWhenOnline() {
         let snap = PingSnapshot(host: "1.1.1.1", ip: "1.1.1.1", latencyMillis: 11.6,
                                 lossPercent: 0, jitterMillis: 1, status: .ok, timestamp: Date())
-        XCTAssertEqual(ControlSnapshotDisplay.subtitle(snap), "12 мс")   // rounded
+        XCTAssertEqual(ControlSnapshotDisplay.subtitle(snap), "12 ms")   // rounded
     }
 
     func testSubtitleShowsStatusWordWhenDown() {
         let snap = PingSnapshot(host: "x", ip: "", latencyMillis: nil,
                                 lossPercent: 100, jitterMillis: nil, status: .down, timestamp: Date())
-        XCTAssertEqual(ControlSnapshotDisplay.subtitle(snap), "Недоступен")
+        XCTAssertEqual(ControlSnapshotDisplay.subtitle(snap), "Unreachable")
     }
 }

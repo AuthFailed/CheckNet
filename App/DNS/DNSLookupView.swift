@@ -18,7 +18,7 @@ struct DNSLookupView: View {
         run.activity = settings.liveActivitiesEnabled ? .init(
             kind: .lookup, title: name, subtitle: "DNS",
             content: { LookupActivityContent.view($0, running: name) { r in
-                ("\(r.answers.count) записей", r.answers.first?.value ?? "нет ответа") } }
+                ("\(r.answers.count) records", r.answers.first?.value ?? "no response") } }
         ) : nil
         run.start {
             try await DNSClient().query(
@@ -30,7 +30,7 @@ struct DNSLookupView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $host, placeholder: "Домен", icon: "magnifyingglass",
+            HostInputBar(text: $host, placeholder: "Domain", icon: "magnifyingglass",
                          disabled: run.isRunning, savedHostTool: .dns) {
                 start()
             }
@@ -51,15 +51,15 @@ struct DNSLookupView: View {
                 } else {
                     ToolIdleHint(
                         icon: "magnifyingglass",
-                        title: "Готово к запросу",
-                        message: "Спросим выбранный резолвер о записях домена и покажем ответ целиком.",
+                        title: "Ready to query",
+                        message: "We'll ask the chosen resolver for the domain's records and show the whole answer.",
                         example: "example.com",
                         current: host
                     ) { host = "example.com" }
                 }
             }
         } bottom: {
-            RunButton(title: "Запросить", running: run.isRunning,
+            RunButton(title: "Request", running: run.isRunning,
                       disabled: host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 start()
             }
@@ -79,9 +79,9 @@ struct DNSLookupView: View {
     private var controlsCard: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Тип записи").foregroundStyle(.secondary)
+                Text("Record type").foregroundStyle(.secondary)
                 Spacer()
-                Picker("Тип записи", selection: $recordType) {
+                Picker("Record type", selection: $recordType) {
                     ForEach(DNSRecordType.allCases, id: \.self) { Text($0.label).tag($0) }
                 }
                 .labelsHidden()
@@ -89,7 +89,7 @@ struct DNSLookupView: View {
             .padding(.horizontal, 14).padding(.vertical, 8)
             Divider().padding(.leading, 14)
             HStack {
-                Text("Резолвер").foregroundStyle(.secondary)
+                Text("Resolver").foregroundStyle(.secondary)
                 Spacer()
                 Picker("", selection: $resolver) {
                     ForEach(DNSResolverInfo.presets) { r in
@@ -112,7 +112,7 @@ struct DNSLookupView: View {
     @ViewBuilder
     private func recordModules(_ result: DNSResult) -> some View {
         if !result.answers.isEmpty {
-            recordsCard("Ответы", result.answers)
+            recordsCard("Responses", result.answers)
         } else {
             emptyAnswers
         }
@@ -129,7 +129,7 @@ struct DNSLookupView: View {
                 .foregroundStyle(ok ? .green : .orange)
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.responseCode.label).font(.headline)
-                Text("\(result.answers.count) записей · \(String(format: "%.0f", result.latencyMillis)) мс")
+                Text("\(result.answers.count) records · \(String(format: "%.0f", result.latencyMillis)) ms")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -174,7 +174,7 @@ struct DNSLookupView: View {
     }
 
     private var emptyAnswers: some View {
-        Text("Записей не найдено")
+        Text("No records found")
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity)
             .padding(.top, 24)

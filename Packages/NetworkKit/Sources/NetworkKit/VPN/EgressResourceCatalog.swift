@@ -57,8 +57,8 @@ public extension EgressResource {
     ]
 
     private enum cat {
-        static let echo = "IP-эхо"
+        static let echo = "IP echo"
         static let cloudflare = "Cloudflare"
-        static let geo = "Гео и ASN"
+        static let geo = "Geo and ASN"
     }
 }

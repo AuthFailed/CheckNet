@@ -41,7 +41,7 @@ enum CurrentNetwork {
     static func current() async -> Result {
         #if os(iOS)
         guard isSSIDReadable else {
-            return .unavailable(reason: "У сборки нет прав на чтение имени Wi-Fi-сети.")
+            return .unavailable(reason: "This build is not entitled to read the Wi-Fi network name.")
         }
 
         // Location permission is a prerequisite; request it if undetermined.
@@ -50,9 +50,9 @@ enum CurrentNetwork {
         case .authorizedWhenInUse, .authorizedAlways:
             break
         case .notDetermined:
-            return .restricted(reason: "Не выдано разрешение на геопозицию.")
+            return .restricted(reason: "Location permission has not been granted.")
         default:
-            return .restricted(reason: "Доступ к геопозиции запрещён — имя сети iOS не отдаёт.")
+            return .restricted(reason: "Location access is denied — iOS does not reveal the network name.")
         }
 
         return await withCheckedContinuation { continuation in
@@ -74,13 +74,13 @@ enum CurrentNetwork {
                     // No network object means either not on Wi-Fi or the app
                     // lacks the Access Wi-Fi Information entitlement.
                     continuation.resume(returning: .unavailable(
-                        reason: "Нет доступа к имени сети. Нужны Wi-Fi-права приложения и подключение к Wi-Fi."
+                        reason: "No access to the network name. The app needs the Wi-Fi entitlement and an active Wi-Fi connection."
                     ))
                 }
             }
         }
         #else
-        return .unavailable(reason: "Определение сети доступно только на iOS.")
+        return .unavailable(reason: "Network detection is available on iOS only.")
         #endif
     }
 }

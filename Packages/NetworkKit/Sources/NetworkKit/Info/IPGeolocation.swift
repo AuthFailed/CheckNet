@@ -31,7 +31,7 @@ public struct IPGeolocation: Sendable {
             return out
         }
         guard !collected.isEmpty else {
-            throw NetworkError.protocolError("Сервисы геолокации не ответили. Попробуйте позже.")
+            throw NetworkError.protocolError("Geolocation services didn’t respond. Try again later.")
         }
         // Stable order: API providers as declared, then MaxMind.
         var ordered = Self.providers.compactMap { p in collected.first { $0.source == p.name } }
@@ -129,7 +129,7 @@ public struct IPGeolocation: Sendable {
         let data = try await fetch(url)
         let ip = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !ip.isEmpty, ip.count <= 45 else {
-            throw NetworkError.protocolError("не удалось определить свой IP")
+            throw NetworkError.protocolError("couldn’t determine your IP")
         }
         return ip
     }

@@ -23,7 +23,7 @@ final class WebhookTests: XCTestCase {
             event: "check.ping",
             timestamp: Date(timeIntervalSince1970: 1_700_000_000),
             host: "1.1.1.1", succeeded: true,
-            verdict: "clean", headline: "Хост отвечает", detail: "5/5",
+            verdict: "clean", headline: "Host responds", detail: "5/5",
             latencyMillis: 12.5, lossPercent: 0,
             metadata: ["tool": "ping"]
         )

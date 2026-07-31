@@ -114,7 +114,7 @@ public enum EgressIPProbe {
     static func fetch(_ res: EgressResource, session: URLSession) async -> EgressResult {
         guard let url = URL(string: res.url) else {
             return EgressResult(name: res.name, category: res.category, url: res.url,
-                                info: nil, error: "некорректный адрес", millis: 0)
+                                info: nil, error: "invalid address", millis: 0)
         }
         // Timed from here — the request's own round-trip, not the time it spent
         // waiting for a free slot in the window.
@@ -128,10 +128,10 @@ public enum EgressIPProbe {
             if let http = response as? HTTPURLResponse, !(200..<400).contains(http.statusCode) {
                 return done(nil, "HTTP \(http.statusCode)")
             }
-            guard let info = parse(res.kind, data: data) else { return done(nil, "ответ не разобран") }
+            guard let info = parse(res.kind, data: data) else { return done(nil, "response not parsed") }
             return done(info, nil)
         } catch is CancellationError {
-            return done(nil, "отменено")
+            return done(nil, "cancelled")
         } catch let error as URLError {
             return done(nil, reason(for: error))
         } catch {
@@ -142,11 +142,11 @@ public enum EgressIPProbe {
     /// Turn the noisiest URLErrors into a short operator-readable cause.
     static func reason(for error: URLError) -> String {
         switch error.code {
-        case .timedOut: return "таймаут"
-        case .cannotConnectToHost, .cannotFindHost: return "прокси не пропустил"
-        case .secureConnectionFailed, .serverCertificateUntrusted: return "ошибка TLS"
-        case .notConnectedToInternet, .networkConnectionLost: return "соединение потеряно"
-        default: return "нет ответа"
+        case .timedOut: return "timeout"
+        case .cannotConnectToHost, .cannotFindHost: return "proxy blocked it"
+        case .secureConnectionFailed, .serverCertificateUntrusted: return "TLS error"
+        case .notConnectedToInternet, .networkConnectionLost: return "connection lost"
+        default: return "no response"
         }
     }
 
@@ -173,7 +173,7 @@ public enum EgressIPProbe {
             if kv.count == 2 { fields[String(kv[0])] = String(kv[1]) }
         }
         guard let ip = fields["ip"], isIPAddress(ip) else { return nil }
-        let colo = fields["colo"].map { "дата-центр \($0)" }
+        let colo = fields["colo"].map { "data center \($0)" }
         return EgressInfo(ip: ip, country: fields["loc"], note: colo)
     }
 

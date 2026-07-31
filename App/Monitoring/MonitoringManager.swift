@@ -57,7 +57,7 @@ final class MonitoringManager {
         BackgroundMonitor.schedule()
         #endif
         if useLiveActivity {
-            liveActivity.start(kind: .monitor, title: "Мониторинг сети",
+            liveActivity.start(kind: .monitor, title: "Network monitoring",
                                subtitle: MonitorActivityContent.subtitle(for: entries),
                                view: MonitorActivityContent.view(for: entries))
         }

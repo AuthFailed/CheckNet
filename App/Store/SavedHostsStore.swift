@@ -74,7 +74,7 @@ final class SavedHostsStore {
     }
 
     static let seed: [SavedHost] = [
-        SavedHost(name: "Дом-роутер", value: "192.168.1.1", toolID: nil),
+        SavedHost(name: "Home router", value: "192.168.1.1", toolID: nil),
         SavedHost(name: "Google DNS", value: "8.8.8.8", toolID: nil),
         SavedHost(name: "Cloudflare", value: "1.1.1.1", toolID: nil)
     ]

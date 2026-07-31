@@ -57,12 +57,12 @@ public final class IperfClient: Sendable {
                 var result = SpeedResult(downloadMbps: nil, uploadMbps: nil, server: server.host, latencyMillis: nil)
                 do {
                     if config.download {
-                        continuation.yield(.phase("Загрузка (download)…"))
+                        continuation.yield(.phase("Download…"))
                         result.downloadMbps = try self.session(server: server, config: config, reverse: true,
                                                                continuation: continuation, direction: .download, cancel: box)
                     }
                     if config.upload && !box.isCancelled {
-                        continuation.yield(.phase("Отдача (upload)…"))
+                        continuation.yield(.phase("Upload…"))
                         result.uploadMbps = try self.session(server: server, config: config, reverse: false,
                                                              continuation: continuation, direction: .upload, cancel: box)
                     }
@@ -167,9 +167,9 @@ public final class IperfClient: Sendable {
                 return Double(totalBytes) * 8 / elapsed / 1_000_000
 
             case .accessDenied:
-                throw NetworkError.protocolError("Сервер занят (access denied)")
+                throw NetworkError.protocolError("Server busy (access denied)")
             case .serverError:
-                throw NetworkError.protocolError("Ошибка сервера iperf3")
+                throw NetworkError.protocolError("iperf3 server error")
             case .testEnd:
                 continue
             }

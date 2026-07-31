@@ -9,17 +9,18 @@ ship broken localizations:
    so `%@` in a translation of a `%lld` key makes it read an integer as an
    object pointer — an immediate EXC_BAD_ACCESS, in that language only.
 2. A translatable key that is missing a translation in any supported language,
-   which silently ships as Russian there.
-3. (warning) A Russian literal that reaches the UI through
-   `LocalizedStringKey(variable)` but was never added to the catalog. The
-   compiler cannot extract those keys, so nothing else notices; the lookup
-   just returns the Russian key itself.
+   which silently ships as English there.
+3. (warning) A stray non-Latin (e.g. Russian) literal that reaches the UI
+   through `LocalizedStringKey(variable)` but was never added to the catalog.
+   The compiler cannot extract those keys, so nothing else notices; the lookup
+   just returns the literal itself. Post-migration the source language is
+   English, so any such literal is almost always a mistake.
 
 Modes:
     python3 scripts/check_string_catalog.py               # CI gate (exit 1 on error)
     python3 scripts/check_string_catalog.py --report      # per-language completeness table
     python3 scripts/check_string_catalog.py --todo [lang] # keys still missing a translation
-    python3 scripts/check_string_catalog.py --orphans     # Russian literals not in the catalog
+    python3 scripts/check_string_catalog.py --orphans     # stray non-Latin literals not in the catalog
 """
 import json
 import re
@@ -31,8 +32,8 @@ ROOT = Path(__file__).resolve().parent.parent
 CATALOG = ROOT / "App/Resources/Localizable.xcstrings"
 
 # Every language the app ships (see CFBundleLocalizations in project.yml), minus
-# the Russian source. A translatable key must be present in all of them.
-TARGET_LANGS = ["en", "zh-Hans", "es", "fr", "de", "ja", "pt-BR", "ko", "it", "tr", "ar", "hi"]
+# the English source. A translatable key must be present in all of them.
+TARGET_LANGS = ["ru", "zh-Hans", "es", "fr", "de", "ja", "pt-BR", "ko", "it", "tr", "ar", "hi"]
 
 SPEC = re.compile(r"%(?:(\d+)\$)?(@|lld|u|d|f|%)")
 
@@ -63,17 +64,26 @@ def translation(entry, lang):
     return value if value else None
 
 
+# Files that legitimately hold non-Latin string literals as *data* (not UI):
+# CountryFlag matches server remarks written in Russian, so its table must keep
+# the Russian country names. These are intentional and excluded from the scan.
+DATA_LITERAL_FILES = {"CountryFlag.swift"}
+
+
 def dynamic_key_candidates():
-    """Russian string literals in source that are not interpolated.
+    """Non-Latin (e.g. Russian) string literals in source that are not interpolated.
 
     An interpolated literal cannot be a catalog key, so only plain ones count.
-    This is a heuristic — it over-reports strings that never reach the UI.
+    This is a heuristic — it over-reports strings that never reach the UI. With
+    English as the source language, any hit is usually an untranslated literal.
     """
     literal = re.compile(r'"((?:[^"\\]|\\.)*)"')
     cyrillic = re.compile(r"[а-яА-ЯёЁ]")
     found = {}
     for pattern in ("App/**/*.swift", "Shared/**/*.swift", "Packages/NetworkKit/Sources/**/*.swift"):
         for path in glob.glob(str(ROOT / pattern), recursive=True):
+            if Path(path).name in DATA_LITERAL_FILES:
+                continue
             for number, line in enumerate(open(path, encoding="utf-8"), 1):
                 if line.lstrip().startswith("//"):
                     continue
@@ -129,8 +139,8 @@ def todo(strings, only_lang=None):
 
 def orphans(strings):
     cands = {k: v for k, v in dynamic_key_candidates().items() if k not in strings}
-    print(f"{len(cands)} Russian literals not in the catalog "
-          f"(shown via LocalizedStringKey(variable) they stay Russian):")
+    print(f"{len(cands)} non-Latin literals not in the catalog "
+          f"(shown via LocalizedStringKey(variable) they stay untranslated):")
     for key, where in sorted(cands.items()):
         print(f"  {where}: {key!r}")
 

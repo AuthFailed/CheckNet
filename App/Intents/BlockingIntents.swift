@@ -7,21 +7,21 @@ import NetworkKit
 /// the app when Wi-Fi changes, but a personal automation ("when I join network
 /// X → run this intent") can.
 struct RunBlockingCheckIntent: AppIntent {
-    static let title: LocalizedStringResource = "Проверить блокировку"
+    static let title: LocalizedStringResource = "Check for blocking"
     static let description = IntentDescription(
-        "Запускает одну проверку ограничений и возвращает вердикт с подробностями.",
-        categoryName: "Блокировки"
+        "Runs a single restriction check and returns a verdict with details.",
+        categoryName: "Blocks"
     )
     static let openAppWhenRun = false
 
-    @Parameter(title: "Проверка")
+    @Parameter(title: "Check")
     var check: BlockingCheckChoice
 
-    @Parameter(title: "Домен или хост")
+    @Parameter(title: "Domain or host")
     var target: SavedHostEntity?
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Проверить \(\.$check) для \(\.$target)")
+        Summary("Check \(\.$check) for \(\.$target)")
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<CheckOutcome> {
@@ -44,18 +44,18 @@ struct RunBlockingCheckIntent: AppIntent {
 
 /// Sweeps a group of hosts and reports what could not be reached.
 struct CheckReachabilityIntent: AppIntent {
-    static let title: LocalizedStringResource = "Проверить доступность"
+    static let title: LocalizedStringResource = "Check reachability"
     static let description = IntentDescription(
-        "Проверяет доступность группы узлов — провайдеров, популярных сервисов или серверов push-уведомлений.",
-        categoryName: "Блокировки"
+        "Checks whether a group of hosts is reachable — providers, popular services or push notification servers.",
+        categoryName: "Blocks"
     )
     static let openAppWhenRun = false
 
-    @Parameter(title: "Что проверять")
+    @Parameter(title: "What to check")
     var scope: ReachabilityScope
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Проверить доступность: \(\.$scope)")
+        Summary("Check reachability: \(\.$scope)")
     }
 
     func perform() async throws -> some IntentResult & ProvidesDialog & ReturnsValue<CheckOutcome> {
@@ -67,13 +67,13 @@ struct CheckReachabilityIntent: AppIntent {
         let outcome = CheckOutcome()
         outcome.succeeded = obstructed == 0
         outcome.verdict = obstructed == 0 ? "clean" : "restricted"
-        outcome.headline = "Доступно \(reachable) из \(results.count)"
+        outcome.headline = "\(reachable) of \(results.count) reachable"
         outcome.target = scope.rawValue
 
         let unreachable = results.filter { $0.status != .reachable }.map(\.target.host)
         outcome.detail = unreachable.isEmpty
-            ? "Все узлы отвечают."
-            : "Не отвечают: \(unreachable.joined(separator: ", "))"
+            ? "All hosts respond."
+            : "Not responding: \(unreachable.joined(separator: ", "))"
 
         return .result(value: outcome, dialog: IntentDialog("\(outcome.headline). \(outcome.detail)"))
     }
@@ -81,14 +81,14 @@ struct CheckReachabilityIntent: AppIntent {
 
 /// Dedicated push-delivery check.
 ///
-/// "Уведомления не приходят" is a common complaint that users almost never
+/// "Notifications aren't arriving" is a common complaint that users almost never
 /// connect to network filtering, so it gets its own phrase rather than hiding
 /// behind a parameter.
 struct CheckPushDeliveryIntent: AppIntent {
-    static let title: LocalizedStringResource = "Проверить push-уведомления"
+    static let title: LocalizedStringResource = "Check push notifications"
     static let description = IntentDescription(
-        "Проверяет доступность серверов push-уведомлений (APNs и FCM).",
-        categoryName: "Блокировки"
+        "Checks reachability of push notification servers (APNs and FCM).",
+        categoryName: "Blocks"
     )
     static let openAppWhenRun = false
 
@@ -102,11 +102,11 @@ struct CheckPushDeliveryIntent: AppIntent {
         outcome.verdict = blocked.isEmpty ? "clean" : "restricted"
         outcome.target = "push"
         outcome.headline = blocked.isEmpty
-            ? "Push-серверы доступны"
-            : "Недоступно \(blocked.count) из \(results.count)"
+            ? "Push servers are reachable"
+            : "\(blocked.count) of \(results.count) unavailable"
         outcome.detail = blocked.isEmpty
-            ? "Серверы APNs и FCM отвечают — сеть доставку уведомлений не блокирует."
-            : "Не отвечают: \(blocked.map(\.target.host).joined(separator: ", "))"
+            ? "APNs and FCM servers respond — the network isn't blocking notification delivery."
+            : "Not responding: \(blocked.map(\.target.host).joined(separator: ", "))"
 
         return .result(value: outcome, dialog: IntentDialog("\(outcome.headline). \(outcome.detail)"))
     }

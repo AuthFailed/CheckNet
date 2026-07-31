@@ -10,17 +10,17 @@ import SwiftUI
 struct CheckNetCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("Новая проверка") { ToolCommandBus.shared.send(.newCheck) }
+            Button("New check") { ToolCommandBus.shared.send(.newCheck) }
                 .keyboardShortcut("n")
         }
 
-        CommandMenu("Проверка") {
-            Button("Запустить проверку") { ToolCommandBus.shared.send(.run) }
+        CommandMenu("Check") {
+            Button("Run check") { ToolCommandBus.shared.send(.run) }
                 .keyboardShortcut("r")
-            Button("Остановить") { ToolCommandBus.shared.send(.stop) }
+            Button("Stop") { ToolCommandBus.shared.send(.stop) }
                 .keyboardShortcut(".", modifiers: .command)
             Divider()
-            Button("Поиск") { ToolCommandBus.shared.send(.search) }
+            Button("Search") { ToolCommandBus.shared.send(.search) }
                 .keyboardShortcut("f")
         }
     }

@@ -16,8 +16,8 @@ final class BonjourModel {
         CheckActivityView(
             status: isRunning ? .unknown : .ok,
             headline: "\(services.count)",
-            caption: isRunning ? "поиск сервисов" : "готово — сервисов: \(services.count)",
-            stats: [CheckStat(label: "Сервисов", value: "\(services.count)")],
+            caption: isRunning ? "searching services" : "done — services: \(services.count)",
+            stats: [CheckStat(label: "Services", value: "\(services.count)")],
             isRunning: isRunning)
     }
 
@@ -78,7 +78,7 @@ struct BonjourView: View {
             if model.isRunning {
                 HStack(spacing: 10) {
                     ProgressView().controlSize(.small)
-                    Text("Поиск сервисов mDNS…").foregroundStyle(.secondary)
+                    Text("Searching for mDNS services…").foregroundStyle(.secondary)
                     Spacer()
                     Text("\(model.services.count)").font(.headline).foregroundStyle(.blue)
                 }
@@ -91,9 +91,9 @@ struct BonjourView: View {
 
             if model.services.isEmpty && !model.isRunning && model.errorMessage == nil {
                 ContentUnavailableView(
-                    "Нет сервисов",
+                    "No services",
                     systemImage: "bonjour",
-                    description: Text("Запустите поиск, чтобы найти устройства и сервисы Bonjour в сети.")
+                    description: Text("Start a search to find Bonjour devices and services on the network.")
                 )
                 .padding(.top, 40)
             }
@@ -102,7 +102,7 @@ struct BonjourView: View {
                 groupCard(group)
             }
         } bottom: {
-            RunButton(title: "Искать сервисы", running: model.isRunning) { model.toggle() }
+            RunButton(title: "Search services", running: model.isRunning) { model.toggle() }
         }
         .animation(.snappy, value: model.services)
         .refreshable { await model.refresh() }

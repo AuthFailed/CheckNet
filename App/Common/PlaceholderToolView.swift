@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Shown for a tool without a working screen. It answers the question the old
-/// "Скоро в этой сборке" chip left open: is this coming, or will it never be
+/// "Soon in this build" chip left open: is this coming, or will it never be
 /// here? A tool held back by iOS restrictions says so plainly, with a different
 /// icon from one that is merely unbuilt.
 struct PlaceholderToolView: View {

@@ -24,13 +24,13 @@ public enum ProbeFailureKind: String, Sendable, Codable {
 
     public var label: String {
         switch self {
-        case .reset: "соединение сброшено (RST)"
-        case .timeout: "нет ответа (тихий обрыв)"
-        case .eof: "соединение закрыто"
-        case .refused: "подключение отклонено"
-        case .unreachable: "сеть недоступна"
-        case .tlsAlert: "TLS-ошибка на стороне сервера"
-        case .other: "другая ошибка"
+        case .reset: "connection reset (RST)"
+        case .timeout: "no response (silent drop)"
+        case .eof: "connection closed"
+        case .refused: "connection refused"
+        case .unreachable: "network unreachable"
+        case .tlsAlert: "TLS error on the server side"
+        case .other: "other error"
         }
     }
 

@@ -21,9 +21,9 @@ struct PingSnapshot: Codable, Hashable, Sendable {
 
     var statusLabel: String {
         switch status {
-        case .ok: return "Онлайн"
-        case .degraded: return "Нестабильно"
-        case .down: return "Недоступен"
+        case .ok: return "Online"
+        case .degraded: return "Unstable"
+        case .down: return "Unreachable"
         case .unknown: return "—"
         }
     }
@@ -94,7 +94,7 @@ struct CheckActivityAttributes: ActivityAttributes {
     }
 
     var kind: CheckActivityKind
-    /// Host, or a tool name like "Мониторинг сети".
+    /// Host, or a tool name like "Network monitoring".
     var title: String
     /// IP, or a host count.
     var subtitle: String

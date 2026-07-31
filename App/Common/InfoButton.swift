@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// A small ⓘ button that reveals a short "what & why" description of a check.
-/// Used in the catalog rows, the Блокировки rows, and inside each tool screen.
+/// Used in the catalog rows, the Blocking rows, and inside each tool screen.
 struct InfoButton: View {
     let title: String
     let systemImage: String
@@ -19,7 +19,7 @@ struct InfoButton: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Об инструменте")
+        .accessibilityLabel("About the tool")
         .sheet(isPresented: $show) {
             InfoSheet(title: title, systemImage: systemImage, message: message, note: note)
         }
@@ -73,13 +73,13 @@ struct InfoSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .background(Palette.groupedBackground)
-            .navigationTitle("Об инструменте")
+            .navigationTitle("About the tool")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -92,7 +92,7 @@ extension Tool {
     /// Consent note shown for scanning tools that some networks treat as hostile.
     var sensitivityNote: String? {
         isSensitive
-            ? "Эта проверка активно опрашивает хосты/сеть. В чужих сетях это может расцениваться как сканирование. Запускайте только там, где у вас есть разрешение."
+            ? "This check actively probes hosts/network. On others' networks this may be treated as scanning. Run it only where you have permission."
             : nil
     }
 }

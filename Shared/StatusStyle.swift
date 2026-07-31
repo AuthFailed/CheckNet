@@ -14,10 +14,10 @@ enum StatusStyle {
     /// the screen in greyscale.
     static func label(_ status: PingSnapshot.Status) -> String {
         switch status {
-        case .ok: return "Отвечает"
-        case .degraded: return "Есть потери"
-        case .down: return "Недоступен"
-        case .unknown: return "Нет данных"
+        case .ok: return "Responds"
+        case .degraded: return "Packet loss"
+        case .down: return "Unreachable"
+        case .unknown: return "No data"
         }
     }
     static func symbol(_ status: PingSnapshot.Status) -> String {
@@ -33,7 +33,7 @@ enum StatusStyle {
 extension PingSnapshot {
     var latencyText: String {
         guard let latencyMillis else { return "—" }
-        return "\(Int(latencyMillis)) мс"
+        return "\(Int(latencyMillis)) ms"
     }
     var lossText: String { "\(Int(lossPercent))%" }
 }

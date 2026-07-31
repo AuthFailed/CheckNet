@@ -1,10 +1,10 @@
 import SwiftUI
 import NetworkKit
 
-/// Разбор существующего профиля роутинга Happ: вставить `happ://routing/add/…`
-/// (или `…/onadd/…`) → подробный читаемый разбор — DNS, geo-источники,
-/// DNS-хосты и все правила Direct/Proxy/Block по категориям. Полноценный
-/// визуальный конструктор — отдельная дизайн-задача (issue #76).
+/// Parses an existing Happ routing profile: paste `happ://routing/add/…`
+/// (or `…/onadd/…`) → a detailed, readable breakdown — DNS, geo sources,
+/// DNS hosts and all Direct/Proxy/Block rules by category. A full visual
+/// builder is a separate design task (issue #76).
 struct HappRoutingView: View {
     @State private var input = ""
     @State private var profile: HappRoutingProfile?
@@ -23,7 +23,7 @@ struct HappRoutingView: View {
                 ruleSection("BLOCK", sites: profile.blockSites, ips: profile.blockIP, tint: .red)
             }
         }
-        .navigationTitle("Роутинг Happ")
+        .navigationTitle("Happ routing")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -48,10 +48,10 @@ struct HappRoutingView: View {
             HStack {
                 Button {
                     if let s = clipboardString() { input = s }
-                } label: { Label("Вставить", systemImage: "doc.on.clipboard") }
+                } label: { Label("Paste", systemImage: "doc.on.clipboard") }
                 Spacer()
                 Button { parse() } label: {
-                    Label("Разобрать", systemImage: "arrow.right.circle.fill")
+                    Label("Parse", systemImage: "arrow.right.circle.fill")
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -79,11 +79,11 @@ struct HappRoutingView: View {
                 countPill("Direct", p.directSites.count + p.directIP.count, .green)
                 countPill("Proxy", p.proxySites.count + p.proxyIP.count, .blue)
                 countPill("Block", p.blockSites.count + p.blockIP.count, .red)
-                if !p.dnsHosts.isEmpty { countPill("DNS-хосты", p.dnsHosts.count, .orange) }
+                if !p.dnsHosts.isEmpty { countPill("DNS hosts", p.dnsHosts.count, .orange) }
             }
             .font(.caption)
             if let date = p.lastUpdatedDate {
-                InfoRow(label: "Обновлён", value: date.formatted(date: .abbreviated, time: .shortened))
+                InfoRow(label: "Updated", value: date.formatted(date: .abbreviated, time: .shortened))
             }
         }
     }
@@ -99,12 +99,12 @@ struct HappRoutingView: View {
 
     @ViewBuilder
     private func basicsSection(_ p: HappRoutingProfile) -> some View {
-        Section("Основное") {
-            InfoRow(label: "Глобальный прокси", value: p.globalProxy ? "да" : "нет")
-            if !p.routeOrder.isEmpty { InfoRow(label: "Порядок правил", value: p.routeOrder) }
+        Section("General") {
+            InfoRow(label: "Global proxy", value: p.globalProxy ? "yes" : "no")
+            if !p.routeOrder.isEmpty { InfoRow(label: "Rule order", value: p.routeOrder) }
             InfoRow(label: "Domain strategy", value: p.domainStrategy)
-            InfoRow(label: "FakeDNS", value: p.fakeDNS ? "вкл" : "выкл")
-            if p.useChunkFiles { InfoRow(label: "Chunk files", value: "вкл") }
+            InfoRow(label: "FakeDNS", value: p.fakeDNS ? "on" : "off")
+            if p.useChunkFiles { InfoRow(label: "Chunk files", value: "on") }
         }
     }
 
@@ -116,7 +116,7 @@ struct HappRoutingView: View {
             dnsRow(label: "Domestic", server: p.domesticDNS, type: p.domesticDNSType,
                    domain: p.domesticDNSDomain, ip: p.domesticDNSIP)
             if !p.dnsHosts.isEmpty {
-                DisclosureGroup("DNS-хосты · \(p.dnsHosts.count)") {
+                DisclosureGroup("DNS hosts · \(p.dnsHosts.count)") {
                     ForEach(p.dnsHosts.sorted(by: { $0.key < $1.key }), id: \.key) { host, ip in
                         InfoRow(label: host, value: ip, mono: true)
                     }
@@ -146,7 +146,7 @@ struct HappRoutingView: View {
     @ViewBuilder
     private func geoSection(_ p: HappRoutingProfile) -> some View {
         if !p.geoSiteURL.isEmpty || !p.geoIPURL.isEmpty {
-            Section("Geo-источники") {
+            Section("Geo sources") {
                 if !p.geoSiteURL.isEmpty { geoRow("geosite", p.geoSiteURL) }
                 if !p.geoIPURL.isEmpty { geoRow("geoip", p.geoIPURL) }
             }
@@ -194,8 +194,8 @@ struct HappRoutingView: View {
         case .geositeTag: ("geosite", .purple)
         case .geoipTag: ("geoip", .teal)
         case .ipCIDR: ("IP", .orange)
-        case .domain: ("домен", .blue)
-        case .raw: ("правило", .gray)
+        case .domain: ("domain", .blue)
+        case .raw: ("rule", .gray)
         }
     }
 
@@ -214,10 +214,10 @@ struct HappRoutingView: View {
 
     private func message(for error: Error) -> String {
         switch error as? HappRoutingLink.DecodeError {
-        case .notARoutingLink: "Это не ссылка happ://routing/add/…"
-        case .invalidBase64: "Не удалось раскодировать base64"
-        case .notAnObject: "Внутри не JSON-профиль роутинга"
-        case nil: "Не удалось разобрать ссылку"
+        case .notARoutingLink: "Not a happ://routing/add/… link"
+        case .invalidBase64: "Couldn't decode base64"
+        case .notAnObject: "Not a JSON routing profile inside"
+        case nil: "Couldn't parse the link"
         }
     }
 

@@ -12,7 +12,7 @@ public struct DiscoveredDevice: Sendable, Hashable, Codable, Identifiable {
     public var randomizedMAC: Bool
 
     public var displayName: String {
-        hostname ?? vendor ?? (isGateway ? "Шлюз" : ip)
+        hostname ?? vendor ?? (isGateway ? "Gateway" : ip)
     }
 }
 

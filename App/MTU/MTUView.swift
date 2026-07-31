@@ -22,7 +22,7 @@ final class MTUModel {
         return CheckActivityView(
             status: isRunning ? .unknown : .ok,
             headline: headline,
-            caption: isRunning ? "поиск MTU…" : "путь MTU, байт",
+            caption: isRunning ? "finding MTU…" : "path MTU, bytes",
             stats: result.map { [CheckStat(label: "Path MTU", value: "\($0.pathMTU)"),
                                  CheckStat(label: "Payload", value: "\($0.maxPayload)")] } ?? [],
             isRunning: isRunning)
@@ -64,13 +64,13 @@ struct MTUView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $model.host, placeholder: "Хост или IP", icon: "ruler",
+            HostInputBar(text: $model.host, placeholder: "Host or IP", icon: "ruler",
                          disabled: model.isRunning, savedHostTool: .mtuDiscovery) { model.start() }
 
             if model.isRunning, let probe = model.currentProbe {
                 HStack(spacing: 10) {
                     ProgressView().controlSize(.small)
-                    Text("Проба \(probe + 28) байт…").foregroundStyle(.secondary)
+                    Text("Probing \(probe + 28) bytes…").foregroundStyle(.secondary)
                     Spacer()
                 }
                 .padding(14).card()
@@ -84,14 +84,14 @@ struct MTUView: View {
             } else if !model.isRunning, model.errorMessage == nil {
                 ToolIdleHint(
                     icon: "ruler",
-                    title: "Готово к поиску MTU",
-                    message: "Найдём наибольший пакет, который доходит до хоста без фрагментации.",
+                    title: "Ready to find the MTU",
+                    message: "We'll find the largest packet that reaches the host without fragmentation.",
                     example: "1.1.1.1",
                     current: model.host
                 ) { model.host = "1.1.1.1" }
             }
         } bottom: {
-            RunButton(title: "Определить MTU", running: model.isRunning,
+            RunButton(title: "Determine MTU", running: model.isRunning,
                       disabled: model.host.trimmingCharacters(in: .whitespaces).isEmpty) {
                 model.toggle()
             }
@@ -118,7 +118,7 @@ struct MTUView: View {
                     .lineLimit(1)
                     .foregroundStyle(.tint)
                     .contentTransition(.numericText())
-                Text("Path MTU · байт").font(.subheadline).foregroundStyle(.secondary)
+                Text("Path MTU · bytes").font(.subheadline).foregroundStyle(.secondary)
             }
             Divider()
             HStack {
@@ -126,10 +126,10 @@ struct MTUView: View {
                 Divider().frame(height: statRule)
                 metric("\(result.pathMTU)", "MTU")
                 Divider().frame(height: statRule)
-                metric("\(result.probes.count)", "проб")
+                metric("\(result.probes.count)", "probes")
             }
             if result.pathMTU < 1500 {
-                Label("Путь ограничивает MTU ниже 1500 — вероятны туннель/VPN/PPPoE.",
+                Label("The path limits MTU below 1500 — a tunnel/VPN/PPPoE is likely.",
                       systemImage: "exclamationmark.triangle")
                     .font(.caption).foregroundStyle(.orange)
             }

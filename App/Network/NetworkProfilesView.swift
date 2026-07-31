@@ -27,21 +27,21 @@ struct NetworkProfilesView: View {
                     Button {
                         Task { await runForCurrentNetwork() }
                     } label: {
-                        Label("Проверить текущую сеть", systemImage: "wifi")
+                        Label("Check current network", systemImage: "wifi")
                     }
                     .disabled(isBusy)
                     statusRow
                 } footer: {
-                    Text("Читает имя текущей Wi-Fi-сети и запускает профиль для неё. Для чтения имени сети нужны Wi-Fi-права приложения и разрешение на геопозицию (требование iOS).")
+                    Text("Reads the name of the current Wi-Fi network and runs the profile for it. Reading the network name requires the app’s Wi-Fi entitlement and location permission (an iOS requirement).")
                 }
             } else {
                 Section {
                     Label {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Определение сети недоступно")
+                            Text("Network detection unavailable")
                                 .font(.callout.weight(.medium))
                                 .foregroundStyle(.primary)
-                            Text("iOS отдаёт имя Wi-Fi-сети только приложениям с правом «Access Wi-Fi Information». Его подписывает лишь платный аккаунт разработчика, поэтому в этой сборке автоопределение сети выключено.")
+                            Text("iOS gives the Wi-Fi network name only to apps with the “Access Wi-Fi Information” entitlement, which only a paid developer account can sign. Automatic network detection is therefore turned off in this build.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -49,13 +49,13 @@ struct NetworkProfilesView: View {
                         Image(systemName: "wifi.exclamationmark").foregroundStyle(.orange)
                     }
                 } footer: {
-                    Text("Профили ниже при этом не бесполезны: условие «При подключении к Wi-Fi …» проверяет сама система в «Командах», и автоматизация запускает проверку без прав на имя сети.")
+                    Text("The profiles below are still useful: the “When I connect to Wi-Fi …” condition is evaluated by the system itself in Shortcuts, so an automation can start a check without the network-name entitlement.")
                 }
             }
 
-            Section("Профили") {
+            Section("Profiles") {
                 if store.profiles.isEmpty {
-                    Text("Пока нет профилей").foregroundStyle(.secondary)
+                    Text("No profiles yet").foregroundStyle(.secondary)
                 } else {
                     ForEach(store.profiles) { profile in
                         Button { editing = profile } label: { profileRow(profile) }
@@ -71,13 +71,13 @@ struct NetworkProfilesView: View {
                 Button {
                     editing = NetworkProfile(ssid: "", checkIDs: [])
                 } label: {
-                    Label("Добавить профиль", systemImage: "plus")
+                    Label("Add profile", systemImage: "plus")
                 }
             } footer: {
-                Text("Автозапуск при подключении к сети настраивается в приложении «Команды»: автоматизация «При подключении к Wi-Fi …» → «Проверить блокировку». iOS не будит приложение на смену сети само.")
+                Text("Running a check when you join a network is set up in Shortcuts: an automation “When I connect to Wi-Fi …” → “Check for blocking”. iOS doesn’t wake the app on a network change by itself.")
             }
         }
-        .navigationTitle("Профили сети")
+        .navigationTitle("Network profiles")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -97,18 +97,18 @@ struct NetworkProfilesView: View {
         case .idle:
             EmptyView()
         case .reading:
-            HStack { ProgressView(); Text("Определяем сеть…").font(.caption).foregroundStyle(.secondary) }
+            HStack { ProgressView(); Text("Detecting network…").font(.caption).foregroundStyle(.secondary) }
         case .noMatch(let info):
             VStack(alignment: .leading, spacing: 6) {
                 networkIdentity(info)
-                Text("Для этой сети нет профиля.").font(.caption).foregroundStyle(.secondary)
+                Text("There's no profile for this network.").font(.caption).foregroundStyle(.secondary)
             }
         case .unavailable(let reason):
             Text(LocalizedStringKey(reason)).font(.caption).foregroundStyle(.orange)
         case .running(let info):
             VStack(alignment: .leading, spacing: 6) {
                 networkIdentity(info)
-                HStack { ProgressView(); Text("Проверяем профиль…").font(.caption).foregroundStyle(.secondary) }
+                HStack { ProgressView(); Text("Checking profile…").font(.caption).foregroundStyle(.secondary) }
             }
         case .done(let info, let summary):
             VStack(alignment: .leading, spacing: 6) {
@@ -123,11 +123,11 @@ struct NetworkProfilesView: View {
     /// in the macOS Wi-Fi tools.)
     private func networkIdentity(_ info: WiFiIdentity) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            LabeledContent("Сеть", value: info.ssid)
+            LabeledContent("Network", value: info.ssid)
             if let bssid = info.bssidDisplay {
                 LabeledContent("BSSID") { Text(bssid).monospaced() }
             }
-            LabeledContent("Защита") {
+            LabeledContent("Security") {
                 Label {
                     Text(LocalizedStringKey(info.securityLabel))
                 } icon: {
@@ -145,8 +145,8 @@ struct NetworkProfilesView: View {
             Image(systemName: profile.isEnabled ? "wifi" : "wifi.slash")
                 .foregroundStyle(profile.isEnabled ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
             VStack(alignment: .leading, spacing: 2) {
-                Text(profile.ssid.isEmpty ? "Без имени" : profile.ssid)
-                Text("Проверок: \(profile.checkIDs.count)").font(.caption).foregroundStyle(.secondary)
+                Text(profile.ssid.isEmpty ? "Untitled" : profile.ssid)
+                Text("Checks: \(profile.checkIDs.count)").font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
@@ -180,8 +180,8 @@ struct NetworkProfilesView: View {
             WebhookReporter.reportBlocking(check: id, target: target, finding: finding, eventPrefix: "profile")
         }
         let summary = restricted == 0
-            ? "Ограничений не найдено (\(profile.checkIDs.count) проверок)."
-            : "Найдено ограничений: \(restricted) из \(profile.checkIDs.count)."
+            ? "No restrictions found (\(profile.checkIDs.count) checks)."
+            : "Restrictions found: \(restricted) of \(profile.checkIDs.count)."
         runState = .done(info, summary: summary)
     }
 }
@@ -201,13 +201,13 @@ struct NetworkProfileEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Сеть") {
-                    TextField("Имя Wi-Fi (SSID)", text: $draft.ssid)
+                Section("Network") {
+                    TextField("Wi-Fi name (SSID)", text: $draft.ssid)
                         .autocorrectionDisabled()
-                    Toggle("Профиль активен", isOn: $draft.isEnabled)
+                    Toggle("Profile active", isOn: $draft.isEnabled)
                 }
 
-                Section("Проверки") {
+                Section("Checks") {
                     ForEach(BlockingCheck.allCases) { check in
                         Button {
                             toggle(check)
@@ -223,24 +223,24 @@ struct NetworkProfileEditor: View {
                     }
                 }
 
-                Section("Цель (необязательно)") {
-                    TextField("Домен по умолчанию у каждой проверки", text: $draft.target)
+                Section("Target (optional)") {
+                    TextField("Default domain for each check", text: $draft.target)
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
                         #endif
                 }
             }
-            .navigationTitle(isNew ? "Новый профиль" : "Профиль")
+            .navigationTitle(isNew ? "New profile" : "Profile")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") { save() }
+                    Button("Save") { save() }
                         .disabled(draft.ssid.trimmingCharacters(in: .whitespaces).isEmpty || draft.checkIDs.isEmpty)
                 }
             }

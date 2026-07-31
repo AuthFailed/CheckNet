@@ -39,12 +39,12 @@ enum MonitorNotification {
     static func plan(host: String, transition: Transition) -> Plan {
         switch transition {
         case .down:
-            return Plan(title: "❌ \(host) недоступен",
-                        body: "Хост перестал отвечать на ping.",
+            return Plan(title: "❌ \(host) unreachable",
+                        body: "The host stopped responding to ping.",
                         timeSensitive: true, threadID: host)
         case .recovered:
-            return Plan(title: "✅ \(host) снова онлайн",
-                        body: "Хост восстановил соединение.",
+            return Plan(title: "✅ \(host) back online",
+                        body: "The host restored its connection.",
                         timeSensitive: false, threadID: host)
         }
     }

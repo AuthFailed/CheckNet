@@ -1,11 +1,11 @@
-# Возрастной рейтинг (#90)
+# Age rating (#90)
 
-Ответы на анкету App Store Connect → **Age Rating**. Приложение — утилита сетевой диагностики,
-без контента 17+. Ожидаемый итог: **4+**.
+Answers to the App Store Connect → **Age Rating** questionnaire. The app is a network-diagnostics
+utility with no 17+ content. Expected result: **4+**.
 
-## Ответы на анкету (все — «None», если не отмечено)
+## Questionnaire answers (all "None" unless noted)
 
-| Вопрос | Ответ |
+| Question | Answer |
 |---|---|
 | Cartoon or Fantasy Violence | None |
 | Realistic Violence | None |
@@ -18,20 +18,20 @@
 | Gambling (simulated) | None |
 | Contests | None |
 | **Unrestricted Web Access** | **No** |
-| **Age Assurance / Kids Category** | не заявляем Kids Category |
+| **Age Assurance / Kids Category** | not claiming Kids Category |
 
-## Тонкие места
+## Subtle points
 
-- **Unrestricted Web Access = No.** Это про встроенный браузер общего назначения (как Safari внутри
-  приложения). У CheckNet его нет: инструменты обращаются к конкретным хостам по команде и показывают
-  результат проверки (заголовки, статус, страница-заглушка при детекте блокировки) — это не
-  веб-сёрфинг. Если бы мы отдавали пользователю произвольную навигацию по вебу — было бы Yes.
-- **Kids Category — не заявляем.** Приложение не для детей; заявление Kids Category навесило бы
-  жёсткие требования (никаких внешних ссылок и т. п.), которые нам не подходят (есть ссылки на
-  bgp.tools/GitHub и т. д.).
-- Итоговый рейтинг Apple посчитает сам из ответов; при всех «None»/«No» это **4+**.
+- **Unrestricted Web Access = No.** This is about a built-in general-purpose browser (like Safari
+  embedded in the app). CheckNet has none: the tools reach specific hosts on command and show the
+  result of a check (headers, status, block page when a block is detected) — this is not web
+  surfing. If we handed the user arbitrary web navigation, it would be Yes.
+- **Kids Category — not claiming it.** The app is not for children; claiming the Kids Category would
+  impose strict requirements (no external links, etc.) that don't suit us (we have links to
+  bgp.tools/GitHub, etc.).
+- Apple computes the final rating itself from the answers; with all "None"/"No" it is **4+**.
 
-## Что нажать
+## What to click
 
-1. ASC → приложение → Age Rating → Edit → проставить значения из таблицы → Save.
-2. Убедиться, что рейтинг показывается как 4+ (или Apple-эквивалент по регионам).
+1. ASC → app → Age Rating → Edit → set the values from the table → Save.
+2. Confirm the rating shows as 4+ (or the Apple equivalent per region).

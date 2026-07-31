@@ -1,196 +1,196 @@
-# Этап 4 — расширение раздела «Блокировки»
+# Stage 4 — expanding the "Blocking" section
 
-План основан на измерительных источниках (net4people/bbs, IMC'21/'22 TSPU, OONI spec, DEF CON 33). Каждая проверка — **только детект**: приложение фиксирует, что ограничивает сеть, и не помогает это обойти. Это правило действует и на все новые проверки ниже.
+The plan is based on measurement sources (net4people/bbs, IMC'21/'22 TSPU, OONI spec, DEF CON 33). Every check is **detection only**: the app records what the network restricts, and does not help circumvent it. This rule applies to all the new checks below as well.
 
-Платформа: iOS и macOS. Mac-таргет собирается и запускается; Live Activities там отключены,
-адаптивная раскладка — отдельная задача.
+Platform: iOS and macOS. The Mac target builds and runs; Live Activities are disabled there,
+and the adaptive layout is a separate task.
 
 ---
 
-## 0. Общие правила, без которых все проверки врут
+## 0. Common rules, without which every check lies
 
-Это фундамент — делать до самих проверок.
+This is the foundation — to be done before the checks themselves.
 
-### 0.1 Пре-чек captive portal (блокирует всё остальное)
-Запрос `http://captive.apple.com/hotspot-detect.html`, ожидаемое тело — ровно `<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>`. Любой другой ответ → портал. **При положительном результате остальные проверки не запускаются**, показывается объяснение. Иначе гостиничный Wi-Fi зажигает всю панель ложными блокировками.
+### 0.1 Captive portal pre-check (blocks everything else)
+A request to `http://captive.apple.com/hotspot-detect.html`, with the expected body being exactly `<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</BODY></HTML>`. Any other response → portal. **On a positive result the remaining checks do not run**, and an explanation is shown. Otherwise hotel Wi-Fi lights up the whole panel with false blocks.
 
-### 0.2 Свежий source-порт на каждую пробу
-TSPU держит conntrack-подобное состояние на 5-tuple. Остаточная блокировка после срабатывания: SNI-I **75 с**, SNI-II **420 с**, SNI-IV **40 с**, QUIC **420 с**. Повтор в это окно провалится независимо от реального состояния сети. Новый сокет даёт новый порт — это уже так, но повторы нужно разносить сознательно и не считать неудачу в окне доказательством.
+### 0.2 A fresh source port for every probe
+TSPU keeps conntrack-like state on the 5-tuple. Residual blocking after a trigger fires: SNI-I **75 s**, SNI-II **420 s**, SNI-IV **40 s**, QUIC **420 s**. A retry inside that window will fail regardless of the actual network state. A new socket gives a new port — that is already the case, but retries must be spaced out deliberately, and a failure inside the window must not be treated as proof.
 
-### 0.3 MTU как дисквалификатор
-Низкий path MTU даёт ту же картину «мелкое проходит, крупное зависает», что и `l4-25`. Существующий MTU discovery запускается **до** пакетных проверок; при аномально низком MTU вердикт по `l4-25` не выносится.
+### 0.3 MTU as a disqualifier
+A low path MTU produces the same "small passes, large freezes" picture as `l4-25`. The existing MTU discovery runs **before** the packet checks; when the MTU is abnormally low, no `l4-25` verdict is issued.
 
-### 0.4 CGNAT снижает вес конкурентных проверок
-CGNAT (локальный адрес в `100.64.0.0/10` или локальный ≠ публичный) сам вызывает исчерпание портов при concurrency. При обнаружении вердикт «сибирской» проверки помечается как ненадёжный. У нас уже есть CGNAT-инструмент — переиспользовать.
+### 0.4 CGNAT lowers the weight of concurrency-based checks
+CGNAT (a local address in `100.64.0.0/10`, or local ≠ public) itself causes port exhaustion under concurrency. When it is detected, the verdict of the "Siberian" check is marked as unreliable. We already have a CGNAT tool — reuse it.
 
-### 0.5 Словарь вердиктов — по модели OONI
-- **confirmed** — только при совпадении с отпечатком (блок-страница, известный IP цензуры).
-- **anomaly** — есть признаки вмешательства, нужна корроборация. Это дефолт для почти всего.
+### 0.5 Verdict vocabulary — following the OONI model
+- **confirmed** — only on a match with a fingerprint (block page, known censorship IP).
+- **anomaly** — there are signs of interference, corroboration is needed. This is the default for almost everything.
 - **ok** / **inconclusive**.
 
-Одно измерение — не вердикт. Формулировки должны отражать наблюдение («TLS-соединение оборвалось после ClientHello»), а не мотив.
+A single measurement is not a verdict. Wording must reflect the observation ("the TLS connection dropped after ClientHello"), not the motive.
 
-### 0.6 Классификация отказа по errno
-Единый разбор для всех проверок, это главный дискриминатор механизма:
+### 0.6 Failure classification by errno
+A single parser for all checks; this is the main discriminator of the mechanism:
 
-| errno | Значение | Интерпретация |
+| errno | Meaning | Interpretation |
 |---|---|---|
-| `ECONNRESET` | reset | инжекция RST (on-path) |
-| таймаут без байт | drop | тихий дроп (in-path) |
-| чистый EOF | обрыв | обрыв в середине |
-| TLS alert | — | **не цензура**, серверная сторона |
+| `ECONNRESET` | reset | RST injection (on-path) |
+| timeout with no bytes | drop | silent drop (in-path) |
+| clean EOF | cut | cut in the middle |
+| TLS alert | — | **not censorship**, server side |
 
 ---
 
-## 1. Проверки — в порядке реализации
+## 1. Checks — in implementation order
 
-Порядок = польза × надёжность детекта с неprivileged iOS-клиента.
+Order = usefulness × detection reliability from an unprivileged iOS client.
 
-### 1.1 Проверка «16–20 КБ» ⭐ первое
+### 1.1 The "16–20 KB" check ⭐ first
 
-Название пользовательское и остаётся, но проверка запускает **три варианта**, потому что механизм оказался не байтовым: реальный триггер — **~25 пакетов** в любом направлении (в среднем ~16 КБ, наблюдаемый разброс 14–34 КБ), и соединение **молча замерзает, RST не приходит**. Работает на TCP и UDP, не зависит от порта, симметрично по направлению. Цели — иностранные ASN (Cloudflare, Hetzner, OVH, DigitalOcean, AWS).
+The name is user-facing and stays, but the check runs **three variants**, because the mechanism turned out not to be byte-based: the real trigger is **~25 packets** in either direction (~16 KB on average, observed spread 14–34 KB), and the connection **silently freezes, with no RST arriving**. It works on TCP and UDP, is port-independent, and is symmetric across directions. The targets are foreign ASNs (Cloudflare, Hetzner, OVH, DigitalOcean, AWS).
 
-Варианты дают разный ответ на «а что именно считает цензор», и вместе различают порог по байтам, порог по пакетам и отсутствие фильтра.
+The variants give different answers to "what exactly is the censor counting", and together they distinguish a byte threshold, a packet threshold, and no filter at all.
 
-**Вариант A — накопление байтов** (соответствует исходной формулировке «16–20 КБ»).
-Одно keep-alive TLS-соединение на IP:443. Запрос `i = 0` без набивки — это контроль живости. Запросы `i = 1…15` с набивкой по **4 КБ** (накопительно 4→60 КБ). Read-таймаут `max(RTT × 3, 1.5 с)`, потолок **12 с**. Положительно, если `i = 0` прошёл, а какой-то `i ≥ 1` замёрз. **Репортим точное смещение в байтах** — это то число, которое пользователь ожидает увидеть.
+**Variant A — byte accumulation** (matches the original "16–20 KB" wording).
+A single keep-alive TLS connection to IP:443. Request `i = 0` with no padding — this is the liveness control. Requests `i = 1…15` with **4 KB** of padding (cumulatively 4→60 KB). Read timeout `max(RTT × 3, 1.5 s)`, cap **12 s**. Positive if `i = 0` passed and some `i ≥ 1` froze. **We report the exact byte offset** — that is the number the user expects to see.
 
-**Вариант B — счётчик пакетов** (решающий).
-TCP → цель:443, `TCP_NODELAY`, TLS. Отправить ~**64 байта** кусками по **2 байта** с паузой **50 мс** → ~32 пакета. Ждать до **5 с**.
+**Variant B — packet counter** (decisive).
+TCP → target:443, `TCP_NODELAY`, TLS. Send ~**64 bytes** in **2-byte** chunks with a **50 ms** pause → ~32 packets. Wait up to **5 s**.
 
-**Вариант C — контроль сегментации** (плечо к B).
-Те же 64 байта **одним сегментом** на тот же IP:порт.
+**Variant C — segmentation control** (paired with B).
+The same 64 bytes in **a single segment** to the same IP:port.
 
-Замерзание в B при успехе C — это счётчик пакетов и ничто иное: 64 байта трафика, безобидного объяснения нет. Если A срабатывает, а B нет — порог действительно байтовый, и это отдельная находка.
+A freeze in B while C succeeds is a packet counter and nothing else: 64 bytes of traffic, no harmless explanation. If A fires but B does not, the threshold really is byte-based, and that is a separate finding.
 
-**Парность целей:** иностранный ASN + российский контроль (Selectel, Yandex Cloud). «Иностранный замерзает, российский держит» гораздо сильнее любого одиночного результата.
+**Target pairing:** foreign ASN + Russian control (Selectel, Yandex Cloud). "The foreign one freezes, the Russian one holds" is far stronger than any single result.
 
-**Ложняки:** очень низкие для B+C, умеренные для A — конгестия даёт таймауты в произвольной точке, поэтому для A требовать воспроизведения на **≥3 разных ASN**. Везде требовать успеха контроля. Предупредить, что при включённых средствах обхода результат бессмысленен.
+**False positives:** very low for B+C, moderate for A — congestion produces timeouts at an arbitrary point, so for A require reproduction across **≥3 different ASNs**. Everywhere require the control to succeed. Warn that with circumvention tools enabled the result is meaningless.
 
-### 1.2 Whitelist SNI+CIDR ⭐ второе
+### 1.2 Whitelist SNI+CIDR ⭐ second
 
-Уточнение существующей проверки. Цензор ведёт список по **SNI** *и* по **CIDR назначения**, и с 2026 сверяет их вместе.
+A refinement of the existing check. The censor keeps a list by **SNI** *and* by **destination CIDR**, and since 2026 checks them together.
 
-**Тест A — чувствительность к SNI при фиксированном IP:** два TLS-соединения на **один и тот же** иностранный IP:443, отличаются только SNI: нейтральный (`example.com`) против из белого списка (`vk.com`, `yandex.ru`). Разница = SNI-whitelist. Меняется 6 байт открытого текста в ClientHello — почти идеальная пара.
+**Test A — SNI sensitivity at a fixed IP:** two TLS connections to **the same** foreign IP:443, differing only in SNI: neutral (`example.com`) versus whitelisted (`vk.com`, `yandex.ru`). A difference = SNI whitelist. Six bytes of plaintext change in the ClientHello — an almost ideal pair.
 
-**Тест B — чувствительность к CIDR:** фиксируем SNI из белого списка, меняем назначение (whitelisted ASN против иностранного).
+**Test B — CIDR sensitivity:** fix a whitelisted SNI, vary the destination (whitelisted ASN versus a foreign one).
 
-Вместе дают три состояния: нет whitelist / только SNI / SNI+CIDR.
+Together they give three states: no whitelist / SNI only / SNI+CIDR.
 
-`sec_protocol_options_set_tls_server_name` позволяет задать SNI независимо от endpoint. **Браузерные чекеры этого не могут** — нативное приложение здесь объективно сильнее любого веб-теста.
+`sec_protocol_options_set_tls_server_name` lets you set the SNI independently of the endpoint. **Browser-based checkers cannot do this** — a native app is objectively stronger here than any web test.
 
-**Ложняки:** низкие. Серверная причина отличается *режимом* отказа: сервер отвечает alert или 4xx быстро, whitelist даёт таймаут без alert. Брать цели, отдающие дефолтный сертификат на произвольный SNI.
+**False positives:** low. A server-side cause differs by the *mode* of failure: the server responds with an alert or a 4xx quickly, whereas a whitelist gives a timeout with no alert. Use targets that serve a default certificate for an arbitrary SNI.
 
-### 1.3 Обрезание TLS — классификация RST против таймаута
+### 1.3 TLS truncation — RST versus timeout classification
 
-Существующая SNI-RST проверка, доведённая до диагностической.
+The existing SNI-RST check, taken to a diagnostic level.
 
-**Механизмы (IMC'22):** SNI-I — переписывание серверного пакета в **RST/ACK** (не инжекция лишнего, поэтому TTL/seq не аномальны и классический TTL-тест не сработает); SNI-II — проходят ещё 5–8 пакетов, затем симметричный дроп; SNI-IV — дроп всего включая ClientHello, как резервный фильтр.
+**Mechanisms (IMC'22):** SNI-I — rewriting the server packet into **RST/ACK** (not injecting an extra one, so TTL/seq are not anomalous and the classic TTL test will not work); SNI-II — 5–8 more packets pass, then a symmetric drop; SNI-IV — dropping everything including the ClientHello, as a fallback filter.
 
-**Рецепт:**
-1. TCP connect. **Если TCP прошёл, а TLS упал — IP-блокировка исключена**, это само по себе полезное сужение.
-2. ClientHello с целевым SNI → классифицировать по errno (см. 0.6).
-3. **Контроль A:** тот же IP, нейтральный SNI. Успех здесь + провал выше = триггер по имени, и разом исключает IP-блок, маршрутизацию и падение сервера.
-4. **Контроль B:** тот же SNI, другой IP.
-5. Показывать **распределение режимов отказа по целям**. Сплошные таймауты против сплошных RST — это разные развёртывания DPI у разных операторов, и это реально интересная пользователю информация.
+**Recipe:**
+1. TCP connect. **If TCP passed but TLS failed, an IP block is ruled out**, which is a useful narrowing in itself.
+2. ClientHello with the target SNI → classify by errno (see 0.6).
+3. **Control A:** same IP, neutral SNI. Success here + a failure above = a name-based trigger, and it rules out an IP block, routing, and a server crash all at once.
+4. **Control B:** same SNI, a different IP.
+5. Show **the distribution of failure modes across targets**. All timeouts versus all RSTs are different DPI deployments by different operators, and that is information a user genuinely finds interesting.
 
-### 1.4 Недоступность / IP-блокировка
+### 1.4 Unreachability / IP block
 
-**Поведение:** дроп независимо от порта и payload, **ICMP к заблокированным IP тоже дропается**. Остаточная блокировка живёт месяцами.
+**Behavior:** a drop regardless of port and payload, **ICMP to blocked IPs is dropped too**. Residual blocking lives for months.
 
-**Рецепт:** ICMP (4 пробы) + TCP на **443**, **80** и произвольный высокий порт (7777) + **контроль на соседний IP того же AS**. Положительно, когда ICMP молчит, все три порта в таймаут (не refused), а контроль проходит. Связка «независимость от порта + потеря ICMP» отличает это от `l4-25` (нужно установленное соединение) и от SNI-блока (нужен успешный TCP).
+**Recipe:** ICMP (4 probes) + TCP on **443**, **80** and an arbitrary high port (7777) + **a control to a neighboring IP in the same AS**. Positive when ICMP is silent, all three ports time out (not refused), and the control passes. The combination of "port independence + ICMP loss" distinguishes this from `l4-25` (which needs an established connection) and from an SNI block (which needs a successful TCP).
 
-Плюс traceroute к цели и к контролю: TSPU в первых **~5 хопах** (GFW для сравнения ~14), расхождение на 2–3 хопе — сильная корроборация. MTR у нас есть.
+Plus a traceroute to the target and to the control: TSPU is in the first **~5 hops** (the GFW, for comparison, is at ~14), and a divergence at hop 2–3 is strong corroboration. We have MTR.
 
-**Ложняки:** ICMP массово режут по безобидным причинам — **никогда не выносить вердикт по одному ICMP**. Контроль в том же AS обязателен.
+**False positives:** ICMP is dropped en masse for harmless reasons — **never issue a verdict on a single ICMP result**. A control in the same AS is mandatory.
 
-### 1.5 «Сибирская» блокировка — policing по числу соединений
+### 1.5 "Siberian" blocking — policing by connection count
 
-Уточнение существующей. Срабатывает **гораздо раньше**, чем принято думать: измерение (Новосибирск, МТС, ноябрь 2025) — около **12** TLS-соединений за короткое окно, причём **даже к российским серверам и из обычного браузера**. Восстановление ~60 с.
+A refinement of the existing check. It fires **much earlier** than commonly assumed: a measurement (Novosibirsk, MTS, November 2025) — around **12** TLS connections in a short window, and **even to Russian servers and from an ordinary browser**. Recovery ~60 s.
 
-**Рецепт:** одиночный последовательный handshake (контроль) → **16** соединений с шагом **~100 мс** → зафиксировать, где начались таймауты → **проверить восстановление**: последовательный handshake через 60–120 с.
+**Recipe:** a single sequential handshake (control) → **16** connections at **~100 ms** intervals → record where the timeouts began → **check recovery**: a sequential handshake after 60–120 s.
 
-**Таймер восстановления — это и есть диагностика.** Серверные лимиты дают немедленный отказ или RST; здесь — замораживание, которое отпускает по часам. «Соединения были заморожены 118 с» — куда убедительнее для пользователя, чем «часть handshake'ов не прошла».
+**The recovery timer is the diagnostic.** Server-side limits give an immediate refusal or RST; here it is a freeze that releases on a clock. "Connections were frozen for 118 s" is far more convincing to a user than "some handshakes didn't go through".
 
-**Ложняки: умеренные, самые высокие в списке.** Исчерпание портов CGNAT, переходы состояний радио, серверные rate limits. Обязательно: таймер восстановления, успешный контроль до, две цели в разных AS, понижение веса при CGNAT. **Нужен consent-гейт** (`SensitiveConsentModifier`) — сама проверка на минуту портит связь.
+**False positives: moderate, the highest in the list.** CGNAT port exhaustion, radio state transitions, server-side rate limits. Mandatory: the recovery timer, a successful control beforehand, two targets in different ASes, weight reduction under CGNAT. **A consent gate is needed** (`SensitiveConsentModifier`) — the check itself degrades connectivity for a minute.
 
-### 1.6 DNS — перехват и подмена
+### 1.6 DNS — interception and tampering
 
-Два решающих подтеста, которых сейчас нет:
+Two decisive subtests that are missing today:
 
-- **Ответ от не-резолвера.** Одинаковый запрос на публичный резолвер и на IP, где DNS-сервера нет вовсе. **Корректный ответ от не-резолвера — доказательство прозрачного перехвата на пути.** Безобидного объяснения не существует. Дёшево и почти без ложняков.
-- **Гонка инжекции.** Не закрывать UDP-сокет после первого ответа, ждать ~2 с. **Два разных ответа на один запрос — доказательство инжекции.**
+- **A response from a non-resolver.** The same query to a public resolver and to an IP where there is no DNS server at all. **A correct response from a non-resolver is proof of transparent on-path interception.** There is no harmless explanation. Cheap and almost free of false positives.
+- **Injection race.** Do not close the UDP socket after the first response; wait ~2 s. **Two different responses to one query are proof of injection.**
 
-Плюс: NXDOMAIN-hijacking (случайная несуществующая метка — любой A-ответ = подмена); отпечаток блок-страницы (собрать stub-IP оператора заранее, резолвя заведомо заблокированные домены); доступность DoH/DoT по транспортам (53 / 443 / **853**) с классификацией по errno; SNI-контроль для DoH (нейтральный SNI на IP провайдера — отделяет «DoH заблокирован» от «IP недоступен»).
+Plus: NXDOMAIN hijacking (a random nonexistent label — any A response = tampering); block-page fingerprint (collect the operator's stub IPs beforehand by resolving known-blocked domains); DoH/DoT availability across transports (53 / 443 / **853**) with errno classification; an SNI control for DoH (a neutral SNI to the provider's IP — separates "DoH is blocked" from "the IP is unreachable").
 
-**Важно:** сравнивать ответы **по AS, а не по IP** — CDN законно отдаёт разные IP. И архитектурно: DNS-манипуляции делает **резолвер оператора** (хопы 5–8), а не TSPU (хопы 1–3) — это разные слои, и в UI их стоит разводить.
+**Important:** compare responses **by AS, not by IP** — a CDN legitimately serves different IPs. And architecturally: DNS manipulation is done by **the operator's resolver** (hops 5–8), not by TSPU (hops 1–3) — these are different layers, and the UI should keep them apart.
 
-**Оговорка о свежести:** механика DoH/DoT у меня из 2021 года. Проверять, а не утверждать.
+**Freshness caveat:** my knowledge of DoH/DoT mechanics is from 2021. Verify, don't assert.
 
-### 1.7 IPv4 против IPv6
+### 1.7 IPv4 versus IPv6
 
-Фильтрация часто развёрнута только на IPv4. Одинаковые пробы по A и AAAA, сравнение. Дёшево, и существующие инструменты (`dpi-ch`) это не покрывают вовсе.
+Filtering is often deployed on IPv4 only. Identical probes over A and AAAA, then compare. Cheap, and the existing tools (`dpi-ch`) do not cover it at all.
 
-**Ложняки:** сломанный или туннелированный IPv6 на потребительских сетях — обычное дело, нужен IPv6-baseline на заведомо доступной цели.
+**False positives:** broken or tunneled IPv6 on consumer networks is common, so an IPv6 baseline against a known-reachable target is needed.
 
-### 1.8 TLS MITM / подмена сертификата
+### 1.8 TLS MITM / certificate substitution
 
-Сравнить SPKI-хеш и издателя с ожидаемыми для запинненного хоста. **Показывать издателя** — почти все срабатывания это корпоративный MDM или антивирус, и имя издателя даёт пользователю понять это мгновенно. Формулировать нейтрально.
+Compare the SPKI hash and issuer against those expected for a pinned host. **Show the issuer** — almost every trigger is corporate MDM or antivirus, and the issuer name lets the user recognize it instantly. Word it neutrally.
 
-### 1.9 Фильтрация исходящих портов
+### 1.9 Outbound port filtering
 
-TCP на 25, 445, 853, 1194, 5060, 51820 + контрольный высокий порт. Отличать `ECONNREFUSED` (дошли) от таймаута (отфильтровано). **Подавать в разделе «политика сети», не «блокировки»** — это почти всегда обычная политика оператора.
+TCP on 25, 445, 853, 1194, 5060, 51820 + a control high port. Distinguish `ECONNREFUSED` (reached) from a timeout (filtered). **Present it under "network policy", not "blocking"** — this is almost always ordinary operator policy.
 
 ---
 
-## 2. Что сознательно не делаем
+## 2. What we deliberately do not do
 
-- **QUIC/UDP:443** — данные только за март 2022 (версия v1, payload ≥1001 байт, порт 443). Текущий статус неизвестен, а UDP:443 ломается на множестве сетей по безобидным причинам. Молчание — слабое свидетельство. Если делать — то только как дифференциальную пробу с тремя контролями, и подавать как информацию, а не вердикт.
-- **ECH** — данные ноября 2024: триггер это конъюнкция «расширение ECH + SNI `cloudflare-ech.com`». Дизайн чистый (три плеча, срабатывание только на конъюнкции), но интел 20-месячной давности и требует ручной сборки трёх ClientHello, отличающихся ровно одним полем. Ошибка в кодировании выглядит идентично блокировке. Проверить на реальной сети до включения.
-- **Детект блокировки VPN-протоколов** — высокий риск ложняков и юридически чувствительная формулировка. Молчание UDP-handshake переопределено сильнее всего в списке. Если делать — **только как нейтральную диагностику связности** («UDP 51820: нет ответа; UDP 23456: ответ»), без ярлыка «ваш VPN заблокирован». Отдельно: документированное российское правило срабатывает **после** handshake (>15 P_DATA для OpenVPN, >2 data-пакета для WireGuard), так что проверка успешности handshake здесь бесполезна — она отрапортует успех на сети, где туннель нежизнеспособен.
-- **Отпечаток TSPU по IP-фрагментации** (лимит 45 фрагментов против 64 у Linux; в мире так себя ведут 0,7% хостов) — идеальный маркер, но требует `SOCK_RAW`, то есть root. **На iOS недоступно.**
-- **Троттлинг методом record-and-replay** — лучшая методология в своём классе, но нужен свой сервер. Без него честно не сделать.
-- **Деградация CDN против конгестии** — без контролируемой инфраструктуры не разделяется. Либо делать по-настоящему, либо не делать.
+- **QUIC/UDP:443** — data only from March 2022 (version v1, payload ≥1001 bytes, port 443). The current status is unknown, and UDP:443 breaks on many networks for harmless reasons. Silence is weak evidence. If done at all, only as a differential probe with three controls, and presented as information, not a verdict.
+- **ECH** — data from November 2024: the trigger is the conjunction "ECH extension + SNI `cloudflare-ech.com`". The design is clean (three arms, firing only on the conjunction), but the intel is 20 months old and requires hand-building three ClientHellos differing by exactly one field. An encoding error looks identical to blocking. Verify on a real network before enabling.
+- **Detecting VPN-protocol blocking** — a high false-positive risk and legally sensitive wording. Silence of a UDP handshake is the most overdetermined item in the list. If done, **only as neutral connectivity diagnostics** ("UDP 51820: no response; UDP 23456: response"), without a "your VPN is blocked" label. Separately: the documented Russian rule fires **after** the handshake (>15 P_DATA for OpenVPN, >2 data packets for WireGuard), so checking handshake success is useless here — it will report success on a network where the tunnel is unusable.
+- **TSPU fingerprint by IP fragmentation** (a limit of 45 fragments versus 64 on Linux; 0.7% of hosts worldwide behave this way) — an ideal marker, but it requires `SOCK_RAW`, i.e. root. **Not available on iOS.**
+- **Throttling by record-and-replay** — the best methodology in its class, but it needs our own server. Without it, it can't be done honestly.
+- **CDN degradation versus congestion** — cannot be separated without controlled infrastructure. Either do it for real or don't do it.
 
 ---
 
 ## 3. UI
 
-Запрос был «несколько разделов с переключением через нижнее меню». **Нижнее меню уже занято корневым `TabView`** (Тесты / Блокировки / Настройки), и второй ряд табов внизу — против HIG и на iOS 26 будет выглядеть чужеродно.
+The request was for "several sections with switching via a bottom menu". **The bottom menu is already taken by the root `TabView`** (Tests / Blocking / Settings), and a second row of tabs at the bottom is against HIG and would look alien on iOS 26.
 
-Предлагаю вместо этого секции в одном `List` внутри «Блокировок», плюс `Picker(.segmented)` в тулбаре для фильтра:
+Instead I propose sections in a single `List` inside "Blocking", plus a `Picker(.segmented)` in the toolbar as a filter:
 
-- **Блокировки** — DNS-подмена, IP-блок, SNI-RST, HTTP блок-страница, whitelist
-- **Недоступность** — IP-блокировка, порты, IPv4/IPv6
-- **Деградация** — `l4-25`, сибирская, троттлинг
-- **DNS** — перехват, инжекция, DoH/DoT
-- **Целостность** — TLS MITM, прозрачный прокси
+- **Blocking** — DNS tampering, IP block, SNI-RST, HTTP block page, whitelist
+- **Unreachability** — IP block, ports, IPv4/IPv6
+- **Degradation** — `l4-25`, Siberian, throttling
+- **DNS** — interception, injection, DoH/DoT
+- **Integrity** — TLS MITM, transparent proxy
 
-Проверки запускаются **только поштучно**. Кнопки «Запустить всё» нет: часть проверок сознательно портит связь на минуту (см. 1.5), а массовый залп по чужой сети — именно то поведение, от которого нас страхует `SensitiveConsentModifier`.
-
----
-
-## 4. Порядок работ
-
-1. Общие правила 0.1–0.6 (captive-portal гейт, errno-классификатор, словарь вердиктов) — фундамент.
-2. `l4-25` — движок в `NetworkKit/Censorship`, тест против реального хоста, потом экран.
-3. Whitelist SNI+CIDR — доработка существующей.
-4. Классификация обрезания TLS — доработка существующей.
-5. Недоступность / IP-блок.
-6. Сибирская — таймер восстановления + consent-гейт.
-7. DNS-перехват (два решающих подтеста).
-8. IPv4/IPv6, TLS MITM, порты.
-9. Реструктура UI в секции.
-
-Каждый движок — по золотому правилу проекта: сначала тест в `Packages/NetworkKit/Tests/`, зелёный `swift test`, только потом экран и `isImplemented`.
+Checks run **one at a time only**. There is no "Run all" button: some checks deliberately degrade connectivity for a minute (see 1.5), and a mass volley against someone else's network is exactly the behavior that `SensitiveConsentModifier` guards against.
 
 ---
 
-## Источники
+## 4. Work order
 
-- net4people/bbs [#490](https://github.com/net4people/bbs/issues/490) (`l4-25`), [#546](https://github.com/net4people/bbs/issues/546) (сибирская), [#516](https://github.com/net4people/bbs/issues/516) (whitelist), [#274](https://github.com/net4people/bbs/issues/274) (VPN-протоколы), [#363](https://github.com/net4people/bbs/issues/363) (fully-encrypted)
+1. Common rules 0.1–0.6 (captive-portal gate, errno classifier, verdict vocabulary) — the foundation.
+2. `l4-25` — engine in `NetworkKit/Censorship`, a test against a real host, then the screen.
+3. Whitelist SNI+CIDR — refining the existing one.
+4. TLS truncation classification — refining the existing one.
+5. Unreachability / IP block.
+6. Siberian — recovery timer + consent gate.
+7. DNS interception (two decisive subtests).
+8. IPv4/IPv6, TLS MITM, ports.
+9. Restructuring the UI into sections.
+
+Every engine follows the project's golden rule: first a test in `Packages/NetworkKit/Tests/`, a green `swift test`, and only then the screen and `isImplemented`.
+
+---
+
+## Sources
+
+- net4people/bbs [#490](https://github.com/net4people/bbs/issues/490) (`l4-25`), [#546](https://github.com/net4people/bbs/issues/546) (Siberian), [#516](https://github.com/net4people/bbs/issues/516) (whitelist), [#274](https://github.com/net4people/bbs/issues/274) (VPN protocols), [#363](https://github.com/net4people/bbs/issues/363) (fully-encrypted)
 - [hyperion-cs/dpi-checkers](https://github.com/hyperion-cs/dpi-checkers) — `utils/l4-25_prober.py`
 - Xue et al., [TSPU: Russia's Decentralized Censorship System, IMC 2022](https://ensa.fi/papers/tspu-imc22.pdf); [Throttling Twitter, IMC 2021](https://censoredplanet.org/assets/throttling-imc-paper.pdf)
-- [OONI spec](https://github.com/ooni/spec/tree/master/nettests) — особенно `sni_blocking` (ts-024), `tlsmiddlebox` (ts-037), `echcheck` (ts-039), [df-007-errors](https://github.com/ooni/spec/blob/master/data-formats/df-007-errors.md)
+- [OONI spec](https://github.com/ooni/spec/tree/master/nettests) — especially `sni_blocking` (ts-024), `tlsmiddlebox` (ts-037), `echcheck` (ts-039), [df-007-errors](https://github.com/ooni/spec/blob/master/data-formats/df-007-errors.md)
 - [OONI Russia report 2024](https://ooni.org/post/2024-russia-report/), [Interpreting OONI data](https://ooni.org/support/interpreting-ooni-data/)
 - DEF CON 33, Mixon-Baca, [TSPU: Russia's Firewall](https://www.youtube.com/watch?v=zcdEX1ZgXzY)

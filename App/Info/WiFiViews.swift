@@ -68,25 +68,25 @@ struct WiFiAnalysisView: View {
             if let error = model.errorMessage {
                 ErrorCard(message: error) { model.scan() }
             } else if model.networks.isEmpty, model.isScanning {
-                ProgressView("Сканирование…").padding(.top, 40)
+                ProgressView("Scanning…").padding(.top, 40)
             } else if model.networks.isEmpty {
-                ToolIdleHint(icon: "wifi", title: "Анализ Wi-Fi",
-                             message: "Просканируем эфир: соседние сети, их каналы, диапазоны и уровень сигнала. Видно, какие каналы перегружены. Нужен доступ к геопозиции.")
+                ToolIdleHint(icon: "wifi", title: "Wi-Fi analysis",
+                             message: "We scan the air: neighboring networks, their channels, bands and signal level. You see which channels are congested. Location access is required.")
             }
         } content: {
             ForEach(model.byBand, id: \.band) { group in
                 bandCard(group.band, group.networks)
             }
         } bottom: {
-            RunButton(title: "Сканировать", running: model.isScanning) { model.scan() }
+            RunButton(title: "Scan", running: model.isScanning) { model.scan() }
         }
-        .navigationTitle("Wi-Fi анализ")
+        .navigationTitle("Wi-Fi analysis")
         .onAppear { if auth.needsRequest { auth.request() } }
     }
 
     private func bandCard(_ band: WiFiBand, _ networks: [WiFiNetwork]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "\(band.label) · \(networks.count) сетей")
+            SectionCaption(text: "\(band.label) · \(networks.count) networks")
             VStack(spacing: 0) {
                 ForEach(Array(networks.enumerated()), id: \.element.id) { idx, network in
                     HStack(spacing: 11) {
@@ -94,15 +94,15 @@ struct WiFiAnalysisView: View {
                             .font(.caption).foregroundStyle(.secondary).frame(width: 16)
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 6) {
-                                Text(network.ssid?.isEmpty == false ? network.ssid! : "(скрытая)")
+                                Text(network.ssid?.isEmpty == false ? network.ssid! : "(hidden)")
                                 if network.isCurrent {
-                                    Text("текущая").font(.caption2.weight(.semibold))
+                                    Text("current").font(.caption2.weight(.semibold))
                                         .foregroundStyle(.tint)
                                         .padding(.horizontal, 6).padding(.vertical, 1)
                                         .background(.tint.opacity(0.15), in: Capsule())
                                 }
                             }
-                            Text("канал \(network.channel) · \(network.width.label)")
+                            Text("channel \(network.channel) · \(network.width.label)")
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
                         Spacer()

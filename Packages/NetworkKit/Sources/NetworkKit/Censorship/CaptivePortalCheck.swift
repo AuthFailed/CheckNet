@@ -12,9 +12,9 @@ public struct CaptivePortalResult: Sendable, Hashable {
 
         public var label: String {
             switch self {
-            case .open: "сеть открыта"
-            case .captive: "требуется вход (captive portal)"
-            case .unknown: "не удалось определить"
+            case .open: "network is open"
+            case .captive: "sign-in required (captive portal)"
+            case .unknown: "could not be determined"
             }
         }
     }
@@ -50,7 +50,7 @@ public struct CaptivePortalCheck: Sendable {
         } catch {
             return CaptivePortalResult(
                 state: .unknown,
-                detail: "Не удалось обратиться к \(Self.probeHost).",
+                detail: "Couldn't reach \(Self.probeHost).",
                 redirectURL: nil
             )
         }
@@ -71,12 +71,12 @@ public struct CaptivePortalCheck: Sendable {
             try TCPTransport.writeAll(fd: fd, bytes: request)
             raw = try TCPTransport.readUntilClose(fd: fd, timeout: timeout, maxBytes: 64 * 1024)
         } catch {
-            return CaptivePortalResult(state: .unknown, detail: "Проба не завершилась.", redirectURL: nil)
+            return CaptivePortalResult(state: .unknown, detail: "The probe did not complete.", redirectURL: nil)
         }
 
         let response = String(decoding: raw, as: UTF8.self)
         guard let headerEnd = response.range(of: "\r\n\r\n") else {
-            return CaptivePortalResult(state: .unknown, detail: "Пустой ответ.", redirectURL: nil)
+            return CaptivePortalResult(state: .unknown, detail: "Empty response.", redirectURL: nil)
         }
         let head = String(response[..<headerEnd.lowerBound])
         let body = String(response[headerEnd.upperBound...])
@@ -89,7 +89,7 @@ public struct CaptivePortalCheck: Sendable {
                 .map { $0.dropFirst("location:".count).trimmingCharacters(in: .whitespaces) }
             return CaptivePortalResult(
                 state: .captive,
-                detail: "Сеть перенаправляет запросы — вероятно, нужен вход через страницу авторизации.",
+                detail: "The network redirects requests — a sign-in page is probably required.",
                 redirectURL: location
             )
         }
@@ -97,7 +97,7 @@ public struct CaptivePortalCheck: Sendable {
         if body.contains(Self.expectedBody) {
             return CaptivePortalResult(
                 state: .open,
-                detail: "Контрольная страница вернулась без изменений — перехвата нет.",
+                detail: "The control page came back unchanged — nothing is intercepting it.",
                 redirectURL: nil
             )
         }
@@ -105,7 +105,7 @@ public struct CaptivePortalCheck: Sendable {
         // 200 OK but a different body means the portal answered in place.
         return CaptivePortalResult(
             state: .captive,
-            detail: "Ответ отличается от эталонного — содержимое подменяется.",
+            detail: "The response differs from the reference — the content is being substituted.",
             redirectURL: nil
         )
     }

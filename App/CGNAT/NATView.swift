@@ -9,9 +9,9 @@ struct NATView: View {
     private func start() {
         guard !run.isRunning else { return }
         run.activity = settings.liveActivitiesEnabled ? .init(
-            kind: .lookup, title: "NAT", subtitle: "Тип подключения",
-            content: { LookupActivityContent.view($0, running: "проверка NAT") { r in
-                (r.natType.rawValue, r.publicIP ?? "адрес не определён") } }
+            kind: .lookup, title: "NAT", subtitle: "Connection type",
+            content: { LookupActivityContent.view($0, running: "NAT check") { r in
+                (r.natType.rawValue, r.publicIP ?? "address not determined") } }
         ) : nil
         run.start { await NATDetector().detect() }
     }
@@ -23,12 +23,12 @@ struct NATView: View {
             } else if run.isRunning {
                 VStack(spacing: 10) {
                     ProgressView()
-                    Text("Анализ маршрута и внешнего адреса…").font(.caption).foregroundStyle(.secondary)
+                    Text("Analyzing route and external address…").font(.caption).foregroundStyle(.secondary)
                 }
                 .padding(.top, 60)
             } else {
-                ContentUnavailableView("Проверка NAT", systemImage: "arrow.triangle.branch",
-                                       description: Text("Определим тип NAT, внешний адрес и наличие CGNAT."))
+                ContentUnavailableView("NAT check", systemImage: "arrow.triangle.branch",
+                                       description: Text("We'll determine NAT type, external address, and whether CGNAT is present."))
                 .padding(.top, 40)
             }
         } content: {
@@ -37,7 +37,7 @@ struct NATView: View {
                 if !report.findings.isEmpty { findingsCard(report) }
             }
         } bottom: {
-            RunButton(title: "Проверить NAT", running: run.isRunning) {
+            RunButton(title: "Check NAT", running: run.isRunning) {
                 start()
             }
         }
@@ -65,12 +65,12 @@ struct NATView: View {
 
     private func addressCard(_ report: NATReport) -> some View {
         VStack(spacing: 0) {
-            InfoRow(label: "Локальный адрес", value: report.localIP ?? "—", mono: true)
+            InfoRow(label: "Local address", value: report.localIP ?? "—", mono: true)
             Divider().padding(.leading, 14)
-            InfoRow(label: "Внешний адрес", value: report.publicIP ?? "—", mono: true)
+            InfoRow(label: "External address", value: report.publicIP ?? "—", mono: true)
             if !report.privateHops.isEmpty {
                 Divider().padding(.leading, 14)
-                InfoRow(label: "Приватные хопы", value: report.privateHops.joined(separator: "\n"), mono: true)
+                InfoRow(label: "Private hops", value: report.privateHops.joined(separator: "\n"), mono: true)
             }
         }
         .card()

@@ -23,18 +23,28 @@ struct ToolIdleHint: View {
     var current: String = ""
     var useExample: (() -> Void)?
 
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     private var showsExample: Bool {
         guard let example, useExample != nil else { return false }
         return current.trimmingCharacters(in: .whitespaces).caseInsensitiveCompare(example) != .orderedSame
     }
 
+    /// At accessibility text sizes the decorative header (a `largeTitle` glyph and
+    /// ~90 pt of top padding) grows with Dynamic Type and eats the viewport, so a
+    /// long explanation reads as cut off above the pinned run button before the
+    /// user scrolls. The copy is still scrollable — this just reclaims that space
+    /// so the common case fits without scrolling. Regular sizes are untouched.
+    private var compact: Bool { typeSize.isAccessibilitySize }
+
     var body: some View {
         VStack(spacing: 10) {
             Image(systemName: icon)
-                // Scales with Dynamic Type instead of sitting at a fixed 40 pt.
-                .font(.system(.largeTitle))
+                // Scales with Dynamic Type, but capped at accessibility sizes so
+                // the glyph doesn't crowd out the text it introduces.
+                .font(compact ? .title2 : .system(.largeTitle))
                 .foregroundStyle(.tint)
-                .padding(.top, 40)
+                .padding(.top, compact ? 8 : 40)
 
             Text(title)
                 .font(.headline)
@@ -51,7 +61,7 @@ struct ToolIdleHint: View {
                     useExample()
                 } label: {
                     Label {
-                        Text("Подставить \(example)")
+                        Text("Use \(example)")
                     } icon: {
                         Image(systemName: "arrow.turn.down.left")
                     }
@@ -62,7 +72,7 @@ struct ToolIdleHint: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 20)
+        .padding(.top, compact ? 0 : 20)
         // One announcement rather than three fragments; the example stays a
         // separate control.
         .accessibilityElement(children: .contain)
@@ -72,8 +82,8 @@ struct ToolIdleHint: View {
 #Preview {
     ToolIdleHint(
         icon: "point.topleft.down.to.point.bottomright.curvepath",
-        title: "Готово к трассировке",
-        message: "Покажем каждый маршрутизатор на пути до хоста и задержку на каждом шаге.",
+        title: "Ready to trace",
+        message: "We'll show every router on the way to the host and the latency at each step.",
         example: "cloudflare.com",
         current: "",
         useExample: {}

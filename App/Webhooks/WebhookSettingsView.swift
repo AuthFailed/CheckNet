@@ -10,9 +10,9 @@ struct WebhookSettingsView: View {
         @Bindable var settings = settings
         Form {
             Section {
-                Toggle("Отправлять вебхуки", isOn: $settings.isEnabled)
+                Toggle("Send webhooks", isOn: $settings.isEnabled)
             } footer: {
-                Text("Результаты проверок будут отправляться на указанный адрес. Это раскрытие данных: имена хостов, вердикты и задержки покинут устройство.")
+                Text("Check results will be sent to the address you enter. This discloses data: host names, verdicts and latencies leave your device.")
             }
 
             Section {
@@ -26,48 +26,48 @@ struct WebhookSettingsView: View {
                     Text(LocalizedStringKey(message)).font(.caption).foregroundStyle(.orange)
                 }
             } header: {
-                Text("Адрес")
+                Text("Address")
             } footer: {
-                Text("Только https. Исключение — localhost, чтобы можно было проверить приём локально.")
+                Text("HTTPS only. The exception is localhost, so you can test receiving locally.")
             }
 
             Section {
                 HStack {
-                    SecureField("Необязательно", text: $settings.secret)
+                    SecureField("Optional", text: $settings.secret)
                     if settings.secret.isEmpty {
                         Button {
                             settings.generateSecret()
                         } label: {
-                            Image(systemName: "wand.and.stars").accessibilityLabel("Сгенерировать секрет")
+                            Image(systemName: "wand.and.stars").accessibilityLabel("Generate secret")
                         }
                         .buttonStyle(.borderless)
                     } else {
                         Button(role: .destructive) {
                             settings.clearSecret()
                         } label: {
-                            Image(systemName: "xmark.circle.fill").accessibilityLabel("Очистить секрет")
+                            Image(systemName: "xmark.circle.fill").accessibilityLabel("Clear secret")
                         }
                         .buttonStyle(.borderless)
                     }
                 }
             } header: {
-                Text("Секрет для подписи")
+                Text("Signing secret")
             } footer: {
-                Text("Если задан, каждый запрос подписывается: заголовок X-CheckNet-Signature содержит sha256=HMAC-SHA256 от тела. Получатель может убедиться, что запрос пришёл именно от этого устройства.")
+                Text("If set, every request is signed: the X-CheckNet-Signature header contains sha256=HMAC-SHA256 of the body. The recipient can verify that the request really came from this device.")
             }
 
             Section {
-                Picker("События", selection: $settings.trigger) {
+                Picker("Events", selection: $settings.trigger) {
                     ForEach(WebhookTrigger.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
-                Picker("Формат", selection: $settings.format) {
+                Picker("Format", selection: $settings.format) {
                     ForEach(WebhookFormat.allCases) { Text(LocalizedStringKey($0.label)).tag($0) }
                 }
-                Toggle("Live-режим", isOn: $settings.liveMode)
+                Toggle("Live mode", isOn: $settings.liveMode)
             } header: {
-                Text("Что отправлять")
+                Text("What to send")
             } footer: {
-                Text("В live-режиме промежуточные результаты теста отправляются по ходу выполнения (не чаще раза в секунду), а не только финальный итог.")
+                Text("In live mode, interim results are sent while the test runs (at most once per second), not just the final summary.")
             }
 
             Section {
@@ -76,13 +76,13 @@ struct WebhookSettingsView: View {
                         WebhookFieldsView(schema: schema)
                     } label: {
                         LabeledContent(schema.toolLabel,
-                                       value: "\(settings.selectedFields(forTool: schema.toolKey).count) полей")
+                                       value: "\(settings.selectedFields(forTool: schema.toolKey).count) fields")
                     }
                 }
             } header: {
-                Text("Данные по инструментам")
+                Text("Data per tool")
             } footer: {
-                Text("По умолчанию отправляются все данные, которые умеет отдавать инструмент. Здесь можно отключить ненужные поля.")
+                Text("By default, every field a tool can report is sent. Here you can turn off the ones you don’t need.")
             }
 
             Section {
@@ -94,7 +94,7 @@ struct WebhookSettingsView: View {
                     }
                 } label: {
                     HStack {
-                        Label("Отправить тестовое событие", systemImage: "paperplane")
+                        Label("Send test event", systemImage: "paperplane")
                         if isSendingTest { Spacer(); ProgressView() }
                     }
                 }
@@ -104,10 +104,10 @@ struct WebhookSettingsView: View {
                     Text(LocalizedStringKey(status)).font(.caption).foregroundStyle(.secondary)
                 }
             } footer: {
-                Text("Формат payload и заголовков описан в docs/webhooks.md репозитория.")
+                Text("The payload and header format is documented in docs/webhooks.md in the repository.")
             }
         }
-        .navigationTitle("Вебхуки")
+        .navigationTitle("Webhooks")
         #if os(iOS)
         .toolbarTitleDisplayMode(.inline)
         #endif
@@ -135,7 +135,7 @@ struct WebhookFieldsView: View {
                     } header: {
                         Text(LocalizedStringKey(field.label))
                     } footer: {
-                        Text("Промежуточные результаты. Можно отключить весь список или отдельные поля в каждом элементе.")
+                        Text("Interim results. You can turn off the whole list or individual fields in each entry.")
                     }
                 } else {
                     fieldToggle(field.key, field.label)
@@ -143,7 +143,7 @@ struct WebhookFieldsView: View {
             }
 
             Section {
-                Button("Сбросить к значениям по умолчанию") {
+                Button("Reset to defaults") {
                     settings.resetFields(forTool: schema.toolKey)
                 }
             }

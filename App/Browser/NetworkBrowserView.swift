@@ -15,7 +15,7 @@ final class NetworkBrowserModel {
     func toggle() { isRunning ? stop() : start() }
 
     private func activityView() -> CheckActivityView {
-        ScanActivityContent.view(foundLabel: "Устройств", found: devices.count,
+        ScanActivityContent.view(foundLabel: "Devices", found: devices.count,
                                  scanned: scanned, total: total, isRunning: isRunning)
     }
 
@@ -23,7 +23,7 @@ final class NetworkBrowserModel {
         stop()
         devices = []; scanned = 0; total = 0; errorMessage = nil; isRunning = true
         let activity = useLiveActivity ? CheckActivityController() : nil
-        activity?.start(kind: .browser, title: "Обзор сети", subtitle: "Устройства", view: activityView())
+        activity?.start(kind: .browser, title: "Network overview", subtitle: "Devices", view: activityView())
         task = Task { [weak self] in
             guard let self else { return }
             for await event in NetworkBrowser().browse() {
@@ -66,8 +66,8 @@ struct NetworkBrowserView: View {
                 progressCard
             }
             if model.devices.isEmpty, !model.isRunning, model.errorMessage == nil {
-                ContentUnavailableView("Обзор сети", systemImage: "rectangle.connected.to.line.below",
-                                       description: Text("Найдём устройства в вашей сети с IP, MAC и вендором."))
+                ContentUnavailableView("Network overview", systemImage: "rectangle.connected.to.line.below",
+                                       description: Text("We'll find devices on your network with IP, MAC, and vendor."))
                 .padding(.top, 40)
             }
         } content: {
@@ -75,14 +75,14 @@ struct NetworkBrowserView: View {
                 devicesCard
             }
         } bottom: {
-            RunButton(title: "Сканировать сеть", running: model.isRunning) { model.toggle() }
+            RunButton(title: "Scan network", running: model.isRunning) { model.toggle() }
         }
         .animation(.snappy, value: model.devices)
         .refreshable { await model.refresh() }
         // A check runs for seconds; people put the phone down while it does.
         .haptic(.success, trigger: model.isRunning) { !$0 && model.errorMessage == nil }
         .haptic(.failure, trigger: model.isRunning) { !$0 && model.errorMessage != nil }
-        .navigationTitle("Обзор сети")
+        .navigationTitle("Network overview")
         .toolTitleDisplayMode()
         .onAppear {
             model.useLiveActivity = settings.liveActivitiesEnabled
@@ -93,7 +93,7 @@ struct NetworkBrowserView: View {
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("\(model.devices.count) устройств").font(.headline).foregroundStyle(.green)
+                Text("\(model.devices.count) devices").font(.headline).foregroundStyle(.green)
                 Spacer()
                 Text("\(model.scanned) / \(model.total)").font(.subheadline.monospacedDigit()).foregroundStyle(.secondary)
             }
@@ -121,8 +121,8 @@ struct NetworkBrowserView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(device.displayName).font(.callout.weight(.medium)).lineLimit(1)
-                    if device.isSelf { tag("вы", .blue) }
-                    if device.isGateway { tag("шлюз", .orange) }
+                    if device.isSelf { tag("you", .blue) }
+                    if device.isGateway { tag("gateway", .orange) }
                 }
                 Text(device.ip).font(.caption.monospaced()).foregroundStyle(.secondary)
                 if let mac = device.mac {
@@ -131,14 +131,14 @@ struct NetworkBrowserView: View {
                         if let vendor = device.vendor {
                             Text("· \(vendor)").font(.caption2).foregroundStyle(.secondary)
                         } else if device.randomizedMAC {
-                            Text("· случайный MAC").font(.caption2).foregroundStyle(.tertiary)
+                            Text("· random MAC").font(.caption2).foregroundStyle(.tertiary)
                         }
                     }
                 }
             }
             Spacer()
             if let rtt = device.rttMillis {
-                Text("\(Int(rtt)) мс").font(.caption.monospaced()).foregroundStyle(.secondary)
+                Text("\(Int(rtt)) ms").font(.caption.monospaced()).foregroundStyle(.secondary)
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 10)

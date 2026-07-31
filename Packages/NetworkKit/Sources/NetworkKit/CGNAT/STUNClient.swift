@@ -28,7 +28,7 @@ public struct STUNClient: Sendable {
         let request = Self.bindingRequest()
         let response = try await UDPExchange.request(endpoint: endpoint, payload: request, timeout: timeout)
         guard let addr = Self.parseResponse(response) else {
-            throw NetworkError.protocolError("некорректный STUN-ответ")
+            throw NetworkError.protocolError("invalid STUN response")
         }
         return addr
     }

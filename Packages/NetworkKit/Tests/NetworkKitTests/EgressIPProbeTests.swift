@@ -30,7 +30,7 @@ final class EgressIPProbeTests: XCTestCase {
         let info = EgressIPProbe.parse(.trace, data: data(body))
         XCTAssertEqual(info?.ip, "198.51.100.9")
         XCTAssertEqual(info?.country, "FR")
-        XCTAssertEqual(info?.note, "дата-центр CDG")
+        XCTAssertEqual(info?.note, "data center CDG")
     }
 
     func testTraceWithoutIPFails() {

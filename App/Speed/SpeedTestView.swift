@@ -28,8 +28,8 @@ struct SpeedTestView: View {
             case .idle, .ready:
                 ToolIdleHint(
                     icon: "speedometer",
-                    title: "Готово к замеру скорости",
-                    message: "Измерим скорость до выбранного сервера: загрузку, отдачу и задержку под нагрузкой."
+                    title: "Ready to measure speed",
+                    message: "We'll measure speed to the chosen server: download, upload and latency under load."
                 )
             default:
                 EmptyView()
@@ -40,7 +40,7 @@ struct SpeedTestView: View {
         .animation(.snappy, value: model.phase)
         .haptic(.success, trigger: model.phase) { $0 == .done }
         .haptic(.failure, trigger: model.phase) { if case .failed = $0 { true } else { false } }
-        .navigationTitle("Тест скорости")
+        .navigationTitle("Speed test")
         .toolTitleDisplayMode()
         .onAppear { model.useLiveActivity = settings.liveActivitiesEnabled }
         .task {
@@ -71,10 +71,10 @@ struct SpeedTestView: View {
                         HStack(spacing: 6) {
                             Text(s.host).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
                             if let bw = s.bandwidthValue {
-                                Text("· \(bw) Гбит/с").font(.caption).foregroundStyle(.secondary)
+                                Text("· \(bw) Gbps").font(.caption).foregroundStyle(.secondary)
                             }
                             if let ping = model.pings[s.host] {
-                                Text("· \(Int(ping)) мс").font(.caption).foregroundStyle(.green)
+                                Text("· \(Int(ping)) ms").font(.caption).foregroundStyle(.green)
                             }
                         }
                     } else {
@@ -93,9 +93,9 @@ struct SpeedTestView: View {
 
     private var serverStatusText: LocalizedStringKey {
         switch model.phase {
-        case .loadingServers: return "Загрузка серверов…"
-        case .pinging: return "Проверка серверов \(model.pingProgress.done)/\(model.pingProgress.total)…"
-        default: return "Выберите сервер"
+        case .loadingServers: return "Loading servers…"
+        case .pinging: return "Checking servers \(model.pingProgress.done)/\(model.pingProgress.total)…"
+        default: return "Select a server"
         }
     }
 
@@ -114,18 +114,18 @@ struct SpeedTestView: View {
                         .lineLimit(1)
                         .foregroundStyle(model.liveDirection == .download ? .blue : .green)
                         .contentTransition(.numericText())
-                    let dirLabel: LocalizedStringKey = model.liveDirection == .download ? "Загрузка" : "Отдача"
+                    let dirLabel: LocalizedStringKey = model.liveDirection == .download ? "Download" : "Upload"
                     // Interpolation rather than Text + Text: concatenation is
                     // deprecated on macOS 26, and this keeps the unit out of the
                     // translated part of the string.
-                    Text("\(Text(dirLabel)) · Мбит/с")
+                    Text("\(Text(dirLabel)) · Mbps")
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
             }
             HStack {
-                resultCell(title: "Загрузка", value: model.downloadMbps, color: .blue, icon: "arrow.down")
+                resultCell(title: "Download", value: model.downloadMbps, color: .blue, icon: "arrow.down")
                 Divider().frame(height: statRule)
-                resultCell(title: "Отдача", value: model.uploadMbps, color: .green, icon: "arrow.up")
+                resultCell(title: "Upload", value: model.uploadMbps, color: .green, icon: "arrow.up")
             }
         }
         .padding(16).card()
@@ -136,14 +136,14 @@ struct SpeedTestView: View {
             Label(LocalizedStringKey(title), systemImage: icon).font(.caption2).foregroundStyle(.secondary)
             Text(value.map { String(format: "%.1f", $0) } ?? "—")
                 .font(.system(.title2, design: .rounded).weight(.bold)).foregroundStyle(color)
-            Text("Мбит/с").font(.caption2).foregroundStyle(.tertiary)
+            Text("Mbps").font(.caption2).foregroundStyle(.tertiary)
         }
         .frame(maxWidth: .infinity)
     }
 
     private var chartCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SectionCaption(text: "Скорость · Мбит/с")
+            SectionCaption(text: "Speed · Mbps")
             Chart(Array(model.samples.enumerated()), id: \.offset) { _, sample in
                 LineMark(x: .value("t", sample.seconds), y: .value("mbps", sample.mbps))
                     .foregroundStyle(sample.direction == .download ? Color.blue : Color.green)
@@ -157,7 +157,7 @@ struct SpeedTestView: View {
     // MARK: Bottom bar
 
     private var bottomBar: some View {
-        RunButton(title: "Запустить тест", running: model.phase == .running,
+        RunButton(title: "Run test", running: model.phase == .running,
                   disabled: model.selected == nil) {
             if model.phase == .running { model.stop() } else { model.startTest() }
         }
@@ -195,14 +195,14 @@ struct ServerPickerView: View {
                             Task { await model.pingServers() }
                         } label: {
                             Label(model.phase == .pinging
-                                  ? "Проверка \(model.pingProgress.done)/\(model.pingProgress.total)…"
-                                  : "Проверить доступность и пинг", systemImage: "bolt.horizontal")
+                                  ? "Checking \(model.pingProgress.done)/\(model.pingProgress.total)…"
+                                  : "Check availability and ping", systemImage: "bolt.horizontal")
                         }
                         .disabled(model.phase == .pinging)
                         Button {
                             Task { await model.refreshServers() }
                         } label: {
-                            Label("Обновить список серверов", systemImage: "arrow.clockwise")
+                            Label("Refresh server list", systemImage: "arrow.clockwise")
                         }
                         .disabled(model.phase == .pinging || model.phase == .loadingServers)
                     }
@@ -215,17 +215,17 @@ struct ServerPickerView: View {
                     }
                 }
             }
-            .searchable(text: $query, prompt: "Город или адрес сервера")
+            .searchable(text: $query, prompt: "City or server address")
             .overlay {
                 if !query.isEmpty && filteredGroups.isEmpty {
                     ContentUnavailableView.search(text: query)
                 }
             }
-            .navigationTitle("Серверы iperf3")
+            .navigationTitle("iperf3 servers")
             #if os(iOS)
             .toolbarTitleDisplayMode(.inline)
             #endif
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Готово") { dismiss() } } }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
     }
 
@@ -241,7 +241,7 @@ struct ServerPickerView: View {
                     HStack(spacing: 6) {
                         Text(server.host).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
                         if let bw = server.bandwidthValue {
-                            Text("\(bw) Гбит/с")
+                            Text("\(bw) Gbps")
                                 .font(.caption2.weight(.semibold))
                                 .foregroundStyle(.blue)
                                 .padding(.horizontal, 6).padding(.vertical, 1)
@@ -251,7 +251,7 @@ struct ServerPickerView: View {
                 }
                 Spacer()
                 if let ping = model.pings[server.host] {
-                    Text("\(Int(ping)) мс")
+                    Text("\(Int(ping)) ms")
                         .font(.callout.monospaced())
                         .foregroundStyle(ping < 80 ? .green : (ping < 200 ? .orange : .secondary))
                 } else if model.phase == .pinging {

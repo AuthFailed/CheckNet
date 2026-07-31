@@ -31,9 +31,9 @@ struct QRCodeView: View {
                     .interpolation(.none)
                     .resizable()
                     .scaledToFit()
-                    .accessibilityLabel("QR-код со ссылкой на список хостов")
+                    .accessibilityLabel("QR code with a link to the host list")
             } else {
-                ContentUnavailableView("Не удалось построить QR-код", systemImage: "qrcode")
+                ContentUnavailableView("Couldn’t create the QR code", systemImage: "qrcode")
             }
         }
         .padding(16)

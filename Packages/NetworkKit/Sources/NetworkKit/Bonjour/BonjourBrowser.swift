@@ -24,24 +24,24 @@ public final class BonjourBrowser: Sendable {
     }
 
     public static let knownTypes: [ServiceType] = [
-        .init(type: "_http._tcp", label: "Веб (HTTP)"),
-        .init(type: "_https._tcp", label: "Веб (HTTPS)"),
+        .init(type: "_http._tcp", label: "Web (HTTP)"),
+        .init(type: "_https._tcp", label: "Web (HTTPS)"),
         .init(type: "_ssh._tcp", label: "SSH"),
         .init(type: "_sftp-ssh._tcp", label: "SFTP"),
-        .init(type: "_smb._tcp", label: "SMB (общие папки)"),
+        .init(type: "_smb._tcp", label: "SMB (shared folders)"),
         .init(type: "_afpovertcp._tcp", label: "AFP"),
         .init(type: "_airplay._tcp", label: "AirPlay"),
         .init(type: "_raop._tcp", label: "AirPlay Audio"),
         .init(type: "_googlecast._tcp", label: "Chromecast"),
-        .init(type: "_ipp._tcp", label: "Принтер (IPP)"),
-        .init(type: "_printer._tcp", label: "Принтер (LPD)"),
-        .init(type: "_ipps._tcp", label: "Принтер (IPPS)"),
+        .init(type: "_ipp._tcp", label: "Printer (IPP)"),
+        .init(type: "_printer._tcp", label: "Printer (LPD)"),
+        .init(type: "_ipps._tcp", label: "Printer (IPPS)"),
         .init(type: "_homekit._tcp", label: "HomeKit"),
         .init(type: "_hap._tcp", label: "HomeKit Accessory"),
         .init(type: "_spotify-connect._tcp", label: "Spotify Connect"),
-        .init(type: "_device-info._tcp", label: "Информация об устройстве"),
+        .init(type: "_device-info._tcp", label: "Device info"),
         .init(type: "_companion-link._tcp", label: "Companion (Apple)"),
-        .init(type: "_rfb._tcp", label: "Экран (VNC)")
+        .init(type: "_rfb._tcp", label: "Screen (VNC)")
     ]
 
     public enum BrowseEvent: Sendable {

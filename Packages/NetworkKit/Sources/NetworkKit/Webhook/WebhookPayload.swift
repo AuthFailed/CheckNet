@@ -81,8 +81,8 @@ public enum WebhookFormat: String, Sendable, CaseIterable, Codable, Identifiable
 
     public var label: String {
         switch self {
-        case .jsonNested: "JSON (вложенный)"
-        case .jsonFlat: "JSON (плоский)"
+        case .jsonNested: "JSON (nested)"
+        case .jsonFlat: "JSON (flat)"
         case .formURLEncoded: "Form URL-encoded"
         }
     }

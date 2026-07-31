@@ -66,12 +66,12 @@ enum ControlSnapshotDisplay {
     static func subtitle(_ snapshot: PingSnapshot) -> String {
         switch snapshot.status {
         case .down:
-            return snapshot.statusLabel          // "Недоступен"
+            return snapshot.statusLabel          // "Unavailable"
         case .unknown:
             return snapshot.statusLabel          // "—"
         case .ok, .degraded:
             if let ms = snapshot.latencyMillis {
-                return "\(Int(ms.rounded())) мс"
+                return "\(Int(ms.rounded())) ms"
             }
             return snapshot.statusLabel
         }

@@ -13,8 +13,8 @@ struct IPLocationView: View {
         guard !run.isRunning else { return }
         let q = query.trimmingCharacters(in: .whitespaces)
         run.activity = settings.liveActivitiesEnabled ? .init(
-            kind: .lookup, title: q.isEmpty ? "Ваш IP" : q, subtitle: "Геолокация",
-            content: { LookupActivityContent.view($0, running: q.isEmpty ? "ваш IP" : q) { g in
+            kind: .lookup, title: q.isEmpty ? "Your IP" : q, subtitle: "Geolocation",
+            content: { LookupActivityContent.view($0, running: q.isEmpty ? "your IP" : q) { g in
                 let c = g.consensus
                 let place = [c.city, c.country].compactMap { $0 }.joined(separator: ", ")
                 return (place.isEmpty ? c.ip : place, c.asnOrg ?? c.ip) } }
@@ -24,7 +24,7 @@ struct IPLocationView: View {
 
     var body: some View {
         ToolScaffold {
-            HostInputBar(text: $query, placeholder: "IP или домен (пусто — ваш IP)",
+            HostInputBar(text: $query, placeholder: "IP or domain (empty — your IP)",
                          icon: "mappin.and.ellipse", disabled: run.isRunning,
                          savedHostTool: .ipLocation) { start() }
             if let error = run.errorMessage {
@@ -44,19 +44,19 @@ struct IPLocationView: View {
             } else if run.value == nil, !run.isRunning {
                 ToolIdleHint(
                     icon: "mappin.and.ellipse",
-                    title: "Где находится адрес",
-                    message: "Опросим сразу несколько сервисов геолокации и покажем согласованный результат — страну, город, сеть (ASN и оператора) — плюс ответ каждого сервиса отдельно. Пустое поле — ваш публичный IP.",
+                    title: "Where the address is",
+                    message: "We query several geolocation services at once and show a consensus result — country, city, network (ASN and operator) — plus each service’s answer separately. Empty field means your public IP.",
                     example: "1.1.1.1",
                     current: query
                 ) { query = "1.1.1.1" }
             }
         } bottom: {
-            RunButton(title: "Определить", running: run.isRunning) { start() }
+            RunButton(title: "Look up", running: run.isRunning) { start() }
         }
         .animation(.snappy, value: run.value)
         .haptic(.success, trigger: run.isRunning) { !$0 && run.errorMessage == nil }
         .haptic(.failure, trigger: run.isRunning) { !$0 && run.errorMessage != nil }
-        .navigationTitle("Геолокация IP")
+        .navigationTitle("IP geolocation")
         .toolTitleDisplayMode()
         .onAppear {
             if let presetHost { query = presetHost }
@@ -74,7 +74,7 @@ struct IPLocationView: View {
                 Image(systemName: "globe").font(.largeTitle).foregroundStyle(.tint)
             }
             VStack(alignment: .leading, spacing: 3) {
-                Text(c.country ?? "Неизвестно").font(.title3.weight(.bold))
+                Text(c.country ?? "Unknown").font(.title3.weight(.bold))
                 let place = [c.city, c.region].compactMap { $0 }.joined(separator: ", ")
                 if !place.isEmpty {
                     Text(place).font(.caption).foregroundStyle(.secondary)
@@ -101,7 +101,7 @@ struct IPLocationView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(Palette.hairline, lineWidth: Palette.hairlineWidth))
-            .accessibilityLabel("Карта: \(c.city ?? c.country ?? "местоположение")")
+            .accessibilityLabel("Map: \(c.city ?? c.country ?? "location")")
         }
     }
 
@@ -112,18 +112,18 @@ struct IPLocationView: View {
             InfoRow(label: "IP", value: c.ip, mono: true)
             if let asn = c.asn {
                 Divider().padding(.leading, 14)
-                InfoRow(label: "Сеть (ASN)", value: [asn, c.asnOrg].compactMap { $0 }.joined(separator: " · "))
+                InfoRow(label: "Network (ASN)", value: [asn, c.asnOrg].compactMap { $0 }.joined(separator: " · "))
             }
             if let tz = c.timezone {
                 Divider().padding(.leading, 14)
-                InfoRow(label: "Часовой пояс", value: tz)
+                InfoRow(label: "Time zone", value: tz)
             }
             if let lat = c.latitude, let lon = c.longitude {
                 Divider().padding(.leading, 14)
-                InfoRow(label: "Координаты", value: String(format: "%.4f, %.4f", lat, lon), mono: true)
+                InfoRow(label: "Coordinates", value: String(format: "%.4f, %.4f", lat, lon), mono: true)
             }
             Divider().padding(.leading, 14)
-            InfoRow(label: "Источников согласны", value: "\(c.sourceCount)")
+            InfoRow(label: "Sources agree", value: "\(c.sourceCount)")
         }
         .card()
     }
@@ -132,7 +132,7 @@ struct IPLocationView: View {
 
     private func providerTable(_ providers: [IPGeoResult]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "По сервисам")
+            SectionCaption(text: "By source")
             VStack(spacing: 0) {
                 ForEach(Array(providers.enumerated()), id: \.element.id) { idx, p in
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -165,11 +165,11 @@ struct IPLocationView: View {
 
     private func riskCard(_ c: IPGeoConsensus) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            SectionCaption(text: "Тип адреса")
+            SectionCaption(text: "Address type")
             HStack(spacing: 8) {
-                if c.isHosting == true { badge("Дата-центр", "server.rack", .orange) }
+                if c.isHosting == true { badge("Data center", "server.rack", .orange) }
                 if c.isVPN == true { badge("VPN", "lock.shield", .blue) }
-                if c.isProxy == true { badge("Прокси", "arrow.triangle.branch", .blue) }
+                if c.isProxy == true { badge("Proxy", "arrow.triangle.branch", .blue) }
                 if c.isTor == true { badge("Tor", "eye.slash", .purple) }
                 Spacer()
             }
@@ -191,7 +191,7 @@ struct IPLocationView: View {
 
     private func linksCard(_ c: IPGeoConsensus, ip: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            SectionCaption(text: "Внешние ресурсы")
+            SectionCaption(text: "External sources")
             VStack(spacing: 0) {
                 let links = externalLinks(c, ip: ip)
                 ForEach(Array(links.enumerated()), id: \.offset) { idx, link in
@@ -211,7 +211,7 @@ struct IPLocationView: View {
                 }
             }
             .card()
-            Text("Открываются в браузере — детали о сети, префиксе и точках обмена трафиком.")
+            Text("Open in the browser — details on the network, prefix and traffic exchange points.")
                 .font(.caption2).foregroundStyle(.secondary).padding(.horizontal, 4)
         }
     }
@@ -222,17 +222,17 @@ struct IPLocationView: View {
         var out: [ExternalLink] = []
         if let n = c.asNumber {
             if let u = URL(string: "https://bgp.tools/as/\(n)") {
-                out.append(.init(title: "bgp.tools", subtitle: "AS\(n) — соседи, префиксы", icon: "point.3.connected.trianglepath.dotted", url: u))
+                out.append(.init(title: "bgp.tools", subtitle: "AS\(n) — peers, prefixes", icon: "point.3.connected.trianglepath.dotted", url: u))
             }
             if let u = URL(string: "https://bgp.he.net/AS\(n)") {
-                out.append(.init(title: "Hurricane Electric", subtitle: "AS\(n) — BGP-обзор", icon: "network", url: u))
+                out.append(.init(title: "Hurricane Electric", subtitle: "AS\(n) — BGP overview", icon: "network", url: u))
             }
             if let u = URL(string: "https://www.peeringdb.com/asn/\(n)") {
-                out.append(.init(title: "PeeringDB", subtitle: "AS\(n) — точки обмена и объекты", icon: "building.2", url: u))
+                out.append(.init(title: "PeeringDB", subtitle: "AS\(n) — exchange points and facilities", icon: "building.2", url: u))
             }
         }
         if let u = URL(string: "https://bgp.tools/prefix/\(ip)") {
-            out.append(.init(title: "bgp.tools", subtitle: "префикс, покрывающий \(ip)", icon: "square.stack.3d.up", url: u))
+            out.append(.init(title: "bgp.tools", subtitle: "prefix covering \(ip)", icon: "square.stack.3d.up", url: u))
         }
         return out
     }

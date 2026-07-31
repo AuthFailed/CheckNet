@@ -2,11 +2,11 @@ import Foundation
 
 public struct NATReport: Sendable {
     public enum NATType: String, Sendable {
-        case none = "Прямое подключение"
-        case singleNAT = "Одинарный NAT"
+        case none = "Direct connection"
+        case singleNAT = "Single NAT"
         case doubleNAT = "Double NAT"
-        case cgnat = "CGNAT (оператор)"
-        case unknown = "Не определено"
+        case cgnat = "CGNAT (carrier)"
+        case unknown = "Not determined"
     }
 
     public let localIP: String?
@@ -45,23 +45,23 @@ public struct NATDetector: Sendable {
         if let localIP, let publicIP {
             if localIP == publicIP {
                 type = .none
-                findings.append("Локальный и внешний адрес совпадают — вы напрямую в интернете.")
+                findings.append("Local and external addresses match — you're directly on the internet.")
             } else if !cgnatHops.isEmpty {
                 type = .cgnat
-                findings.append("Обнаружен адрес CGNAT (100.64.0.0/10) на пути: \(cgnatHops.joined(separator: ", ")).")
-                findings.append("Оператор использует Carrier-Grade NAT — входящие подключения и проброс портов недоступны.")
+                findings.append("A CGNAT address (100.64.0.0/10) was found on the path: \(cgnatHops.joined(separator: ", ")).")
+                findings.append("The carrier uses Carrier-Grade NAT — incoming connections and port forwarding are unavailable.")
             } else if privateHops.count >= 2 {
                 type = .doubleNAT
-                findings.append("Два и более приватных маршрутизатора на пути — вероятен Double NAT.")
+                findings.append("Two or more private routers on the path — Double NAT is likely.")
             } else if Self.isPrivate(localIP) {
                 type = .singleNAT
-                findings.append("Стандартный домашний NAT: приватный локальный адрес за одним маршрутизатором.")
+                findings.append("Standard home NAT: a private local address behind a single router.")
             } else {
                 type = .none
             }
-            findings.append("Локальный: \(localIP) · внешний: \(publicIP).")
+            findings.append("Local: \(localIP) · external: \(publicIP).")
         } else if publicIP == nil {
-            findings.append("Не удалось определить внешний адрес (STUN недоступен).")
+            findings.append("Couldn't determine the external address (STUN unavailable).")
         }
 
         return NATReport(localIP: localIP, publicIP: publicIP, natType: type,

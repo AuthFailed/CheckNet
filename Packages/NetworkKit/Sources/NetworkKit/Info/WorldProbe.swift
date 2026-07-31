@@ -28,7 +28,7 @@ public struct WorldProbe: Sendable {
         }
         let data = try await Self.fetch(url)
         guard let nodes = Self.parseNodeList(data) else {
-            throw NetworkError.protocolError("не удалось получить список узлов")
+            throw NetworkError.protocolError("couldn’t fetch the node list")
         }
         return nodes.sorted { ($0.country, $0.city) < ($1.country, $1.city) }
     }
@@ -52,7 +52,7 @@ public struct WorldProbe: Sendable {
                          continuation: AsyncStream<WorldProbeEvent>.Continuation) async {
         let target = host.trimmingCharacters(in: .whitespaces)
         guard !target.isEmpty, var components = URLComponents(string: "\(Self.base)/\(type.path)") else {
-            continuation.yield(.failed("Некорректный адрес")); continuation.finish(); return
+            continuation.yield(.failed("Invalid address")); continuation.finish(); return
         }
         var items = [URLQueryItem(name: "host", value: target)]
         if nodeNames.isEmpty {
@@ -63,11 +63,11 @@ public struct WorldProbe: Sendable {
         components.queryItems = items
         guard let url = components.url, let data = try? await Self.fetch(url),
               let (requestId, nodes) = Self.parseInitiate(data) else {
-            continuation.yield(.failed("Сервис проверки не принял запрос. Попробуйте позже."))
+            continuation.yield(.failed("The check service rejected the request. Try again later."))
             continuation.finish(); return
         }
         guard !nodes.isEmpty else {
-            continuation.yield(.failed("Нет доступных узлов для проверки")); continuation.finish(); return
+            continuation.yield(.failed("No nodes available to test")); continuation.finish(); return
         }
 
         var byName = Dictionary(uniqueKeysWithValues: nodes.map { ($0.name, WorldProbeResult(node: $0)) })
@@ -96,7 +96,7 @@ public struct WorldProbe: Sendable {
         // Anything still pending timed out on our side.
         for (name, var result) in byName where result.status == .pending {
             result.status = .error
-            result.summary = "нет ответа"
+            result.summary = "no response"
             byName[name] = result
         }
         continuation.yield(.finished(Self.sorted(byName)))
@@ -182,14 +182,14 @@ public struct WorldProbe: Sendable {
                 total += 1
                 if status == "OK", a.count > 1, let t = (a[1] as? NSNumber)?.doubleValue { rtts.append(t * 1000) }
             }
-            guard total > 0 else { return Outcome(status: .error, rtt: nil, loss: nil, summary: "имя не разрешилось") }
+            guard total > 0 else { return Outcome(status: .error, rtt: nil, loss: nil, summary: "name did not resolve") }
             let avg = rtts.isEmpty ? nil : rtts.reduce(0, +) / Double(rtts.count)
             let loss = Double(total - rtts.count) / Double(total) * 100
             if rtts.isEmpty {
-                return Outcome(status: .failed, rtt: nil, loss: 100, summary: "недоступен")
+                return Outcome(status: .failed, rtt: nil, loss: 100, summary: "unreachable")
             }
-            let lossText = loss > 0 ? ", потери \(Int(loss))%" : ""
-            return Outcome(status: .ok, rtt: avg, loss: loss, summary: "\(Int(avg!)) мс\(lossText)")
+            let lossText = loss > 0 ? ", loss \(Int(loss))%" : ""
+            return Outcome(status: .ok, rtt: avg, loss: loss, summary: "\(Int(avg!)) ms\(lossText)")
         case .http:
             // [[ success, time, message, code, ip ]]
             guard let r = nodeValue.first as? [Any], let success = (r.first as? NSNumber)?.intValue else { return nil }
@@ -199,9 +199,9 @@ public struct WorldProbe: Sendable {
             let head = [code, message].compactMap { $0 }.joined(separator: " ")
             if success == 1 {
                 return Outcome(status: .ok, rtt: time, loss: nil,
-                               summary: [time.map { "\(Int($0)) мс" }, head.isEmpty ? nil : head].compactMap { $0 }.joined(separator: " · "))
+                               summary: [time.map { "\(Int($0)) ms" }, head.isEmpty ? nil : head].compactMap { $0 }.joined(separator: " · "))
             }
-            return Outcome(status: .failed, rtt: time, loss: nil, summary: head.isEmpty ? "ошибка" : head)
+            return Outcome(status: .failed, rtt: time, loss: nil, summary: head.isEmpty ? "error" : head)
         case .tcp, .udp:
             // [{"time":0.03,"address":"..."}] or [{"error":"..."}]
             guard let dict = nodeValue.first as? [String: Any] else { return nil }
@@ -210,15 +210,15 @@ public struct WorldProbe: Sendable {
             }
             let time = ((dict["time"] as? NSNumber)?.doubleValue).map { $0 * 1000 }
             let address = dict["address"] as? String
-            let summary = [time.map { "подключение \(Int($0)) мс" }, address].compactMap { $0 }.joined(separator: " · ")
-            return Outcome(status: .ok, rtt: time, loss: nil, summary: summary.isEmpty ? "подключено" : summary)
+            let summary = [time.map { "connect \(Int($0)) ms" }, address].compactMap { $0 }.joined(separator: " · ")
+            return Outcome(status: .ok, rtt: time, loss: nil, summary: summary.isEmpty ? "connected" : summary)
         case .dns:
             // [{"A":[...],"AAAA":[...],"TTL":n}]
             guard let dict = nodeValue.first as? [String: Any] else { return nil }
             let a = (dict["A"] as? [String]) ?? []
             let aaaa = (dict["AAAA"] as? [String]) ?? []
             let all = a + aaaa
-            guard !all.isEmpty else { return Outcome(status: .failed, rtt: nil, loss: nil, summary: "имя не разрешилось") }
+            guard !all.isEmpty else { return Outcome(status: .failed, rtt: nil, loss: nil, summary: "name did not resolve") }
             let extra = all.count > 1 ? " (+\(all.count - 1))" : ""
             return Outcome(status: .ok, rtt: nil, loss: nil, summary: "\(all.first!)\(extra)")
         }
@@ -252,7 +252,7 @@ public struct WorldProbeResult: Sendable, Hashable, Codable, Identifiable {
     public init(node: WorldProbeNode) {
         self.node = node
         self.status = .pending
-        self.summary = "проверяется…"
+        self.summary = "checking…"
         self.rttMillis = nil
         self.lossPercent = nil
     }

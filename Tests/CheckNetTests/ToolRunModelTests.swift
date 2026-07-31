@@ -5,7 +5,7 @@ import XCTest
 final class ToolRunModelTests: XCTestCase {
 
     private struct Boom: LocalizedError {
-        var errorDescription: String? { "что-то сломалось" }
+        var errorDescription: String? { "something broke" }
     }
 
     func testStartsIdle() {
@@ -28,8 +28,8 @@ final class ToolRunModelTests: XCTestCase {
     func testFailureCapturesLocalizedMessage() async {
         let model = ToolRunModel<Int>()
         await model.perform { throw Boom() }
-        XCTAssertEqual(model.phase, .failure("что-то сломалось"))
-        XCTAssertEqual(model.errorMessage, "что-то сломалось")
+        XCTAssertEqual(model.phase, .failure("something broke"))
+        XCTAssertEqual(model.errorMessage, "something broke")
         XCTAssertNil(model.value)
     }
 
@@ -46,7 +46,7 @@ final class ToolRunModelTests: XCTestCase {
         XCTAssertEqual(model.value, 1)
         await model.perform { throw Boom() }
         XCTAssertNil(model.value)
-        XCTAssertEqual(model.errorMessage, "что-то сломалось")
+        XCTAssertEqual(model.errorMessage, "something broke")
         await model.perform { 2 }
         XCTAssertEqual(model.value, 2)
         XCTAssertNil(model.errorMessage)
@@ -83,12 +83,12 @@ final class ToolRunModelTests: XCTestCase {
 
     func testStartThenAwaitCompletes() async {
         let model = ToolRunModel<String>()
-        model.start { "готово" }
+        model.start { "done" }
         // Poll for the detached task to settle (it may not have begun yet).
         for _ in 0..<200 {
             if model.value != nil || model.errorMessage != nil { break }
             try? await Task.sleep(for: .milliseconds(5))
         }
-        XCTAssertEqual(model.value, "готово")
+        XCTAssertEqual(model.value, "done")
     }
 }

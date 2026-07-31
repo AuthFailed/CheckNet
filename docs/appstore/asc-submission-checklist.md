@@ -1,92 +1,96 @@
-# App Store Connect: чек-лист подачи 1.0
+# App Store Connect: 1.0 submission checklist
 
-Пошагово, в порядке экранов ASC. Значения готовы — копируй. **Блокеры** помечены ⛔ (без них
-кнопка Submit не разблокируется). Источники: остальные файлы в этой папке.
+Step by step, in the order of the ASC screens. Values are ready — copy them. **Blockers** are marked
+⛔ (without them the Submit button won't unlock). Sources: the other files in this folder.
 
 App: **CheckNet** · bundle `com.chrsnv.checknet` · SKU `checknet-ios` · app id 6796268067.
 
 ---
 
-## A. Уровень приложения (заполняется один раз)
+## A. App level (filled in once)
 
-### A1. App Information (левое меню → General → App Information)
-- **Category**: Primary **Utilities (Утилиты)**, Secondary **Developer Tools** (опц.).
-- **Content Rights**: «Does not contain, show, or access third-party content» → у нас свои проверки;
-  но мы показываем сторонние источники (geosite/geoip, iperf-list, bgp.tools). Отметь, что права на
-  контент есть/не требуются (это наши запросы к публичным сервисам). Если сомнение — «Yes, contains
-  third-party content» и в заметках объясни (см. #91).
-- ⛔ **Privacy Policy URL**: нужен захостенный URL (см. блок «Что от меня» ниже). Поле обязательно.
-- **Localizations**: основной — Russian. English можно добавить (метаданные ниже двуязычны).
+### A1. App Information (left menu → General → App Information)
+- **Category**: Primary **Utilities**, Secondary **Developer Tools** (optional).
+- **Content Rights**: "Does not contain, show, or access third-party content" → we run our own
+  checks; but we show third-party sources (geosite/geoip, iperf-list, bgp.tools). Note that content
+  rights exist / aren't required (these are our requests to public services). If in doubt — "Yes,
+  contains third-party content" and explain in the notes (see #91).
+- ⛔ **Privacy Policy URL**: a hosted URL is required (see the "What's on me" block below). The field
+  is mandatory.
+- **Localizations**: primary — Russian. English can be added (the metadata below is bilingual).
 
-### A2. App Privacy (левое меню → App Privacy) — см. `app-privacy.md`
-- «Do you or your third-party partners collect data from this app?» → **No, we do not collect data**.
-- Подтвердить метку **Data Not Collected**. Трекинга нет (ничего дополнительно не включать).
+### A2. App Privacy (left menu → App Privacy) — see `app-privacy.md`
+- "Do you or your third-party partners collect data from this app?" → **No, we do not collect data**.
+- Confirm the **Data Not Collected** label. No tracking (nothing additional to enable).
 
-### A3. Age Rating (в разделе версии / App Information → Age Rating) — см. `age-rating.md`
-- Все категории → **None**. **Unrestricted Web Access → No**. Kids Category — не заявлять.
-- Ожидаемый итог: **4+**.
+### A3. Age Rating (in the version section / App Information → Age Rating) — see `age-rating.md`
+- All categories → **None**. **Unrestricted Web Access → No**. Kids Category — don't claim it.
+- Expected result: **4+**.
 
-### A4. Pricing and Availability (левое меню)
-- **Price**: Free (0). Проверить, что принят **Free Apps Agreement** (иначе поле недоступно).
-- **Availability**: все страны (или по желанию). Для Франции крипта-декларация ANSSI — отдельно
-  (см. `export-compliance.md`), подачу в Apple не блокирует.
+### A4. Pricing and Availability (left menu)
+- **Price**: Free (0). Check that the **Free Apps Agreement** is accepted (otherwise the field is
+  unavailable).
+- **Availability**: all countries (or as desired). For France, the ANSSI crypto declaration is
+  separate (see `export-compliance.md`) and does not block the Apple submission.
 
 ---
 
-## B. Уровень версии 1.0 (левое меню → iOS App → 1.0 Prepare for Submission)
+## B. Version 1.0 level (left menu → iOS App → 1.0 Prepare for Submission)
 
-### B1. Тексты — см. `store-metadata.md`
+### B1. Texts — see `store-metadata.md`
 - **Promotional Text (170)**:
-  `Сетевой комбайн для iPhone, iPad и Mac: пинг, трассировка, DNS, TLS, сканеры портов, проверки блокировок и инструменты для владельцев VPN-серверов. Всё на устройстве, без сбора данных.`
-- **Description**: блок из `store-metadata.md` (#98).
+  `A network multitool for iPhone, iPad, and Mac: ping, traceroute, DNS, TLS, port scanners, censorship checks, and tools for VPN-server owners. All on-device, no data collection.`
+- **Description**: the block from `store-metadata.md` (#98).
 - **Keywords (100)**:
-  `ping,traceroute,dns,tls,ssl,порт,сканер,сеть,диагностика,mtr,whois,ip,bonjour,iperf,скорость,dnsbl`
-- **Subtitle (30)**: `Пинг, DNS, TLS, порты и др.`
-- ⛔ **Support URL**: захостенный URL (см. ниже). Обязателен.
-- **Marketing URL**: опционально (можно тот же Pages-сайт).
-- **What's New in This Version**: для 1.0 не показывается; если поле есть — `Первый релиз CheckNet.`
+  `ping,traceroute,dns,tls,ssl,port,scanner,network,diagnostics,mtr,whois,ip,bonjour,iperf,speed,dnsbl`
+- **Subtitle (30)**: `Ping, DNS, TLS, ports & more`
+- ⛔ **Support URL**: a hosted URL (see below). Mandatory.
+- **Marketing URL**: optional (can be the same Pages site).
+- **What's New in This Version**: not shown for 1.0; if the field exists — `First release of CheckNet.`
 
-### B2. ⛔ Скриншоты (#99)
-- Обязательные размеры: **iPhone 6.9″** (1320×2868) и **iPad 13″** (2064×2752).
-- Ещё не сняты. Могу сгенерировать детерминированно через deep-link-харнесс на симуляторе
-  (`-openTool <tool> -run`) — см. блок «Что от меня».
+### B2. ⛔ Screenshots (#99)
+- Required sizes: **iPhone 6.9″** (1320×2868) and **iPad 13″** (2064×2752).
+- Not yet taken. I can generate them deterministically via the deep-link harness on the simulator
+  (`-openTool <tool> -run`) — see the "What's on me" block.
 
 ### B3. ⛔ Build
-- Выбрать обработанный билд 1.0 (1) в секции **Build** (появится после окончания обработки).
-- Иконку 1024 ASC берёт из билда (single-size AppIcon в asset catalog) — отдельно грузить не нужно.
+- Select the processed 1.0 (1) build in the **Build** section (it appears once processing finishes).
+- ASC pulls the 1024 icon from the build (single-size AppIcon in the asset catalog) — no separate
+  upload needed.
 
-### B4. App Review Information — см. `review-notes.md`
-- **Sign-in required?** → **No** (аккаунта нет).
-- **Contact**: имя, фамилия, телефон, email (твои — ASC требует контакт ревьюера).
-- **Notes**: вставить английский блок из `review-notes.md` (раздел A) — про 5.4 (не VPN, не
-  маршрутизируем трафик), сканеры (с согласием, как Fing), Happ/Incy (публичные ключи), приватность.
-- **Demo / attachments**: публичные цели (1.1.1.1, cloudflare.com) + примеры ссылок `incy://crypt1/…`,
-  `happ://…` для проверки декодеров (см. `review-notes.md` раздел B).
+### B4. App Review Information — see `review-notes.md`
+- **Sign-in required?** → **No** (there is no account).
+- **Contact**: first name, last name, phone, email (yours — ASC requires a reviewer contact).
+- **Notes**: paste the English block from `review-notes.md` (section A) — about 5.4 (not a VPN, we
+  don't route traffic), scanners (with consent, like Fing), Happ/Incy (public keys), privacy.
+- **Demo / attachments**: public targets (1.1.1.1, cloudflare.com) + example links `incy://crypt1/…`,
+  `happ://…` to test the decoders (see `review-notes.md` section B).
 
 ### B5. Export Compliance
-- В билде стоит `ITSAppUsesNonExemptEncryption = false` → ASC **не спросит** дополнительно.
-  Если всё же появится вопрос — «uses standard/exempt encryption», exemption (см. `export-compliance.md`).
+- The build has `ITSAppUsesNonExemptEncryption = false` → ASC **won't ask** anything extra.
+  If the question does appear — "uses standard/exempt encryption", exemption (see `export-compliance.md`).
 
 ### B6. Version Information
-- **Copyright**: напр. `2026 <твоё имя/бренд>`.
-- **Routing App Coverage / Marketing**: не требуется.
+- **Copyright**: e.g. `2026 <your name/brand>`.
+- **Routing App Coverage / Marketing**: not required.
 
 ---
 
 ## C. Submit for Review
-- Нажать **Add for Review** → **Submit to App Review**.
-- После сабмита статус: Waiting for Review → In Review. Первое ревью обычно 24–48 ч.
+- Click **Add for Review** → **Submit to App Review**.
+- After submitting, the status: Waiting for Review → In Review. The first review usually takes 24–48 h.
 
 ---
 
-## Что от меня (могу сделать сам)
+## What's on me (I can do it myself)
 
-1. **Скриншоты (#99)** — сгенерирую набор на симуляторе через deep-link по нескольким инструментам
-   (ping/DNS/TLS/сканер/Блокировки/VPN/Текущая сеть Wi-Fi) в нужных размерах. Скажи — запускаю.
-2. **GitHub Pages** для Privacy Policy + Support (#82/#111) — как дашь `<SUPPORT_EMAIL>` и дату,
-   заполню `docs/legal/*`, включу Pages и дам тебе готовые URL для полей A1 и B1.
+1. **Screenshots (#99)** — I'll generate a set on the simulator via deep-link across several tools
+   (ping/DNS/TLS/scanner/Censorship checks/VPN/Current Wi-Fi network) in the required sizes. Say the
+   word — I'll start.
+2. **GitHub Pages** for Privacy Policy + Support (#82/#111) — once you give me `<SUPPORT_EMAIL>` and
+   a date, I'll fill in `docs/legal/*`, enable Pages, and hand you the ready URLs for fields A1 and B1.
 
-## Что только твоё
-- Контакт ревьюера (имя/тел/email) в B4.
-- Приём Free Apps Agreement (если ещё не принят) для A4.
-- Финальный Submit (кнопка).
+## Yours only
+- Reviewer contact (name/phone/email) in B4.
+- Accepting the Free Apps Agreement (if not yet accepted) for A4.
+- The final Submit (the button).
